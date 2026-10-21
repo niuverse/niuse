@@ -41,3 +41,14 @@ Look for the direction, not the absolute number: acceptance should rise as the s
 ## Done
 
 Ten rows, acceptance at or above 60%, at least three cited judgements, at least one recorded disagreement. Then M2-001 can move to review, and the next milestone is decided from the notes rather than from the backlog.
+
+## Self-check (does not count as a day)
+
+2026-10-22 · synthetic write task in a scratch repo, `--sandbox workspace-write --approval ask`.
+
+- The approval preview showed the expected one-line diff, `y` approved the write, and the file changed.
+- Found: usage printed once per model step, so one prompt produced four usage lines; `/cost` counted steps as turns. Fixed in `M2-053`; a run now prints one `N steps · …` line and `/cost` reports `1 turn`.
+- Found: `--approval ask` also prompts for read-only tools such as `bash cat`; the model recovered by using `read`. Not a bug, but the transcript makes the extra approval visible.
+- `/export` wrote a `0600` Markdown file from the live REPL; `/stats` matched the one run.
+
+This is a smoke test of the loop, not evidence about usefulness. The ten real days are still the gate.
