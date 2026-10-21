@@ -1788,6 +1788,26 @@
       "path": "docs/board/M2-058-sessions-listing.md"
     },
     {
+      "id": "M2-059",
+      "title": "Corrupt session lines are tolerated",
+      "status": "done",
+      "milestone": "M2",
+      "module": "cli",
+      "size": "S",
+      "priority": "P2",
+      "updated": "2026-10-22",
+      "completed": "2026-10-22",
+      "depends_on": [
+        "M2-058"
+      ],
+      "docs": [
+        "architecture"
+      ],
+      "blocked_reason": null,
+      "body_html": "<h2>Scope</h2>\n<ul>\n<li>A session log with a bad JSON line loads its valid events; the loader warns on stderr.</li>\n<li><code>sessions --json</code> still lists it, with the valid event count and a title from the first readable user message.</li>\n<li><code>export --session</code> succeeds on the same file and writes a <code>0600</code> Markdown file.</li>\n<li>An end-to-end CLI test pins both behaviors.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n<code>events</code> counts only decodable lines.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nThe title comes from the readable user message.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nExport exits zero and contains that message.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nNo new dependency.</li>\n</ul>\n<h2>Notes</h2>\n<p>Session logs are append-only files that can be truncated by a crash or edited by hand. Listing and export should degrade to the readable prefix, not refuse the whole file.</p>\n",
+      "path": "docs/board/M2-059-corrupt-sessions.md"
+    },
+    {
       "id": "M3-001",
       "title": "Release and dependency strategy",
       "status": "backlog",
@@ -2007,7 +2027,7 @@
   ],
   "meta": {
     "schema_version": 1,
-    "cards": 66,
+    "cards": 67,
     "modules": 10,
     "docs": 10,
     "generator": "cargo xtask dashboard"

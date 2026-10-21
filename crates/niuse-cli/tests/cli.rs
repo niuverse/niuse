@@ -185,3 +185,44 @@ fn sessions_json_lists_exec_logs() {
     assert_eq!(entries[0]["title"], "one shot");
     assert_eq!(entries[0]["active"], false);
 }
+
+#[test]
+fn corrupt_session_lines_are_tolerated() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    let sessions = home.join("sessions");
+    std::fs::create_dir_all(&sessions).unwrap();
+    let log = sessions.join("bad.jsonl");
+    std::fs::write(
+        &log,
+        "not json\n{\"type\":\"user_message\",\"text\":\"ok\",\"ts\":1}\n",
+    )
+    .unwrap();
+
+    let listing = run(&home, &["sessions", "--json"]);
+    assert!(listing.status.success(), "{listing:?}");
+    let entries: serde_json::Value = serde_json::from_slice(&listing.stdout).expect("valid JSON");
+    assert_eq!(entries[0]["title"], "ok");
+    assert_eq!(entries[0]["events"], 1);
+
+    let out = home.join("export.md");
+    let export = run(
+        &home,
+        &[
+            "export",
+            "--session",
+            log.to_str().unwrap(),
+            "--out",
+            out.to_str().unwrap(),
+        ],
+    );
+    assert!(export.status.success(), "{export:?}");
+    let text = std::fs::read_to_string(&out).unwrap();
+    assert!(text.contains("ok"));
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let mode = std::fs::metadata(&out).unwrap().permissions().mode() & 0o777;
+        assert_eq!(mode, 0o600);
+    }
+}
