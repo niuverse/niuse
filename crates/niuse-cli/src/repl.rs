@@ -97,6 +97,13 @@ fn id_query(line: &str) -> Option<(usize, &str, IdScope)> {
 }
 
 fn id_candidates(store: &Store, scope: IdScope, fragment: &str) -> Vec<Pair> {
+    let (prefix, fragment) = match scope {
+        IdScope::Memory => match fragment.strip_prefix("m-") {
+            Some(rest) => ("m-", rest),
+            None => ("", fragment),
+        },
+        IdScope::Loop => ("", fragment),
+    };
     let items: Vec<(String, String)> = match scope {
         IdScope::Memory => store
             .memories()
@@ -116,8 +123,11 @@ fn id_candidates(store: &Store, scope: IdScope, fragment: &str) -> Vec<Pair> {
         .into_iter()
         .filter(|(id, _)| id.starts_with(fragment))
         .map(|(id, text)| Pair {
-            display: format!("{id}  {}", text.chars().take(50).collect::<String>()),
-            replacement: id,
+            display: format!(
+                "{prefix}{id}  {}",
+                text.chars().take(50).collect::<String>()
+            ),
+            replacement: format!("{prefix}{id}"),
         })
         .collect();
     matches.sort_by(|left, right| left.replacement.cmp(&right.replacement));
@@ -1303,6 +1313,10 @@ mod tests {
         let (start, fragment, _) = id_query(&line).unwrap();
         assert_eq!(start, "/mem show ".len());
         assert_eq!(fragment, &first.id[..2]);
+
+        let prefixed = id_candidates(&store, IdScope::Memory, &format!("m-{}", &first.id[..2]));
+        assert_eq!(prefixed.len(), 1);
+        assert_eq!(prefixed[0].replacement, format!("m-{}", first.id));
     }
 
     #[test]
