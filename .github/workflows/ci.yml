@@ -64,6 +64,10 @@ jobs:
         working-directory: niuse
         run: cargo clippy --workspace --all-targets -- -D warnings
 
+      - name: Docs
+        working-directory: niuse
+        run: RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps
+
       - name: Tests
         working-directory: niuse
         run: cargo test --workspace

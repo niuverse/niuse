@@ -11,6 +11,9 @@ cargo fmt --all --check
 echo "== clippy =="
 cargo clippy --workspace --all-targets -- -D warnings
 
+echo "== docs =="
+RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps
+
 echo "== tests =="
 cargo test --workspace
 
