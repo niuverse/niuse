@@ -273,6 +273,28 @@ mod tests {
     }
 
     #[test]
+    fn every_two_chunk_split_parses_once() {
+        let text = "hello\n<<niuse:memory kind=preference tags=rust>>\nprefer nextest\n<</niuse:memory>>\ntail";
+        let expected = parse(text).visible;
+        let mut boundaries: Vec<usize> = text.char_indices().map(|(index, _)| index).collect();
+        boundaries.push(text.len());
+        for index in boundaries {
+            let mut filter = StreamFilter::new();
+            let mut visible = filter.push(&text[..index]);
+            visible.push_str(&filter.push(&text[index..]));
+            let (tail, raw) = filter.finish();
+            visible.push_str(&tail);
+            let parsed = parse(&raw);
+            assert_eq!(parsed.visible, expected, "split at {index}");
+            assert_eq!(parsed.blocks.len(), 1, "split at {index}");
+            assert!(
+                matches!(parsed.blocks[0], Block::Memory { .. }),
+                "split at {index}"
+            );
+        }
+    }
+
+    #[test]
     fn stream_handles_block_split_across_deltas() {
         let mut filter = StreamFilter::new();
         let mut visible = String::new();
