@@ -46,6 +46,8 @@ const SLASH_COMMANDS: &[&str] = &[
     "/user",
     "/user edit",
     "/export",
+    "/threads",
+    "/sessions",
     "/new",
     "/cd",
     "/status",
@@ -590,6 +592,8 @@ impl App {
                     self.metric("forget", argument);
                 }
             }
+            "/threads" => commands::threads(&self.store, &thread.path, false)?,
+            "/sessions" => commands::sessions(&self.store, false)?,
             "/export" => {
                 let path = export_path(&self.store, &thread.path, argument, &self.cwd);
                 commands::export(&self.store, Some(&path), Some(&thread.path))?;
