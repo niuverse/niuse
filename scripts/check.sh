@@ -17,6 +17,9 @@ RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps
 echo "== tests =="
 cargo test --workspace
 
+echo "== package =="
+cargo package -p niuse-core --allow-dirty
+
 echo "== dashboard =="
 cargo xtask dashboard --check
 

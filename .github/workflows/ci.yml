@@ -72,6 +72,10 @@ jobs:
         working-directory: niuse
         run: cargo test --workspace
 
+      - name: Package niuse-core
+        working-directory: niuse
+        run: cargo package -p niuse-core
+
       - name: Dashboard is fresh
         working-directory: niuse
         run: cargo xtask dashboard --check

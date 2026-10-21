@@ -156,7 +156,7 @@ Four views: Architecture (default), Work, Docs, Decisions. Sources are `docs/das
 ## Development
 
 ```sh
-./scripts/check.sh   # fmt, clippy, docs, tests, dashboard freshness
+./scripts/check.sh   # fmt, clippy, docs, tests, package, dashboard
 ```
 
 Repository rules and commands for future sessions live in [AGENTS.md](AGENTS.md).
