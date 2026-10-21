@@ -354,6 +354,24 @@ mod tests {
     }
 
     #[test]
+    fn thread_titles_skip_empty_and_truncate_long_messages() {
+        let events = vec![
+            Event::UserMessage {
+                text: "   ".into(),
+                ts: 1,
+            },
+            Event::UserMessage {
+                text: "x".repeat(70),
+                ts: 2,
+            },
+        ];
+        let title = thread_title(&events).unwrap();
+        assert_eq!(title.chars().count(), 61);
+        assert!(title.ends_with('…'));
+        assert!(title.starts_with(&"x".repeat(60)));
+    }
+
+    #[test]
     fn human_readable_units() {
         assert_eq!(human_age(5), "just now");
         assert_eq!(human_age(120), "2m ago");

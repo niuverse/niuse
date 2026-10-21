@@ -218,6 +218,7 @@ fn corrupt_session_lines_are_tolerated() {
     );
     assert!(export.status.success(), "{export:?}");
     let text = std::fs::read_to_string(&out).unwrap();
+    assert!(text.starts_with("# ok\n"));
     assert!(text.contains("ok"));
     #[cfg(unix)]
     {
