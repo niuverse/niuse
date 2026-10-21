@@ -1,7 +1,7 @@
 //! Interactive REPL and one-shot execution.
 
-use std::io::{self, Write};
-use std::path::PathBuf;
+use std::io::{self, IsTerminal, Write};
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use anyhow::{bail, Context, Result};
@@ -12,6 +12,8 @@ use niucode_tools::SandboxPolicy;
 use niuse_core::policy::{conflicts, secret_reason};
 use niuse_core::prompt::compose;
 use niuse_core::{Block, Date, LoopItem, MemoryEntry, MemoryKind, Store};
+use rustyline::error::ReadlineError;
+use rustyline::DefaultEditor;
 
 use crate::commands;
 use crate::config::{build_provider, resolve_cwd, resolve_policy};
@@ -110,12 +112,56 @@ impl App {
         let mut history = driver::history(&thread.path)?;
         self.banner();
 
+        let history_path = self.store.history_path();
+        let mut editor = if io::stdin().is_terminal() {
+            match DefaultEditor::new() {
+                Ok(mut editor) => {
+                    if history_path.exists() {
+                        if let Err(error) = editor.load_history(&history_path) {
+                            eprintln!("warning: cannot load history: {error}");
+                        }
+                    }
+                    Some(editor)
+                }
+                Err(error) => {
+                    eprintln!("warning: line editing unavailable: {error}");
+                    None
+                }
+            }
+        } else {
+            None
+        };
+
         loop {
-            print!("\n{}", self.prompt_label());
-            let _ = io::stdout().flush();
-            let Some(line) = render::read_line() else {
-                println!();
-                break;
+            let prompt = format!("\n{}", self.prompt_label());
+            let line = match editor.as_mut() {
+                Some(editor) => match editor.readline(&prompt) {
+                    Ok(line) => {
+                        let _ = editor.add_history_entry(line.as_str());
+                        line
+                    }
+                    Err(ReadlineError::Interrupted) => {
+                        println!("^C");
+                        continue;
+                    }
+                    Err(ReadlineError::Eof) => {
+                        println!();
+                        break;
+                    }
+                    Err(error) => {
+                        eprintln!("input error: {error}");
+                        break;
+                    }
+                },
+                None => {
+                    print!("{prompt}");
+                    let _ = io::stdout().flush();
+                    let Some(line) = render::read_line() else {
+                        println!();
+                        break;
+                    };
+                    line
+                }
             };
             let input = line.trim();
             if input.is_empty() {
@@ -196,6 +242,12 @@ impl App {
         }
 
         driver::append_end(&thread.log)?;
+        if let Some(mut editor) = editor {
+            if let Err(error) = editor.save_history(&history_path) {
+                eprintln!("warning: cannot save history: {error}");
+            }
+            secure_history(&history_path);
+        }
         Ok(())
     }
 
@@ -614,6 +666,20 @@ pub async fn run_exec(app: App, prompt: String) -> Result<()> {
     result.map(|_| ())
 }
 
+#[cfg(unix)]
+fn secure_history(path: &Path) {
+    use std::os::unix::fs::PermissionsExt;
+
+    if let Ok(metadata) = std::fs::metadata(path) {
+        let mut permissions = metadata.permissions();
+        permissions.set_mode(0o600);
+        let _ = std::fs::set_permissions(path, permissions);
+    }
+}
+
+#[cfg(not(unix))]
+fn secure_history(_path: &Path) {}
+
 fn print_help() {
     println!(
         "对话：直接输入；空行忽略。\n\
@@ -640,4 +706,20 @@ fn print_help() {
          /help           本帮助\n\
          /quit           退出"
     );
+}
+
+#[cfg(all(test, unix))]
+mod tests {
+    use super::*;
+    use std::os::unix::fs::PermissionsExt;
+
+    #[test]
+    fn history_file_is_private() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("history");
+        std::fs::write(&path, "/help\n").unwrap();
+        secure_history(&path);
+        let mode = std::fs::metadata(&path).unwrap().permissions().mode() & 0o777;
+        assert_eq!(mode, 0o600);
+    }
 }

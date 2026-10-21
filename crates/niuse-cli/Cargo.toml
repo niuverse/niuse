@@ -22,6 +22,7 @@ niucode-auth.workspace = true
 niucode-core.workspace = true
 niucode-provider.workspace = true
 niucode-tools.workspace = true
+rustyline = "19"
 tokio.workspace = true
 toml.workspace = true
 

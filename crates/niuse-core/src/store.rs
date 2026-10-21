@@ -70,6 +70,10 @@ impl Store {
         self.root.join("threads")
     }
 
+    pub fn history_path(&self) -> PathBuf {
+        self.root.join("history")
+    }
+
     pub fn config_path(&self) -> PathBuf {
         self.root.join("config.toml")
     }

@@ -31,6 +31,8 @@ niuse does not fork niucode and does not add a memory hook to its loop. Memory i
 
 Today niuse owns the REPL and renderer. [ADR-0003](adr/0003-kernel-product-boundary.md) moves the front end upstream: `niucode-cli` grows a library target and a generic turn-hook surface, and niuse becomes the product layer that implements it. Until that lands, the renderer stays here deliberately, not accidentally.
 
+Terminal input uses `rustyline` only when stdin is a TTY; pipes keep the plain reader. History is stored at `~/.niuse/history` with mode `0600`.
+
 ## Modules
 
 | Module | Layer | Responsibility |
