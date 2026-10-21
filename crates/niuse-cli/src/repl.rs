@@ -1,8 +1,9 @@
 //! Interactive REPL and one-shot execution.
 
+use std::fs;
 use std::io::{self, IsTerminal, Write};
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use anyhow::{bail, Context, Result};
 use niucode_agent::ApprovalMode;
@@ -117,8 +118,73 @@ fn id_candidates(store: &Store, scope: IdScope, fragment: &str) -> Vec<Pair> {
     matches
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum PathScope {
+    Directory,
+    Any,
+}
+
+fn path_query(line: &str) -> Option<(usize, &str, PathScope)> {
+    if let Some(fragment) = line.strip_prefix("/cd ") {
+        return Some(("/cd ".len(), fragment, PathScope::Directory));
+    }
+    if let Some(fragment) = line.strip_prefix("/export ") {
+        return Some(("/export ".len(), fragment, PathScope::Any));
+    }
+    None
+}
+
+fn path_candidates(fragment: &str, cwd: &Path, scope: PathScope) -> Vec<Pair> {
+    let (dir_prefix, name_prefix) = match fragment.rfind('/') {
+        Some(index) => (&fragment[..=index], &fragment[index + 1..]),
+        None => ("", fragment),
+    };
+    let base = if let Some(rest) = dir_prefix.strip_prefix("~/") {
+        match std::env::var_os("HOME") {
+            Some(home) => PathBuf::from(home).join(rest),
+            None => return Vec::new(),
+        }
+    } else if dir_prefix.starts_with('/') {
+        PathBuf::from(dir_prefix)
+    } else if dir_prefix.is_empty() {
+        cwd.to_path_buf()
+    } else {
+        cwd.join(dir_prefix)
+    };
+
+    let entries = match fs::read_dir(&base) {
+        Ok(entries) => entries,
+        Err(_) => return Vec::new(),
+    };
+    let mut matches = Vec::new();
+    for entry in entries.flatten() {
+        let name = entry.file_name().to_string_lossy().to_string();
+        if !name.starts_with(name_prefix) {
+            continue;
+        }
+        if name.starts_with('.') && !name_prefix.starts_with('.') {
+            continue;
+        }
+        let is_dir = entry.file_type().map(|kind| kind.is_dir()).unwrap_or(false);
+        if scope == PathScope::Directory && !is_dir {
+            continue;
+        }
+        let mut replacement = format!("{dir_prefix}{name}");
+        if is_dir {
+            replacement.push('/');
+        }
+        matches.push(Pair {
+            display: replacement.clone(),
+            replacement,
+        });
+    }
+    matches.sort_by(|left, right| left.replacement.cmp(&right.replacement));
+    matches
+}
+
 struct SlashCompleter {
     root: PathBuf,
+    cwd: Arc<Mutex<PathBuf>>,
 }
 
 impl Completer for SlashCompleter {
@@ -131,6 +197,14 @@ impl Completer for SlashCompleter {
         _ctx: &RlContext<'_>,
     ) -> rustyline::Result<(usize, Vec<Pair>)> {
         let typed = &line[..pos];
+        if let Some((start, fragment, scope)) = path_query(typed) {
+            let cwd = self
+                .cwd
+                .lock()
+                .map(|guard| guard.clone())
+                .unwrap_or_else(|poisoned| poisoned.into_inner().clone());
+            return Ok((start, path_candidates(fragment, &cwd, scope)));
+        }
         if let Some((start, fragment, scope)) = id_query(typed) {
             let store = Store::at(self.root.clone());
             return Ok((start, id_candidates(&store, scope, fragment)));
@@ -176,6 +250,7 @@ pub struct App {
     pub approval: ApprovalMode,
     pub allow_unsandboxed: bool,
     pub cwd: PathBuf,
+    completion_cwd: Arc<Mutex<PathBuf>>,
     pub max_steps: usize,
     pub prompt: String,
     pub prompt_tokens: usize,
@@ -194,6 +269,7 @@ impl App {
         let (policy, approval, allow_unsandboxed) =
             resolve_policy(&settings.sandbox, &settings.approval, &settings.network)?;
         let cwd = resolve_cwd(cli.cwd.clone())?;
+        let completion_cwd = Arc::new(Mutex::new(cwd.clone()));
         let memory_enabled = std::env::var("NIUSE_MEMORY")
             .map(|value| value.trim().to_lowercase() != "off")
             .unwrap_or(true);
@@ -209,6 +285,7 @@ impl App {
             approval,
             allow_unsandboxed,
             cwd,
+            completion_cwd,
             max_steps: settings.max_steps,
             prompt: String::new(),
             prompt_tokens: 0,
@@ -263,6 +340,7 @@ impl App {
                 Ok(mut editor) => {
                     editor.set_helper(Some(SlashCompleter {
                         root: self.store.root().to_path_buf(),
+                        cwd: self.completion_cwd.clone(),
                     }));
                     if history_path.exists() {
                         if let Err(error) = editor.load_history(&history_path) {
@@ -543,6 +621,9 @@ impl App {
                         bail!("{} is not a directory", path.display());
                     }
                     self.cwd = path;
+                    if let Ok(mut guard) = self.completion_cwd.lock() {
+                        *guard = self.cwd.clone();
+                    }
                     println!("cwd: {}", self.cwd.display());
                 }
             }
@@ -890,6 +971,29 @@ mod tests {
         assert_eq!(slash_candidates("/zzz"), Vec::<&str>::new());
         assert_eq!(slash_candidates("hello"), Vec::<&str>::new());
         assert_eq!(slash_candidates("/mem "), Vec::<&str>::new());
+    }
+
+    #[test]
+    fn path_completion_lists_directories_and_files() {
+        let directory = tempfile::tempdir().unwrap();
+        fs::create_dir(directory.path().join("alpha")).unwrap();
+        fs::write(directory.path().join("beta.txt"), "").unwrap();
+
+        let all = path_candidates("", directory.path(), PathScope::Any);
+        let names: Vec<&str> = all.iter().map(|pair| pair.replacement.as_str()).collect();
+        assert!(names.contains(&"alpha/"));
+        assert!(names.contains(&"beta.txt"));
+
+        let dirs = path_candidates("", directory.path(), PathScope::Directory);
+        assert!(!dirs.is_empty());
+        assert!(dirs.iter().all(|pair| pair.replacement.ends_with('/')));
+
+        let filtered = path_candidates("al", directory.path(), PathScope::Any);
+        assert_eq!(filtered.len(), 1);
+        assert_eq!(filtered[0].replacement, "alpha/");
+
+        assert_eq!(path_query("/cd sr"), Some((4, "sr", PathScope::Directory)));
+        assert_eq!(path_query("/export out"), Some((8, "out", PathScope::Any)));
     }
 
     #[test]
