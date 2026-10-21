@@ -4,7 +4,7 @@
 //! credentials, the sandbox backend, and the pinned niucode checkout.
 
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use anyhow::{bail, Result};
@@ -140,6 +140,21 @@ pub fn doctor(store: &Store, preset: &str, json: bool) -> Result<()> {
     } else {
         report.record(Level::Ok, "thread", "new; will be created on first run");
     }
+
+    private_path(
+        &mut report,
+        "history",
+        &store.history_path(),
+        0o600,
+        "prompt history",
+    );
+    private_path(
+        &mut report,
+        "backups",
+        &store.root().join("backups"),
+        0o700,
+        "prune backups",
+    );
 
     let metrics = store.metrics()?;
     report.record(
@@ -296,9 +311,49 @@ fn write_probe(directory: &std::path::Path) -> bool {
 }
 
 #[cfg(unix)]
-fn mode_of(metadata: &fs::Metadata) -> String {
+fn private_path(report: &mut Report, label: &str, path: &Path, expected: u32, what: &str) {
+    match fs::metadata(path) {
+        Ok(metadata) => {
+            let mode = mode_bits(&metadata);
+            let mode_text = mode_of(&metadata);
+            if is_private_mode(mode) {
+                report.record(
+                    Level::Ok,
+                    label,
+                    format!("{} ({mode_text})", path.display()),
+                );
+            } else {
+                report.record(
+                    Level::Warn,
+                    label,
+                    format!(
+                        "{} is group/world readable ({mode_text}); {what} should be {expected:04o}, run chmod {expected:o}",
+                        path.display()
+                    ),
+                );
+            }
+        }
+        Err(_) => report.record(Level::Ok, label, "not created yet"),
+    }
+}
+
+fn is_private_mode(mode: u32) -> bool {
+    mode & 0o077 == 0
+}
+
+#[cfg(unix)]
+fn mode_bits(metadata: &fs::Metadata) -> u32 {
     use std::os::unix::fs::PermissionsExt;
-    format!("{:04o}", metadata.permissions().mode() & 0o777)
+    metadata.permissions().mode() & 0o777
+}
+
+#[cfg(not(unix))]
+fn mode_bits(_metadata: &fs::Metadata) -> u32 {
+    0
+}
+
+fn mode_of(metadata: &fs::Metadata) -> String {
+    format!("{:04o}", mode_bits(metadata))
 }
 
 #[cfg(not(unix))]
@@ -309,6 +364,16 @@ fn mode_of(_metadata: &fs::Metadata) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn private_modes_reject_group_and_world_bits() {
+        assert!(is_private_mode(0o600));
+        assert!(is_private_mode(0o700));
+        assert!(is_private_mode(0o400));
+        assert!(!is_private_mode(0o640));
+        assert!(!is_private_mode(0o604));
+        assert!(!is_private_mode(0o755));
+    }
 
     #[test]
     fn report_counts_and_serializes_levels() {
