@@ -5,7 +5,7 @@ use anyhow::{bail, Context, Result};
 use niuse_core::model::one_line;
 use niuse_core::policy::{search_score, secret_reason};
 use niuse_core::prompt::compose;
-use niuse_core::{Date, MemoryEntry, MemoryKind, Store};
+use niuse_core::{Date, LoopItem, MemoryEntry, MemoryKind, Store};
 use std::fs;
 use std::io::{self, Write};
 use std::path::PathBuf;
@@ -210,6 +210,31 @@ pub fn loops_list(store: &Store, all: bool) -> Result<()> {
             None => String::new(),
         };
         println!("[{mark}] l-{} {}{due}", item.id, item.text);
+    }
+    Ok(())
+}
+
+pub fn loops_add(store: &Store, text: &str, due: Option<&str>) -> Result<()> {
+    let text = one_line(text.trim().to_string());
+    if text.is_empty() {
+        bail!("loop text is empty");
+    }
+    if let Some(reason) = secret_reason(&text) {
+        bail!("refusing to store: looks like a {reason}");
+    }
+    let due = match due {
+        Some(value) => {
+            Some(Date::parse(value).with_context(|| format!("invalid due date {value:?}"))?)
+        }
+        None => None,
+    };
+    let item = store.add_loop(LoopItem::new(text, due))?;
+    if let Err(error) = store.append_metric("loop", &item.id) {
+        eprintln!("warning: cannot record metric: {error:#}");
+    }
+    match item.due {
+        Some(due) => println!("l-{} {} (due {due})", item.id, item.text),
+        None => println!("l-{} {}", item.id, item.text),
     }
     Ok(())
 }
@@ -775,6 +800,27 @@ mod tests {
         assert_eq!(summary.accepted, 1);
         assert_eq!(summary.blocked, 1);
         assert_eq!(summary.acceptance_percent(), Some(50));
+    }
+
+    #[test]
+    fn manual_loop_persists_with_due_date() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        loops_add(&store, "check the pin", Some("2026-10-30")).unwrap();
+        let loops = store.loops().unwrap();
+        assert_eq!(loops.len(), 1);
+        assert_eq!(loops[0].text, "check the pin");
+        assert_eq!(loops[0].due, Date::parse("2026-10-30"));
+    }
+
+    #[test]
+    fn manual_loop_rejects_a_bad_due_date() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        assert!(loops_add(&store, "check", Some("2026-13-01")).is_err());
+        assert!(store.loops().unwrap().is_empty());
     }
 
     #[test]

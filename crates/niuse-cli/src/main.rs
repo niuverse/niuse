@@ -139,6 +139,13 @@ enum LoopsCommand {
         #[arg(long)]
         all: bool,
     },
+    /// Add a loop manually
+    Add {
+        text: String,
+        /// Optional due date (YYYY-MM-DD)
+        #[arg(long)]
+        due: Option<String>,
+    },
     /// Close a loop
     Done { id: String },
 }
@@ -189,6 +196,7 @@ async fn main() -> Result<()> {
         },
         Some(Command::Loops { command }) => match command {
             LoopsCommand::List { all } => commands::loops_list(&store, all),
+            LoopsCommand::Add { text, due } => commands::loops_add(&store, &text, due.as_deref()),
             LoopsCommand::Done { id } => commands::loops_done(&store, &id),
         },
         Some(Command::Journal { days }) => commands::journal_show(&store, days),

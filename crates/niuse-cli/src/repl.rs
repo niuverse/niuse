@@ -265,6 +265,17 @@ impl App {
                 }
             }
             "/loops" => commands::loops_list(&self.store, false)?,
+            "/loop" => {
+                if argument.is_empty() {
+                    println!("用法：/loop <一件你答应要做的事>");
+                } else if let Some(reason) = secret_reason(argument) {
+                    println!("拒绝：疑似包含 {reason}。");
+                } else {
+                    let item = self.store.add_loop(LoopItem::new(argument, None))?;
+                    self.metric("loop", &item.id);
+                    println!("承诺已记录 l-{}", item.id);
+                }
+            }
             "/done" => {
                 if argument.is_empty() {
                     println!("用法：/done <l-id>");
@@ -564,6 +575,7 @@ fn print_help() {
          /remember <一句话>  直接记住一条偏好\n\
          /forget <id>    删除一条记忆\n\
          /loops          列出承诺\n\
+         /loop <text>    记下一条承诺\n\
          /done <l-id>    关闭一条承诺\n\
          /journal        最近 7 天\n\
          /stats          最近 7 天的候选接受率与活动计数\n\
