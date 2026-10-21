@@ -20,7 +20,8 @@ The contract is deliberately small: `run_with_history`, `AgentConfig`, `project_
 
 | niuse | niucode | status | updated |
 |---|---|---|---|
-| 0.1.0 | `b5f66ba` | contract tests pass | 2026-10-21 |
+| 0.1.0 | `95f5303` | current pin; contract tests pass | 2026-10-21 |
+| 0.1.0 | `b5f66ba` | previous pin; contract tests pass | 2026-10-21 |
 
 ## Weekly ritual
 
