@@ -289,7 +289,8 @@ pub fn review(store: &Store) -> Result<()> {
         match line.trim().to_lowercase().as_str() {
             "y" | "yes" => {
                 if let Some(reason) = secret_reason(&item.text) {
-                    println!("  拒绝：疑似包含 {reason}");
+                    println!("  拒绝：疑似包含 {reason}；保留到下次");
+                    remaining.push(item.clone());
                 } else {
                     let entry = MemoryEntry::new(
                         item.kind,

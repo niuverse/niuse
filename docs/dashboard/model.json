@@ -2071,7 +2071,7 @@
     },
     {
       "id": "M2-073",
-      "title": "Failed review edits keep the candidate",
+      "title": "Failed review actions keep the candidate",
       "status": "done",
       "milestone": "M2",
       "module": "bootstrap",
@@ -2086,7 +2086,7 @@
         "plan"
       ],
       "blocked_reason": null,
-      "body_html": "<h2>Problem</h2>\n<p>In <code>niuse review</code>, the <code>e</code> path advanced past the candidate when the editor was abandoned, produced empty text, or triggered the secret scan. The candidate vanished from both the inbox and memory — neither accepted nor explicitly discarded.</p>\n<h2>Fix</h2>\n<ul>\n<li>Every failed edit now prints <code>保留到下次</code> and pushes the candidate back onto <code>remaining</code>.</li>\n<li>Accepting an edited candidate still removes it from the inbox and records <code>review_accept</code>.</li>\n<li>Manual check with a secret-bearing editor: inbox still contains the entry, summary says <code>剩余 1 条</code>, no memory file is written.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nAbandoned edit keeps the candidate.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nEmpty edit keeps the candidate.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nSecret-bearing edit keeps the candidate.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nA successful edit still accepts and clears it.</li>\n</ul>\n<h2>Notes</h2>\n<p>The only actions that should destroy a candidate are an explicit accept or discard. An editor failure is not a decision.</p>\n",
+      "body_html": "<h2>Problem</h2>\n<p>In <code>niuse review</code>, the <code>e</code> path advanced past the candidate when the editor was abandoned, produced empty text, or triggered the secret scan. The <code>y</code> path did the same when the unedited candidate itself tripped the scan. The candidate vanished from both the inbox and memory — neither accepted nor explicitly discarded.</p>\n<h2>Fix</h2>\n<ul>\n<li>Every failed edit, and a <code>y</code> refused by the secret scan, now prints <code>保留到下次</code> and pushes the candidate back onto <code>remaining</code>.</li>\n<li>Accepting an edited candidate still removes it from the inbox and records <code>review_accept</code>.</li>\n<li>Manual check with a secret-bearing candidate: <code>y</code> refused, inbox still contains the entry, summary says <code>剩余 1 条</code>, no memory file is written.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nAbandoned edit keeps the candidate.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nEmpty edit keeps the candidate.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nSecret-bearing edit keeps the candidate.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nA <code>y</code> refused for a secret keeps the candidate pending.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nA successful edit still accepts and clears it.</li>\n</ul>\n<h2>Notes</h2>\n<p>The only actions that should destroy a candidate are an explicit accept or discard. An editor failure is not a decision.</p>\n",
       "path": "docs/board/M2-073-review-edit-pending.md"
     },
     {

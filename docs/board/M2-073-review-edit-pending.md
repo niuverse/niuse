@@ -1,6 +1,6 @@
 +++
 id = "M2-073"
-title = "Failed review edits keep the candidate"
+title = "Failed review actions keep the candidate"
 status = "done"
 milestone = "M2"
 module = "bootstrap"
@@ -14,19 +14,20 @@ docs = ["plan"]
 
 ## Problem
 
-In `niuse review`, the `e` path advanced past the candidate when the editor was abandoned, produced empty text, or triggered the secret scan. The candidate vanished from both the inbox and memory — neither accepted nor explicitly discarded.
+In `niuse review`, the `e` path advanced past the candidate when the editor was abandoned, produced empty text, or triggered the secret scan. The `y` path did the same when the unedited candidate itself tripped the scan. The candidate vanished from both the inbox and memory — neither accepted nor explicitly discarded.
 
 ## Fix
 
-- Every failed edit now prints `保留到下次` and pushes the candidate back onto `remaining`.
+- Every failed edit, and a `y` refused by the secret scan, now prints `保留到下次` and pushes the candidate back onto `remaining`.
 - Accepting an edited candidate still removes it from the inbox and records `review_accept`.
-- Manual check with a secret-bearing editor: inbox still contains the entry, summary says `剩余 1 条`, no memory file is written.
+- Manual check with a secret-bearing candidate: `y` refused, inbox still contains the entry, summary says `剩余 1 条`, no memory file is written.
 
 ## Acceptance
 
 - [x] Abandoned edit keeps the candidate.
 - [x] Empty edit keeps the candidate.
 - [x] Secret-bearing edit keeps the candidate.
+- [x] A `y` refused for a secret keeps the candidate pending.
 - [x] A successful edit still accepts and clears it.
 
 ## Notes
