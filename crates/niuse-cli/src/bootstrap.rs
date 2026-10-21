@@ -117,32 +117,56 @@ pub async fn run(
     eprintln!();
 
     let existing = store.memories()?;
-    let mut kept: Vec<Pending> = Vec::new();
-    for pending in raw {
-        if secret_reason(&pending.text).is_some() {
-            continue;
-        }
-        if existing
-            .iter()
-            .any(|entry| conflicts(&entry.text, &entry.tags, &pending.text, &pending.tags))
-        {
-            continue;
-        }
-        if kept
-            .iter()
-            .any(|other| conflicts(&other.text, &other.tags, &pending.text, &pending.tags))
-        {
-            continue;
-        }
-        kept.push(pending);
-    }
+    let inbox = store.read_inbox()?;
+    let merged = merge_candidates(&existing, inbox.as_deref(), raw);
+    let added = merged
+        .len()
+        .saturating_sub(inbox.as_deref().map(parse_inbox).map(|items| items.len()).unwrap_or(0));
 
-    write_inbox(store, &kept)?;
-    println!("{} 条候选写入 {}", kept.len(), store.inbox_path().display());
-    if !kept.is_empty() {
+    write_inbox(store, &merged)?;
+    println!(
+        "{} new candidate(s), {} pending in {}",
+        added,
+        merged.len(),
+        store.inbox_path().display()
+    );
+    if !merged.is_empty() {
         println!("运行 `niuse review` 逐条确认。");
     }
     Ok(())
+}
+
+/// Merge new candidates into the existing queue instead of replacing it.
+///
+/// Accepted memories and secret-bearing entries are dropped from both sides;
+/// duplicates are compared with the same similarity rule as memory writes.
+fn merge_candidates(memories: &[MemoryEntry], inbox: Option<&str>, incoming: Vec<Pending>) -> Vec<Pending> {
+    let mut merged: Vec<Pending> = inbox
+        .map(parse_inbox)
+        .unwrap_or_default()
+        .into_iter()
+        .filter(|pending| secret_reason(&pending.text).is_none())
+        .filter(|pending| {
+            !memories
+                .iter()
+                .any(|entry| conflicts(&entry.text, &entry.tags, &pending.text, &pending.tags))
+        })
+        .collect();
+
+    for pending in incoming {
+        if secret_reason(&pending.text).is_some()
+            || memories
+                .iter()
+                .any(|entry| conflicts(&entry.text, &entry.tags, &pending.text, &pending.tags))
+            || merged
+                .iter()
+                .any(|other| conflicts(&other.text, &other.tags, &pending.text, &pending.tags))
+        {
+            continue;
+        }
+        merged.push(pending);
+    }
+    merged
 }
 
 pub fn review(store: &Store) -> Result<()> {
@@ -446,6 +470,38 @@ mod tests {
         assert_eq!(parsed[0].source, "1792-1-0");
         assert_eq!(parsed[1].tags, Vec::<String>::new());
         assert_eq!(parsed[1].text, "先给结论");
+    }
+
+    #[test]
+    fn merge_keeps_pending_and_drops_accepted() {
+        let accepted = MemoryEntry::new(
+            MemoryKind::Lesson,
+            "already accepted",
+            Vec::new(),
+            Date::today(),
+            None,
+        );
+        let inbox = "- [ ] `lesson` already accepted  <!-- source: s1 -->\n- [ ] `preference` keep me  <!-- source: s2 -->\n";
+        let merged = merge_candidates(
+            &[accepted],
+            Some(inbox),
+            vec![
+                Pending {
+                    kind: MemoryKind::Preference,
+                    tags: Vec::new(),
+                    text: "keep me".into(),
+                    source: "s3".into(),
+                },
+                Pending {
+                    kind: MemoryKind::Lesson,
+                    tags: Vec::new(),
+                    text: "new thought".into(),
+                    source: "s4".into(),
+                },
+            ],
+        );
+        let texts: Vec<&str> = merged.iter().map(|pending| pending.text.as_str()).collect();
+        assert_eq!(texts, vec!["keep me", "new thought"]);
     }
 
     #[test]
