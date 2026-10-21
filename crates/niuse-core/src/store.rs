@@ -144,6 +144,22 @@ impl Store {
                     kind.file()
                 ));
             }
+            if parsed > 0 {
+                let stray = text
+                    .lines()
+                    .map(str::trim)
+                    .filter(|line| {
+                        !line.is_empty()
+                            && !line.starts_with('#')
+                            && !line.starts_with("<!--")
+                            && !line.starts_with("-->")
+                            && !line.starts_with("- ")
+                    })
+                    .count();
+                if stray > 0 {
+                    issues.push(format!("{}: {stray} stray line(s)", kind.file()));
+                }
+            }
         }
         Ok(issues)
     }
