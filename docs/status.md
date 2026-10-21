@@ -9,7 +9,7 @@ summary = "Entry point after the autonomous iteration: what works, what is pinne
 
 ## Snapshot · 2026-10-22
 
-niuse is runnable end to end: five Markdown stores, an interactive REPL with line editing, history, completion, multi-line input, confirmation and conflict handling, the in-band protocol, bootstrap from history (memory candidates and a user profile), JSON views for every store, colored approval diffs, `doctor`, and acceptance metrics.
+niuse is runnable end to end: five Markdown stores, an interactive REPL with line editing, history, completion, multi-line input, confirmation and conflict handling, the in-band protocol, bootstrap from history (memory candidates and a user profile), JSON views for every store, one-shot session listing, colored approval diffs, `doctor`, and acceptance metrics. The declared MSRV is 1.88 and a weekly workflow checks it.
 
 Both repositories are green. The board at <https://niuverse.github.io/niuse/> is deployed from a single generated file; source docs are not published. niuse builds against the niucode revision in `niucode.rev`.
 
@@ -19,6 +19,7 @@ Both repositories are green. The board at <https://niuverse.github.io/niuse/> is
 ./scripts/check.sh              # fmt, clippy, docs, tests, package, dashboard
 ./scripts/check-niucode-drift.sh
 cargo xtask dashboard --check
+cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 ```
 
 ## Works
@@ -27,7 +28,7 @@ cargo xtask dashboard --check
 - Memory: search including expired entries, kind filter, kind counts, show/edit, review with metrics, prune with backup and freed-byte report, duplicate guard, secret scan, soft expiry.
 - Journal and loops: model-written blocks plus manual entry and manual promises.
 - Bootstrap: dry-run preview, candidate merge into the inbox, optional `user.md` draft.
-- Sessions: derived thread titles, Markdown export, JSON listing.
+- Sessions: derived thread titles, `threads` and `sessions` listings, Markdown export with a title, JSON output.
 - Machine output: JSON for memory, journal, threads, loops, status, doctor, stats.
 - Operations: pinned niucode revision, contract tests, nightly main check, doctor, acceptance metrics.
 

@@ -77,7 +77,12 @@ There is no second copy of the conversation. `niuse export` renders the event lo
   loops.md         promises (automatic, optional due date)
   thread.jsonl     the relationship thread
   threads/         archived chapters from `/new`
+  sessions/        one-shot `exec` logs (`niuse sessions`)
   inbox.md         bootstrap review queue
+  history          TTY prompt history (0600)
+  backups/         prune snapshots (0700)
+  metrics.jsonl    local acceptance counters
+  config.toml      defaults and overrides
 ```
 
 Defaults come from CLI flags, then `~/.niuse/config.toml`, then built-ins; only commands that build a provider read the file.
