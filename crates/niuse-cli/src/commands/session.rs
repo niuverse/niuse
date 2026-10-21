@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use anyhow::{bail, Context, Result};
+use niucode_core::Event;
 use niuse_core::Store;
 
 #[derive(Debug)]
@@ -15,6 +16,7 @@ struct ThreadInfo {
     bytes: u64,
     age_secs: u64,
     modified: SystemTime,
+    title: Option<String>,
 }
 
 pub fn threads(store: &Store, active: &Path, json: bool) -> Result<()> {
@@ -41,6 +43,9 @@ pub fn threads(store: &Store, active: &Path, json: bool) -> Result<()> {
             human_bytes(info.bytes),
             relative.display()
         );
+        if let Some(title) = &info.title {
+            println!("    {title}");
+        }
     }
     Ok(())
 }
@@ -52,6 +57,7 @@ struct ThreadJson {
     events: usize,
     bytes: u64,
     age_seconds: u64,
+    title: Option<String>,
 }
 
 fn thread_json(store: &Store, info: &ThreadInfo) -> ThreadJson {
@@ -66,6 +72,7 @@ fn thread_json(store: &Store, info: &ThreadInfo) -> ThreadJson {
         events: info.events,
         bytes: info.bytes,
         age_seconds: info.age_secs,
+        title: info.title.clone(),
     }
 }
 
@@ -97,9 +104,15 @@ fn push_thread(entries: &mut Vec<ThreadInfo>, path: &Path, active: &Path) -> Res
         .duration_since(modified)
         .map(|elapsed| elapsed.as_secs())
         .unwrap_or(0);
-    let events = niucode_core::load(path)
+    let loaded = niucode_core::load(path);
+    let events = loaded
+        .as_ref()
         .map(|loaded| loaded.events.len())
         .unwrap_or(0);
+    let title = loaded
+        .as_ref()
+        .ok()
+        .and_then(|loaded| thread_title(&loaded.events));
     entries.push(ThreadInfo {
         path: path.to_path_buf(),
         active: path == active,
@@ -107,8 +120,27 @@ fn push_thread(entries: &mut Vec<ThreadInfo>, path: &Path, active: &Path) -> Res
         bytes: metadata.len(),
         age_secs,
         modified,
+        title,
     });
     Ok(())
+}
+
+fn thread_title(events: &[Event]) -> Option<String> {
+    for event in events {
+        if let Event::UserMessage { text, .. } = event {
+            let line = text.lines().next().unwrap_or(text).trim();
+            if line.is_empty() {
+                continue;
+            }
+            let title: String = line.chars().take(60).collect();
+            return Some(if line.chars().count() > 60 {
+                format!("{title}…")
+            } else {
+                title
+            });
+        }
+    }
+    None
 }
 
 fn human_age(seconds: u64) -> String {
@@ -204,11 +236,22 @@ mod tests {
             bytes: 120,
             age_secs: 5,
             modified: SystemTime::now(),
+            title: None,
         };
         let json = serde_json::to_value(thread_json(&store, &info)).unwrap();
         assert_eq!(json["path"], "thread.jsonl");
         assert_eq!(json["active"], true);
         assert_eq!(json["events"], 3);
+    }
+
+    #[test]
+    fn thread_titles_come_from_the_first_user_message() {
+        let events: Vec<Event> = vec![
+            serde_json::from_str(r#"{"type":"user_message","text":"hello there","ts":1}"#).unwrap(),
+            serde_json::from_str(r#"{"type":"user_message","text":"second","ts":2}"#).unwrap(),
+        ];
+        assert_eq!(thread_title(&events), Some("hello there".to_string()));
+        assert_eq!(thread_title(&[]), None);
     }
 
     #[test]
