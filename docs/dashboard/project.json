@@ -108,7 +108,8 @@
         "crates/niuse-cli/src/commands/doctor.rs",
         "crates/niuse-cli/src/commands/editor.rs",
         "crates/niuse-cli/src/config.rs",
-        "crates/niuse-cli/src/commands/loops.rs"
+        "crates/niuse-cli/src/commands/loops.rs",
+        "crates/niuse-cli/src/commands/session.rs"
       ],
       "notes": [
         "Bare niuse starts the REPL.",
