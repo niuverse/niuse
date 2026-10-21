@@ -8,9 +8,18 @@ use niuse_core::Store;
 
 use super::edit_markdown;
 
-pub fn user_show(store: &Store) -> Result<()> {
+pub fn user_show(store: &Store, json: bool) -> Result<()> {
+    let text = store.user()?;
+    if json {
+        let payload = serde_json::json!({
+            "path": store.user_path().display().to_string(),
+            "text": text,
+        });
+        println!("{}", serde_json::to_string_pretty(&payload)?);
+        return Ok(());
+    }
     println!("{}", store.user_path().display());
-    match store.user()? {
+    match text {
         Some(text) => print!("{text}"),
         None => println!("(missing; run `niuse bootstrap --profile` or `niuse user edit`)"),
     }
@@ -55,8 +64,17 @@ pub fn identity_edit(store: &Store) -> Result<()> {
     Ok(())
 }
 
-pub fn identity_show(store: &Store) -> Result<()> {
-    match store.identity()? {
+pub fn identity_show(store: &Store, json: bool) -> Result<()> {
+    let text = store.identity()?;
+    if json {
+        let payload = serde_json::json!({
+            "path": store.identity_path().display().to_string(),
+            "text": text,
+        });
+        println!("{}", serde_json::to_string_pretty(&payload)?);
+        return Ok(());
+    }
+    match text {
         Some(text) => {
             println!("{}", store.identity_path().display());
             println!();

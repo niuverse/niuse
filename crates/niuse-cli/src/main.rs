@@ -270,7 +270,11 @@ enum LoopsCommand {
 #[derive(Subcommand, Debug, Clone)]
 enum UserCommand {
     /// Print user.md
-    Show,
+    Show {
+        /// Emit JSON
+        #[arg(long)]
+        json: bool,
+    },
     /// Edit user.md in $EDITOR
     Edit,
 }
@@ -302,7 +306,11 @@ enum IdentityCommand {
         force: bool,
     },
     /// Print identity.md
-    Show,
+    Show {
+        /// Emit JSON
+        #[arg(long)]
+        json: bool,
+    },
     /// Edit identity.md in $EDITOR
     Edit,
 }
@@ -417,7 +425,7 @@ async fn main() -> Result<()> {
         }
         Some(Command::Identity { command }) => match command {
             IdentityCommand::Init { force } => commands::identity_init(&store, force),
-            IdentityCommand::Show => commands::identity_show(&store),
+            IdentityCommand::Show { json } => commands::identity_show(&store, json),
             IdentityCommand::Edit => commands::identity_edit(&store),
         },
         Some(Command::Bootstrap {
@@ -451,7 +459,7 @@ async fn main() -> Result<()> {
             commands::doctor(&store, &settings.provider, json)
         }
         Some(Command::User { command }) => match command {
-            UserCommand::Show => commands::user_show(&store),
+            UserCommand::Show { json } => commands::user_show(&store, json),
             UserCommand::Edit => commands::user_edit(&store),
         },
         Some(Command::Config { command }) => match command {

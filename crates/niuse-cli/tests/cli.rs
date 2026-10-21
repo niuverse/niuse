@@ -295,3 +295,17 @@ fn memory_show_json_round_trip() {
     assert_eq!(entry["text"], "single entry");
     assert_eq!(entry["tags"][0], "style");
 }
+
+#[test]
+fn profile_show_json_reports_missing_files() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    for command in ["user", "identity"] {
+        let output = run(&home, &[command, "show", "--json"]);
+        assert!(output.status.success(), "{output:?}");
+        let profile: serde_json::Value =
+            serde_json::from_slice(&output.stdout).expect("valid JSON");
+        assert!(profile["path"].as_str().is_some());
+        assert!(profile["text"].is_null());
+    }
+}

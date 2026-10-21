@@ -768,14 +768,14 @@ impl App {
                 if argument == "edit" {
                     commands::user_edit(&self.store)?;
                 } else {
-                    commands::user_show(&self.store)?;
+                    commands::user_show(&self.store, false)?;
                 }
             }
             "/identity" => {
                 if argument == "edit" {
                     commands::identity_edit(&self.store)?;
                 } else {
-                    commands::identity_show(&self.store)?;
+                    commands::identity_show(&self.store, false)?;
                 }
             }
             "/prompt" => println!("{}", self.prompt),
