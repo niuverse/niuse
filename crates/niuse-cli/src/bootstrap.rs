@@ -6,7 +6,7 @@
 
 use std::cmp::Reverse;
 use std::env;
-use std::io::{self, Write};
+use std::io::{self, IsTerminal, Write};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
@@ -133,9 +133,12 @@ pub async fn run(
     }
 
     let mut raw: Vec<Pending> = Vec::new();
+    let progress = io::stderr().is_terminal();
     for (index, (path, transcript)) in sessions.iter().enumerate() {
-        eprint!("\r[{}/{}] 抽取中…", index + 1, sessions.len());
-        let _ = io::stderr().flush();
+        if progress {
+            eprint!("\r[{}/{}] 抽取中…", index + 1, sessions.len());
+            let _ = io::stderr().flush();
+        }
 
         match extract(provider, model, transcript).await {
             Ok(candidates) => {
@@ -166,7 +169,9 @@ pub async fn run(
             }
         }
     }
-    eprintln!();
+    if progress {
+        eprintln!();
+    }
 
     let existing = store.memories()?;
     let inbox = store.read_inbox()?;
