@@ -153,6 +153,9 @@ enum MemCommand {
         /// Include expired entries
         #[arg(long)]
         all: bool,
+        /// Emit JSON
+        #[arg(long)]
+        json: bool,
     },
     /// Add a memory directly
     Add {
@@ -172,6 +175,9 @@ enum MemCommand {
         /// Exclude expired entries
         #[arg(long)]
         fresh: bool,
+        /// Emit JSON
+        #[arg(long)]
+        json: bool,
     },
     /// Show one memory in full
     Show { id: String },
@@ -290,14 +296,16 @@ async fn main() -> Result<()> {
             repl::run_exec(app, prompt).await
         }
         Some(Command::Mem { command }) => match command {
-            MemCommand::List { all } => commands::mem_list(&store, all),
+            MemCommand::List { all, json } => commands::mem_list(&store, all, json),
             MemCommand::Add {
                 text,
                 kind,
                 tags,
                 force,
             } => commands::mem_add(&store, &text, &kind, tags, force),
-            MemCommand::Search { query, fresh } => commands::mem_search(&store, &query, fresh),
+            MemCommand::Search { query, fresh, json } => {
+                commands::mem_search(&store, &query, fresh, json)
+            }
             MemCommand::Show { id } => commands::mem_show(&store, &id),
             MemCommand::Edit { id } => commands::mem_edit(&store, &id),
             MemCommand::Forget { id } => commands::mem_forget(&store, &id),

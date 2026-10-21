@@ -256,11 +256,11 @@ impl App {
                 if argument == "review" {
                     commands::mem_review(&self.store)?;
                 } else if let Some(query) = argument.strip_prefix("recall ") {
-                    commands::mem_search(&self.store, query.trim(), false)?;
+                    commands::mem_search(&self.store, query.trim(), false, false)?;
                 } else if let Some(id) = argument.strip_prefix("show ") {
                     commands::mem_show(&self.store, id.trim())?;
                 } else {
-                    commands::mem_list(&self.store, false)?;
+                    commands::mem_list(&self.store, false, false)?;
                 }
             }
             "/remember" => {

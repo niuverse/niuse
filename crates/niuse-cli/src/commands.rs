@@ -17,13 +17,19 @@ use niucode_auth::AuthStore;
 use niucode_provider::Preset;
 use serde::Serialize;
 
-pub fn mem_list(store: &Store, all: bool) -> Result<()> {
+pub fn mem_list(store: &Store, all: bool, json: bool) -> Result<()> {
     let today = Date::today();
     let memories = store.memories()?;
     let shown: Vec<&MemoryEntry> = memories
         .iter()
         .filter(|entry| all || !entry.is_expired(today))
         .collect();
+
+    if json {
+        let entries: Vec<MemoryJson> = shown.iter().map(|entry| MemoryJson::from(*entry)).collect();
+        println!("{}", serde_json::to_string_pretty(&entries)?);
+        return Ok(());
+    }
 
     let stale = memories
         .iter()
@@ -47,6 +53,36 @@ pub fn mem_list(store: &Store, all: bool) -> Result<()> {
         println!("{}", entry_line(entry, today));
     }
     Ok(())
+}
+
+#[derive(Debug, serde::Serialize)]
+struct MemoryJson<'a> {
+    id: &'a str,
+    kind: &'a str,
+    tags: &'a [String],
+    created: String,
+    confirmed: String,
+    age_days: i64,
+    expired: bool,
+    source: Option<&'a str>,
+    text: &'a str,
+}
+
+impl<'a> From<&'a MemoryEntry> for MemoryJson<'a> {
+    fn from(entry: &'a MemoryEntry) -> Self {
+        let today = Date::today();
+        Self {
+            id: &entry.id,
+            kind: entry.kind.as_str(),
+            tags: &entry.tags,
+            created: entry.created.to_string(),
+            confirmed: entry.confirmed.to_string(),
+            age_days: entry.age_days(today),
+            expired: entry.is_expired(today),
+            source: entry.source.as_deref(),
+            text: &entry.text,
+        }
+    }
 }
 
 fn entry_line(entry: &MemoryEntry, today: Date) -> String {
@@ -74,7 +110,7 @@ fn entry_line(entry: &MemoryEntry, today: Date) -> String {
 
 /// Search every memory, including expired ones: recall is exactly where old
 /// entries are still useful, even though they are no longer auto-injected.
-pub fn mem_search(store: &Store, query: &str, fresh_only: bool) -> Result<()> {
+pub fn mem_search(store: &Store, query: &str, fresh_only: bool, json: bool) -> Result<()> {
     let today = Date::today();
     let query = query.trim();
     if query.is_empty() {
@@ -94,6 +130,15 @@ pub fn mem_search(store: &Store, query: &str, fresh_only: bool) -> Result<()> {
             .partial_cmp(&left.0)
             .unwrap_or(std::cmp::Ordering::Equal)
     });
+
+    if json {
+        let entries: Vec<MemoryJson> = scored
+            .iter()
+            .map(|(_, entry)| MemoryJson::from(*entry))
+            .collect();
+        println!("{}", serde_json::to_string_pretty(&entries)?);
+        return Ok(());
+    }
 
     if scored.is_empty() {
         println!("没有匹配「{query}」的记忆。");
@@ -1434,6 +1479,22 @@ mod tests {
             bullets: vec!["decided to use cargo nextest".into()],
         };
         assert!(rank_journal("kubernetes", &[day]).is_empty());
+    }
+
+    #[test]
+    fn memory_json_is_machine_readable() {
+        let entry = MemoryEntry::new(
+            MemoryKind::Preference,
+            "prefer short paragraphs",
+            vec!["style".into()],
+            Date::parse("2026-10-20").unwrap(),
+            Some("session-1".into()),
+        );
+        let json = serde_json::to_value(MemoryJson::from(&entry)).unwrap();
+        assert_eq!(json["id"], entry.id);
+        assert_eq!(json["kind"], "preference");
+        assert_eq!(json["expired"], false);
+        assert_eq!(json["source"], "session-1");
     }
 
     #[test]
