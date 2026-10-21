@@ -174,3 +174,4 @@ A daemon, a web UI, WeChat / Feishu bridges, scheduled push notifications, vecto
 - [ADR-0003: kernel and product boundary](docs/adr/0003-kernel-product-boundary.md)
 - [niucode compatibility](docs/compat.md)
 - [Dogfood log](docs/dogfood.md): the ten-day acceptance ritual
+- [Distribution notes](docs/distribution.md): install paths, crates.io blockers, license decision

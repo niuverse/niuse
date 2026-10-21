@@ -8,7 +8,7 @@ size = "M"
 priority = "P1"
 updated = "2026-10-21"
 depends_on = ["M0-003"]
-docs = ["plan"]
+docs = ["plan", "distribution"]
 +++
 
 ## Scope
@@ -25,5 +25,7 @@ docs = ["plan"]
 - [ ] License and naming strategy are documented in the README.
 
 ## Notes
+
+Findings and options are recorded in [distribution](../distribution.md).
 
 Current failure: `all dependencies must have a version requirement specified when packaging`, pointing at the `niucode-agent` path dependency.

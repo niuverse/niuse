@@ -1166,10 +1166,11 @@
         "M0-003"
       ],
       "docs": [
-        "plan"
+        "plan",
+        "distribution"
       ],
       "blocked_reason": null,
-      "body_html": "<h2>Scope</h2>\n<ul>\n<li>Decide the niucode dependency: publish niucode crates first, pin a git revision, or support <code>cargo install --git</code> only.</li>\n<li>Add <code>license</code>, <code>repository</code>, <code>description</code>, and other release metadata.</li>\n<li>Make <code>cargo package</code> / <code>cargo publish --dry-run</code> reproducible.</li>\n<li>Confirm crate-name availability; rename the crate if needed while keeping the <code>niuse</code> binary.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\"/>\n<code>cargo package -p niuse</code> passes (currently blocked by path dependencies).</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nThe install path is reproducible on a clean machine.</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nLicense and naming strategy are documented in the README.</li>\n</ul>\n<h2>Notes</h2>\n<p>Current failure: <code>all dependencies must have a version requirement specified when packaging</code>, pointing at the <code>niucode-agent</code> path dependency.</p>\n",
+      "body_html": "<h2>Scope</h2>\n<ul>\n<li>Decide the niucode dependency: publish niucode crates first, pin a git revision, or support <code>cargo install --git</code> only.</li>\n<li>Add <code>license</code>, <code>repository</code>, <code>description</code>, and other release metadata.</li>\n<li>Make <code>cargo package</code> / <code>cargo publish --dry-run</code> reproducible.</li>\n<li>Confirm crate-name availability; rename the crate if needed while keeping the <code>niuse</code> binary.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\"/>\n<code>cargo package -p niuse</code> passes (currently blocked by path dependencies).</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nThe install path is reproducible on a clean machine.</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nLicense and naming strategy are documented in the README.</li>\n</ul>\n<h2>Notes</h2>\n<p>Findings and options are recorded in <a href=\"../distribution.md\">distribution</a>.</p>\n<p>Current failure: <code>all dependencies must have a version requirement specified when packaging</code>, pointing at the <code>niucode-agent</code> path dependency.</p>\n",
       "path": "docs/board/M3-001-distribution.md"
     },
     {
@@ -1273,6 +1274,17 @@
       "excerpt": "Ten-day protocol: one row per day, numbers from stats --json, plus one concrete memory win or disagreement."
     },
     {
+      "id": "distribution",
+      "title": "Distribution notes",
+      "kind": "doc",
+      "status": "living",
+      "order": 50,
+      "summary": "What installs today, why crates.io is blocked by path dependencies, and the decisions still open: dependency strategy, names, and license.",
+      "body_html": "<h2>What works today</h2>\n<pre><code class=\"language-sh\">cargo install --git https://github.com/niuverse/niuse\n</code></pre>\n<p>This is also the path for people who only want the binary. It bypasses crates.io entirely.</p>\n<h2>Why crates.io is blocked</h2>\n<p><code>cargo package -p niuse</code> fails:</p>\n<pre><code class=\"language-text\">error: all dependencies must have a version requirement specified when packaging.\ndependency `niucode-agent` does not specify a version\n</code></pre>\n<p>crates.io removes <code>path</code> specifications and expects the dependency to exist in the registry. Until that changes, only <code>niuse-core</code> is packageable on its own, and it is not useful without the CLI.</p>\n<h2>Options</h2>\n<div class=\"table-wrap\"><table><thead><tr><th>Option</th><th>Cost</th><th>When</th></tr></thead><tbody>\n<tr><td>Publish the <code>niucode-*</code> crates first, then depend on versions</td><td>Release coordination between the two repositories</td><td>After niucode's embedding surface stabilizes</td></tr>\n<tr><td>Switch to git dependencies with a pinned revision</td><td>Every build fetches from GitHub; local co-development needs a patch override</td><td>If clean-checkout builds matter before publishing</td></tr>\n<tr><td>Keep the CLI on <code>cargo install --git</code></td><td>No crates.io presence or docs.rs page</td><td>Acceptable while the tool is personal</td></tr>\n</tbody></table></div>\n<p>The pinned-revision policy in <a href=\"compat.md\">compat</a> is independent of this choice; it keeps the required CI reproducible either way.</p>\n<h2>Names</h2>\n<p><code>niuse</code>, <code>niuse-core</code>, <code>niuse-cli</code>, and <code>niucode</code> were unclaimed on crates.io, npm, and PyPI when checked on 2026-10-21. Recheck immediately before publishing; registry names are first-come. The binary name is independent of the crate name, so a rename is recoverable.</p>\n<h2>License</h2>\n<p>Not chosen yet. crates.io requires a <code>license</code> or <code>license-file</code>, so publishing waits on that decision. The workspace <code>repository</code> field is set; the package warning now only complains about the missing license.</p>\n<h2>Checklist</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\"/>\nChoose a license and add it to the workspace manifest.</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nDecide the niucode dependency strategy (publish first, git rev, or git-only install).</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nRecheck crate names and reserve them with a real release.</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nAdd a release workflow that runs <code>scripts/check.sh</code> before publish.</li>\n</ul>\n",
+      "path": "docs/distribution.md",
+      "excerpt": "What installs today, why crates.io is blocked by path dependencies, and the decisions still open: dependency strategy, names, and license."
+    },
+    {
       "id": "docs-readme",
       "title": "Dashboard guide",
       "kind": "guide",
@@ -1351,7 +1363,7 @@
     "schema_version": 1,
     "cards": 37,
     "modules": 10,
-    "docs": 8,
+    "docs": 9,
     "generator": "cargo xtask dashboard"
   }
 }
