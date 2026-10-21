@@ -323,7 +323,7 @@ Implemented in `crates/niuse-core` and `crates/niuse-cli`:
 | Architecture dashboard | `crates/xtask` plus `docs/dashboard/project.json` |
 | Memory kill switch | `NIUSE_MEMORY=off` in `repl.rs` |
 
-Three deviations from the plan:
+Deviations and later additions:
 
 1. **A third protocol block, `journal`.** The plan had memory and loop only; to avoid an extra model call, the main model emits a journal block and niuse writes it automatically.
 2. **`exec` never writes memory.** It prints candidates to stderr so scripted calls cannot change the store silently.
