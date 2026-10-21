@@ -103,6 +103,9 @@ enum Command {
         /// Only sessions modified within this many days
         #[arg(long, default_value_t = 90)]
         since_days: i64,
+        /// List the sessions that would be scanned, without calling a model
+        #[arg(long)]
+        dry_run: bool,
     },
     /// Review bootstrapped candidates
     Review,
@@ -303,7 +306,11 @@ async fn main() -> Result<()> {
             IdentityCommand::Show => commands::identity_show(&store),
             IdentityCommand::Edit => commands::identity_edit(&store),
         },
-        Some(Command::Bootstrap { limit, since_days }) => {
+        Some(Command::Bootstrap {
+            limit,
+            since_days,
+            dry_run,
+        }) => {
             let settings = settings::resolve(&cli, &store)?;
             let app = repl::App::new(&cli, &settings, store)?;
             bootstrap::run(
@@ -312,6 +319,7 @@ async fn main() -> Result<()> {
                 &app.model,
                 limit,
                 since_days,
+                dry_run,
             )
             .await
         }

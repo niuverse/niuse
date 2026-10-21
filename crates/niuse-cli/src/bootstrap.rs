@@ -51,6 +51,7 @@ pub async fn run(
     model: &str,
     limit: usize,
     since_days: i64,
+    dry_run: bool,
 ) -> Result<()> {
     let candidates = recent_sessions(usize::MAX, since_days)?;
     if candidates.is_empty() {
@@ -79,6 +80,18 @@ pub async fn run(
         since_days,
         limit
     );
+
+    if dry_run {
+        println!("dry run：不会调用模型。");
+        for (path, transcript) in &sessions {
+            let name = path
+                .file_stem()
+                .and_then(|stem| stem.to_str())
+                .unwrap_or("session");
+            println!("  {name}  {} chars", transcript.chars().count());
+        }
+        return Ok(());
+    }
 
     let mut raw: Vec<Pending> = Vec::new();
     for (index, (path, transcript)) in sessions.iter().enumerate() {
