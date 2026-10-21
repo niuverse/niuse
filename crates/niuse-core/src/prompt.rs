@@ -177,7 +177,7 @@ fn loop_section(loops: &[LoopItem], today: Date) -> String {
         }
         let cost = estimate_text_tokens(&line) + 1;
         if used + cost > LOOP_BUDGET {
-            break;
+            continue;
         }
         used += cost;
         lines.push_str(&line);
@@ -300,6 +300,16 @@ mod tests {
         assert!(!composition.system.contains("很久以前的结论"));
         assert_eq!(composition.memory_injected, 2);
         assert_eq!(composition.memory_dropped, 1);
+    }
+
+    #[test]
+    fn oversized_promise_does_not_hide_smaller_ones() {
+        let today = date("2026-10-21");
+        let huge = LoopItem::new("x".repeat(2_000), Some(date("2026-10-01")));
+        let small = LoopItem::new("pay the invoice", None);
+        let composition = compose(None, None, &[], &[huge, small], &[], today);
+        assert!(composition.system.contains("pay the invoice"));
+        assert!(!composition.system.contains("xxxx"));
     }
 
     #[test]
