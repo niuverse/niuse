@@ -100,6 +100,14 @@ pub fn status(store: &Store, thread: &Path, json: bool) -> Result<()> {
         }
     );
     println!(
+        "user      {}",
+        if user.is_some() {
+            "已设置"
+        } else {
+            "未设置"
+        }
+    );
+    println!(
         "memory    {} 条（preference {} · lesson {}；{} 条待验证，{} 条已过期）",
         memories.len(),
         preferences,

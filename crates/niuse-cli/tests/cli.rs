@@ -33,6 +33,7 @@ fn status_works_on_an_empty_home() {
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("home"));
     assert!(stdout.contains("memory"));
+    assert!(stdout.contains("user"));
 }
 
 #[test]
