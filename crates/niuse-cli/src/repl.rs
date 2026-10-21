@@ -43,6 +43,7 @@ const SLASH_COMMANDS: &[&str] = &[
     "/identity edit",
     "/user",
     "/user edit",
+    "/export",
     "/new",
     "/cd",
     "/status",
@@ -487,6 +488,10 @@ impl App {
                     self.metric("forget", argument);
                 }
             }
+            "/export" => {
+                let path = export_path(&self.store, &thread.path, argument, &self.cwd);
+                commands::export(&self.store, Some(&path), Some(&thread.path))?;
+            }
             "/journal" => {
                 if let Some(query) = argument.strip_prefix("search ") {
                     commands::journal_search(&self.store, query.trim(), false)?;
@@ -813,6 +818,21 @@ pub async fn run_exec(app: App, prompt: String) -> Result<()> {
     result.map(|_| ())
 }
 
+fn export_path(store: &Store, thread: &Path, argument: &str, cwd: &Path) -> PathBuf {
+    if !argument.is_empty() {
+        let path = PathBuf::from(argument);
+        if path.is_absolute() {
+            return path;
+        }
+        return cwd.join(path);
+    }
+    let stem = thread
+        .file_stem()
+        .map(|stem| stem.to_string_lossy().to_string())
+        .unwrap_or_else(|| "thread".to_string());
+    store.root().join(format!("export-{stem}.md"))
+}
+
 #[cfg(unix)]
 fn secure_history(path: &Path) {
     use std::os::unix::fs::PermissionsExt;
@@ -842,11 +862,13 @@ fn print_help() {
          /journal        最近 7 天\n\
          /journal search <query>  检索日记条目\n\
          /journal add <text>      追加一条今天的日记\n\
+        /export [path]  导出当前主线为 Markdown\n\
          /stats          最近 7 天的候选接受率与活动计数\n\
          /doctor         检查本地设置，不调用模型\n\
          /identity       查看 identity.md（/identity edit 编辑）\n\
          /user           查看 user.md（/user edit 编辑）\n\
-         /new            归档当前主线并开始一条新的\n\
+         /export [path]  导出当前主线为 Markdown\n\
+        /new            归档当前主线并开始一条新的\n\
          /cd <path>      切换工作目录（下一个 turn 生效）\n\
          /status         当前配置与存储状态\n\
          /prompt         打印完整 system prompt（调试用）\n\
@@ -871,6 +893,30 @@ mod tests {
     }
 
     #[test]
+    fn export_path_defaults_next_to_the_home() {
+        let home = Path::new("/tmp/niuse");
+        let thread = Path::new("/tmp/niuse/threads/thread-42.jsonl");
+        assert_eq!(
+            export_path(
+                &Store::at(home.to_path_buf()),
+                thread,
+                "",
+                Path::new("/tmp/niuse")
+            ),
+            PathBuf::from("/tmp/niuse/export-thread-42.md")
+        );
+        assert_eq!(
+            export_path(
+                &Store::at(home.to_path_buf()),
+                thread,
+                "out.md",
+                Path::new("/work")
+            ),
+            PathBuf::from("/work/out.md")
+        );
+    }
+
+    #[test]
     fn id_completion_reads_the_stores() {
         let directory = tempfile::tempdir().unwrap();
         let store = Store::at(directory.path().join(".niuse"));
@@ -892,7 +938,7 @@ mod tests {
                 None,
             ))
             .unwrap();
-        let matches = id_candidates(&store, IdScope::Memory, &first.id[..2]);
+        let matches = id_candidates(&store, IdScope::Memory, &first.id);
         assert_eq!(matches.len(), 1);
         assert_eq!(matches[0].replacement, first.id);
 
