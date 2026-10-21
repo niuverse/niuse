@@ -1,0 +1,13 @@
+[package]
+name = "niuse-core"
+description = "Identity, memory, journal, and loops for niuse"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+regex.workspace = true
+
+[dev-dependencies]
+tempfile = "3"

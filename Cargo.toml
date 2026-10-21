@@ -1,0 +1,24 @@
+[workspace]
+resolver = "2"
+members = ["crates/niuse-core", "crates/niuse-cli"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+repository = "https://github.com/niuverse/niuse"
+
+[workspace.dependencies]
+anyhow = "1.0"
+clap = { version = "4.5", features = ["derive"] }
+futures-util = { version = "0.3", default-features = false, features = ["std"] }
+regex = "1"
+tokio = { version = "1.40", features = ["rt-multi-thread", "macros", "signal", "time"] }
+
+# Local sibling checkout. A published build should pin a git revision instead;
+# see docs/plan.md §8.
+niucode-agent = { path = "../niuverse/niucode/crates/niucode-agent" }
+niucode-auth = { path = "../niuverse/niucode/crates/niucode-auth" }
+niucode-core = { path = "../niuverse/niucode/crates/niucode-core" }
+niucode-provider = { path = "../niuverse/niucode/crates/niucode-provider" }
+niucode-tools = { path = "../niuverse/niucode/crates/niucode-tools" }

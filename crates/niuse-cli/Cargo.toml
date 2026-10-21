@@ -1,0 +1,24 @@
+[package]
+name = "niuse"
+description = "A personal engineering companion built on niucode"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "niuse"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+futures-util.workspace = true
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+niuse-core = { path = "../niuse-core" }
+niucode-agent.workspace = true
+niucode-auth.workspace = true
+niucode-core.workspace = true
+niucode-provider.workspace = true
+niucode-tools.workspace = true
+tokio.workspace = true
