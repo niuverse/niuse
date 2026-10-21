@@ -303,7 +303,7 @@ impl App {
                     println!("{error}");
                 }
             }
-            "/loops" => commands::loops_list(&self.store, false)?,
+            "/loops" => commands::loops_list(&self.store, false, false)?,
             "/loop" => {
                 if argument.is_empty() {
                     println!("用法：/loop <一件你答应要做的事>");
@@ -343,7 +343,7 @@ impl App {
                 }
             }
             "/status" => {
-                commands::status(&self.store, &thread.path)?;
+                commands::status(&self.store, &thread.path, false)?;
                 let events = load(&thread.path)
                     .map(|loaded| loaded.events.len())
                     .unwrap_or(0);

@@ -376,9 +376,33 @@ pub fn mem_review(store: &Store) -> Result<()> {
     Ok(())
 }
 
-pub fn loops_list(store: &Store, all: bool) -> Result<()> {
+#[derive(Debug, Serialize)]
+struct LoopJson {
+    id: String,
+    text: String,
+    due: Option<String>,
+    done: bool,
+    overdue: bool,
+}
+
+pub fn loops_list(store: &Store, all: bool, json: bool) -> Result<()> {
     let today = Date::today();
     let loops = store.loops()?;
+    if json {
+        let items: Vec<LoopJson> = loops
+            .iter()
+            .filter(|item| all || !item.done)
+            .map(|item| LoopJson {
+                id: format!("l-{}", item.id),
+                text: item.text.clone(),
+                due: item.due.map(|due| due.to_string()),
+                done: item.done,
+                overdue: item.is_overdue(today),
+            })
+            .collect();
+        println!("{}", serde_json::to_string_pretty(&items)?);
+        return Ok(());
+    }
     let open = loops.iter().filter(|item| !item.done).count();
     println!("{} 条承诺 · {} 条未完成", loops.len(), open);
     for item in &loops {
@@ -803,7 +827,7 @@ pub fn identity_init(store: &Store, force: bool) -> Result<()> {
     Ok(())
 }
 
-pub fn status(store: &Store, thread: &Path) -> Result<()> {
+pub fn status(store: &Store, thread: &Path, json: bool) -> Result<()> {
     let today = Date::today();
     let memories = store.memories()?;
     let loops = store.loops()?;
@@ -819,6 +843,41 @@ pub fn status(store: &Store, thread: &Path) -> Result<()> {
         today,
     );
 
+    let stale = memories
+        .iter()
+        .filter(|entry| entry.is_stale(today) && !entry.is_expired(today))
+        .count();
+    let expired = memories
+        .iter()
+        .filter(|entry| entry.is_expired(today))
+        .count();
+    let open_loops = loops.iter().filter(|item| !item.done).count();
+
+    if json {
+        let payload = serde_json::json!({
+            "home": store.root().display().to_string(),
+            "thread": thread.display().to_string(),
+            "identity": identity.is_some(),
+            "user": user.is_some(),
+            "memory": {
+                "total": memories.len(),
+                "stale": stale,
+                "expired": expired,
+            },
+            "loops": {
+                "total": loops.len(),
+                "open": open_loops,
+            },
+            "prompt": {
+                "tokens": composition.tokens,
+                "injected": composition.memory_injected,
+                "dropped": composition.memory_dropped,
+            },
+        });
+        println!("{}", serde_json::to_string_pretty(&payload)?);
+        return Ok(());
+    }
+
     println!("home      {}", store.root().display());
     println!("thread    {}", thread.display());
     println!(
@@ -832,19 +891,10 @@ pub fn status(store: &Store, thread: &Path) -> Result<()> {
     println!(
         "memory    {} 条（{} 条待验证，{} 条已过期）",
         memories.len(),
-        memories
-            .iter()
-            .filter(|entry| entry.is_stale(today) && !entry.is_expired(today))
-            .count(),
-        memories
-            .iter()
-            .filter(|entry| entry.is_expired(today))
-            .count()
+        stale,
+        expired
     );
-    println!(
-        "loops     {} 条未完成",
-        loops.iter().filter(|item| !item.done).count()
-    );
+    println!("loops     {} 条未完成", open_loops);
     println!(
         "prompt    ~{} tokens（注入 {} 条记忆，{} 条被预算或过期挡掉）",
         composition.tokens, composition.memory_injected, composition.memory_dropped

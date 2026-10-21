@@ -154,7 +154,11 @@ enum Command {
         json: bool,
     },
     /// Show store and prompt status
-    Status,
+    Status {
+        /// Emit JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(Subcommand, Debug, Clone)]
@@ -221,6 +225,9 @@ enum LoopsCommand {
         /// Include closed loops
         #[arg(long)]
         all: bool,
+        /// Emit JSON
+        #[arg(long)]
+        json: bool,
     },
     /// Add a loop manually
     Add {
@@ -338,7 +345,7 @@ async fn main() -> Result<()> {
             MemCommand::Prune { apply } => commands::mem_prune(&store, apply),
         },
         Some(Command::Loops { command }) => match command {
-            LoopsCommand::List { all } => commands::loops_list(&store, all),
+            LoopsCommand::List { all, json } => commands::loops_list(&store, all, json),
             LoopsCommand::Add { text, due } => commands::loops_add(&store, &text, due.as_deref()),
             LoopsCommand::Done { id } => commands::loops_done(&store, &id),
         },
@@ -437,9 +444,9 @@ async fn main() -> Result<()> {
             }
         },
         Some(Command::Stats { days, trend, json }) => commands::stats(&store, days, trend, json),
-        Some(Command::Status) => {
+        Some(Command::Status { json }) => {
             let thread = cli.thread.clone().unwrap_or_else(|| store.session_path());
-            commands::status(&store, &thread)
+            commands::status(&store, &thread, json)
         }
     }
 }

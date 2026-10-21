@@ -76,3 +76,32 @@ fn effective_config_reflects_cli_overrides() {
     assert!(stdout.contains("sandbox     read-only"));
     assert!(stdout.contains("max_steps   3"));
 }
+
+#[test]
+fn status_json_has_nested_sections() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    let output = run(&home, &["status", "--json"]);
+    assert!(output.status.success(), "{output:?}");
+    let status: serde_json::Value = serde_json::from_slice(&output.stdout).expect("valid JSON");
+    assert_eq!(status["memory"]["total"], 0);
+    assert_eq!(status["loops"]["open"], 0);
+    assert!(status["prompt"]["tokens"].as_u64().unwrap() > 0);
+}
+
+#[test]
+fn loops_json_round_trip() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    let add = run(
+        &home,
+        &["loops", "add", "check the pin", "--due", "2026-10-30"],
+    );
+    assert!(add.status.success(), "{add:?}");
+    let output = run(&home, &["loops", "list", "--json"]);
+    assert!(output.status.success(), "{output:?}");
+    let loops: serde_json::Value = serde_json::from_slice(&output.stdout).expect("valid JSON");
+    assert_eq!(loops.as_array().unwrap().len(), 1);
+    assert_eq!(loops[0]["text"], "check the pin");
+    assert_eq!(loops[0]["due"], "2026-10-30");
+}
