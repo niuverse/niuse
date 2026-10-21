@@ -1,0 +1,57 @@
+//! End-to-end checks for the binary's argument wiring.
+//!
+//! These run without a provider: status, memory writes, and JSON reads are all
+//! offline. They catch the class of bug where a library function is correct but
+//! the subcommand is wired to the wrong flag.
+
+use std::process::Command;
+
+fn run(home: &std::path::Path, args: &[&str]) -> std::process::Output {
+    Command::new(env!("CARGO_BIN_EXE_niuse"))
+        .arg("--home")
+        .arg(home)
+        .args(args)
+        .output()
+        .expect("run niuse")
+}
+
+#[test]
+fn status_works_on_an_empty_home() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    let output = run(&home, &["status"]);
+    assert!(output.status.success(), "{output:?}");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("home"));
+    assert!(stdout.contains("memory"));
+}
+
+#[test]
+fn memory_add_and_json_list_round_trip() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+
+    let add = run(
+        &home,
+        &["mem", "add", "prefer short paragraphs", "--tags", "style"],
+    );
+    assert!(add.status.success(), "{add:?}");
+
+    let list = run(&home, &["mem", "list", "--json"]);
+    assert!(list.status.success(), "{list:?}");
+    let entries: serde_json::Value = serde_json::from_slice(&list.stdout).expect("valid JSON");
+    assert_eq!(entries.as_array().unwrap().len(), 1);
+    assert_eq!(entries[0]["text"], "prefer short paragraphs");
+    assert_eq!(entries[0]["tags"][0], "style");
+    assert_eq!(entries[0]["expired"], false);
+}
+
+#[test]
+fn threads_json_is_an_empty_array_before_the_first_run() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    let output = run(&home, &["threads", "--json"]);
+    assert!(output.status.success(), "{output:?}");
+    let entries: serde_json::Value = serde_json::from_slice(&output.stdout).expect("valid JSON");
+    assert_eq!(entries, serde_json::json!([]));
+}
