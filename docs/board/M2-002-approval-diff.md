@@ -1,6 +1,6 @@
 +++
 id = "M2-002"
-title = "审批显示完整 unified diff"
+title = "Show a full unified diff at approval"
 status = "backlog"
 milestone = "M2"
 module = "repl"
@@ -11,18 +11,18 @@ depends_on = ["M0-003"]
 docs = ["architecture"]
 +++
 
-## 范围
+## Scope
 
-- 审批时展示 `ChangePreview` 的结构化 diff，而不是只有摘要与 +/- 行数。
-- 复用 niucode 的 `Toolbox::preview` 结果，不在 niuse 里复制路径策略。
-- 长 diff 分页或折叠，保持终端可读。
+- Show the structured `ChangePreview` diff instead of a summary plus +/- counts.
+- Reuse niucode's `Toolbox::preview` result; do not copy path policy into niuse.
+- Page or fold long diffs so the terminal stays readable.
 
-## 验收
+## Acceptance
 
-- [ ] write / edit 审批能看到真实 hunk。
-- [ ] 审批拒绝后事件与行为一致。
-- [ ] 非 TTY 退化为逐行确认。
+- [ ] Write / edit approval shows real hunks.
+- [ ] A rejection produces events consistent with behaviour.
+- [ ] Non-TTY falls back to line-by-line confirmation.
 
-## 记录
+## Notes
 
-安全边界不变，只是把已有的预览信息显示出来。
+The security boundary is unchanged; this only surfaces information that already exists.

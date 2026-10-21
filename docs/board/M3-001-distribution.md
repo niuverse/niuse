@@ -1,6 +1,6 @@
 +++
 id = "M3-001"
-title = "发布与依赖策略"
+title = "Release and dependency strategy"
 status = "backlog"
 milestone = "M3"
 module = "cli"
@@ -11,19 +11,19 @@ depends_on = ["M0-003"]
 docs = ["plan"]
 +++
 
-## 范围
+## Scope
 
-- 决定 niucode 依赖：先发布 niucode crates、改为钉 rev 的 git 依赖，或明确只支持 `cargo install --git`。
-- 补齐 `license`、`repository`、`description` 等发布元数据。
-- `cargo package` / `cargo publish --dry-run` 可复现。
-- 确认 crate 名可用性；必要时 crate 改名而保留二进制名 `niuse`。
+- Decide the niucode dependency: publish niucode crates first, pin a git revision, or support `cargo install --git` only.
+- Add `license`, `repository`, `description`, and other release metadata.
+- Make `cargo package` / `cargo publish --dry-run` reproducible.
+- Confirm crate-name availability; rename the crate if needed while keeping the `niuse` binary.
 
-## 验收
+## Acceptance
 
-- [ ] `cargo package -p niuse` 通过（当前被 path 依赖卡住）。
-- [ ] 安装路径在干净机器上可复现。
-- [ ] 许可证与名称策略写进 README。
+- [ ] `cargo package -p niuse` passes (currently blocked by path dependencies).
+- [ ] The install path is reproducible on a clean machine.
+- [ ] License and naming strategy are documented in the README.
 
-## 记录
+## Notes
 
-当前 `cargo package` 的失败信息：`all dependencies must have a version requirement specified when packaging`，指向 `niucode-agent` 的 path 依赖。
+Current failure: `all dependencies must have a version requirement specified when packaging`, pointing at the `niucode-agent` path dependency.

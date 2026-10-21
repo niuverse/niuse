@@ -1,6 +1,6 @@
 +++
 id = "M0-006"
-title = "架构看板"
+title = "Architecture dashboard"
 status = "done"
 milestone = "M0"
 module = "dashboard"
@@ -12,22 +12,22 @@ depends_on = ["M0-003"]
 docs = ["architecture", "plan"]
 +++
 
-## 范围
+## Scope
 
-- 复用 niucode 的 xtask 生成器与三栏壳，换成 niuse 的项目模型。
-- 四个视图：Architecture（默认）、Work、Docs、Decisions。
-- 数据源：`project.json` + `board/*.md` + `docs/**/*.md`。
-- 单文件 `docs/index.html`，离线可开，无 CDN、无运行时 fetch。
-- `cargo xtask dashboard --check` 在生成物过期时失败。
+- Reuse niucode's xtask generator and three-column shell, with a niuse project model.
+- Four views: Architecture (default), Work, Docs, Decisions.
+- Sources: `project.json` plus `board/*.md` plus `docs/**/*.md`.
+- Single-file `docs/index.html`, offline, no CDN, no runtime fetch.
+- `cargo xtask dashboard --check` fails when generated output is stale.
 
-## 验收
+## Acceptance
 
-- [x] `cargo xtask dashboard` 生成 `docs/index.html` 与 `model.json`。
-- [x] 校验通过：模块路径存在、卡片引用有效、ADR 状态合法。
-- [x] Architecture 展示模块、分层与依赖箭头。
-- [x] Docs 能打开架构文档、实施计划与两份 ADR。
-- [x] `--check` 通过。
+- [x] `cargo xtask dashboard` writes `docs/index.html` and `model.json`.
+- [x] Validation passes: module paths exist, card references resolve, ADR statuses are legal.
+- [x] Architecture shows modules, layers, and dependency arrows.
+- [x] Docs opens the architecture doc, the plan, and both ADRs.
+- [x] `--check` passes.
 
-## 记录
+## Notes
 
-看板只读，状态变更走仓库，避免它变成第二个真相源。生成器复制自 niucode，只改品牌与项目模型。
+The board is read-only; state changes go through the repository so it never becomes a second source of truth. The generator is copied from niucode; only branding and the project model changed.

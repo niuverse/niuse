@@ -1,20 +1,20 @@
 +++
 id = "architecture"
-title = "架构"
+title = "Architecture"
 kind = "doc"
 status = "living"
 order = 5
-summary = "niuse 的边界、五件套、turn 数据流、写入分级与明确不做的事。"
+summary = "niuse boundaries, the five stores, turn data flow, write thresholds, and explicit non-goals."
 +++
 
-## 一句话
+## In one sentence
 
-niuse 是 niucode 之上的身份与记忆层：它决定「你是谁、它记得什么、它答应过什么」，但把「能不能做」留给 niucode 的 loop、工具与沙箱。
+niuse is the identity and memory layer above niucode: it decides who the companion is, what it remembers, and what it promised. Whether a task can be done at all stays with niucode's loop, tools, and sandbox.
 
-## 依赖方向
+## Dependency direction
 
 ```text
-crates/niuse-cli     REPL / 命令 / renderer / driver / bootstrap
+crates/niuse-cli     REPL / commands / renderer / driver / bootstrap
     │
 crates/niuse-core    date / model / store / prompt / candidate / policy
     │
@@ -25,107 +25,107 @@ niucode-auth         AuthStore
 niucode-tools        SandboxPolicy / ApprovalMode
 ```
 
-只有 `driver.rs` 直接接触 `niucode-agent`。其余代码要么是纯领域逻辑，要么只认 `niuse-core` 的类型。这样 niucode 升级时，需要改的地方被压在一个文件里。
+Only `driver.rs` touches `niucode-agent` directly. Everything else is either pure domain logic or only knows `niuse-core` types. When niucode upgrades, the required changes are confined to one file.
 
-不 fork niucode，也不给它的 loop 加 memory 钩子。记忆是产品层，内核保持最小。
+niuse does not fork niucode and does not add a memory hook to its loop. Memory is a product layer; the kernel stays minimal.
 
-## 模块
+## Modules
 
-| 模块 | 层 | 职责 |
+| Module | Layer | Responsibility |
 |---|---|---|
-| `cli` | Interface | 参数、子命令、离线命令、装配 |
-| `repl` | Interface | 对话、斜杠命令、候选确认、渲染 |
-| `prompt` | Engine | 稳定前缀的 system prompt 与预算 |
-| `protocol` | Engine | 带内块的解析与流式剥离 |
-| `policy` | Engine | 软过期、冲突、密钥扫描 |
-| `driver` | Adapters | niucode 边界、session、per-turn cwd |
-| `bootstrap` | Adapters | 旧 session 抽取与 inbox |
-| `stores` | State | 五件套的读写与权限 |
-| `dashboard` | Engineering | 离线看板生成 |
+| `cli` | Interface | flags, subcommands, offline commands, wiring |
+| `repl` | Interface | conversation, slash commands, candidate confirmation, rendering |
+| `prompt` | Engine | stable-prefix system prompt and budgets |
+| `protocol` | Engine | in-band block parsing and streaming stripping |
+| `policy` | Engine | soft expiry, conflicts, secret scanning |
+| `driver` | Adapters | niucode boundary, sessions, per-turn cwd |
+| `bootstrap` | Adapters | old-session mining and the inbox |
+| `stores` | State | five-store load / save and permissions |
+| `dashboard` | Engineering | offline board generation |
 
-## 一个 turn 的数据流
+## Turn data flow
 
 ```text
-启动
-  ├─ 读 identity / user / memory / loops / journal
-  ├─ compose() 组装 system prompt（每个 session 一次）
-  └─ project_history(thread.jsonl) 恢复历史
+startup
+  ├─ read identity / user / memory / loops / journal
+  ├─ compose() assembles the system prompt (once per session)
+  └─ project_history(thread.jsonl) restores history
 
-用户输入
+user input
   ├─ run_with_history(config, prompt, history)
-  ├─ AgentEvent → Renderer（TextDelta 经过 StreamFilter）
-  ├─ 尾部缓冲剥离 <<niuse:*>> 块
-  ├─ journal / loop：自动写
-  ├─ memory：打印候选 → y / n / e / s
-  └─ 重新投影 history，进入下一轮
+  ├─ AgentEvent → Renderer (TextDelta goes through StreamFilter)
+  ├─ trailing buffer strips <<niuse:*>> blocks
+  ├─ journal / loop: written automatically
+  ├─ memory: print candidate → y / n / e / s
+  └─ re-project history, next turn
 ```
 
-`history` 不另存一份。它由 niucode 的 `project_history` 从事件日志投影，所以 compaction、replay、fork 的行为与 niucode 完全一致。
+There is no second copy of the conversation. `history` is projected from the event log by niucode's `project_history`, so compaction, replay, and fork behave exactly as they do in niucode.
 
-## 五件套与注入
+## The five stores and injection
 
 ```text
 ~/.niuse/
-  identity.md      它是谁（人写，它只能提建议）
-  user.md          你是谁（冷启动挖，人审）
-  memory/          事实：偏好 / 决策 / 踩坑（确认，会过期）
-  journal/         经历：按月分文件，按天合并（自动）
-  loops.md         承诺（自动，带截止）
-  thread.jsonl     关系主线
-  inbox.md         bootstrap 的待审队列
+  identity.md      who it is (human-written; it may only propose)
+  user.md          who you are (bootstrapped, human-reviewed)
+  memory/          facts: preferences, decisions, pitfalls (confirmed, expiring)
+  journal/         experience: one file per month, merged per day (automatic)
+  loops.md         promises (automatic, optional due date)
+  thread.jsonl     the relationship thread
+  inbox.md         bootstrap review queue
 ```
 
-注入顺序固定为稳定 → 易变：
+Injection order is fixed, stable before volatile:
 
-| 段 | 预算 | 变化频率 |
+| Section | Budget | Change rate |
 |---|---|---|
-| persona | 常量 | 无 |
-| identity | ≤ 600 tok | 极低 |
-| user | ≤ 600 tok | 低 |
-| memory | ≤ 2 000 tok | 低 |
-| protocol | 常量 | 无 |
-| today | 一行 | 每天 |
-| loops | ≤ 300 tok | 中 |
-| journal | ≤ 600 tok | 高 |
+| persona | constant | never |
+| identity | ≤ 600 tok | very low |
+| user | ≤ 600 tok | low |
+| memory | ≤ 2 000 tok | low |
+| protocol | constant | never |
+| today | one line | daily |
+| loops | ≤ 300 tok | medium |
+| journal | ≤ 600 tok | high |
 
-前四段加上 protocol 构成稳定的 cache 前缀；`today` 之后才是每 session 可能变化的内容。system prompt 只组装一次，session 中途不重建。
+The first five sections form the stable cache prefix; only content after `today` can vary per session. The system prompt is assembled once and is not rebuilt mid-session.
 
-## 写入分级与协议
+## Write thresholds and protocol
 
-| 写什么 | 谁决定 | 确认 |
+| What | Who decides | Confirmation |
 |---|---|---|
-| journal、loops | 它自己 | 不要 |
-| memory | 它提议 | 要 |
-| identity | 人 | 只有人能改 |
+| journal, loops | the companion | none |
+| memory | it proposes | required |
+| identity | the human | only the human can change it |
 
-模型在回答末尾可以带三种块：
+The model may end an answer with three block types:
 
 ```text
 <<niuse:memory kind=preference tags=rust,testing>>
-一句话结论
+one self-contained conclusion
 <</niuse:memory>>
 
 <<niuse:loop due=2026-10-22>>
-答应过的事
+something it promised to do
 <</niuse:loop>>
 
 <<niuse:journal>>
-- 与上次不同的决定或转折
+- a decision or turning point that differs from last time
 <</niuse:journal>>
 ```
 
-`memory` 每轮最多一条；被拒绝后同标签在本次 session 不再提。`journal` 只记变化，不记流水账。
+At most one `memory` block per turn; after a rejection, the same tags are not proposed again in that session. `journal` records changes, not activity logs.
 
-## 安全与隐私
+## Safety and privacy
 
-- `~/.niuse` 目录 `0700`，文件 `0600`，写临时文件再 rename。
-- 密钥模式扫描在写入前执行；命中即拒，CLI 需要 `--force` 才能覆盖。
-- 记忆每一轮都会发给 provider，所以泄露面比普通文件大。
-- 项目知识留在 repo 的 `AGENTS.md`，niuse 不自动改仓库。
-- `NIUSE_MEMORY=off` 关闭记忆注入与候选，用于 A/B 验证和信任受损时的降级。
+- `~/.niuse` directories are `0700`, files are `0600`; writes go to a temporary file and are renamed.
+- Secret patterns are scanned before every write; a match is refused, and the CLI requires `--force` to override.
+- Memory is sent to the provider on every turn, so the leak surface is larger than a normal file.
+- Project knowledge stays in the repo's `AGENTS.md`; niuse never edits your repositories.
+- `NIUSE_MEMORY=off` disables injection and candidates, for A/B runs and for recovering trust.
 
-## 明确不做
+## Explicit non-goals
 
-常驻进程、Web UI、微信 / 飞书通道、定时推送、向量检索、session 全量索引、自动改 repo、多人协作、TUI（MVP 阶段）、通用 agent 框架。
+A daemon, a web UI, WeChat / Feishu bridges, scheduled push notifications, vector search, full session indexing, automatic repo edits, multi-user support, a TUI (for now), or a general agent framework.
 
-判断标准只有一句：**它是在塑造身份，还是只是在堆能力？**
+There is one test for every proposal: **does this shape an identity, or is it just another capability?**

@@ -4,7 +4,7 @@
     "name": "niuse",
     "title": "niuse",
     "tagline": "personal engineering companion on niucode",
-    "summary": "站在 niucode 之上的个人工程伙伴：五件套 Markdown 身份与记忆、带内协议、软过期、可恢复主线。看板是架构、决策与迭代的维护面，不是运行时监控。",
+    "summary": "A personal engineering companion on top of niucode: five Markdown stores for identity and memory, an in-band protocol, soft expiry, and a resumable thread. The board records architecture, decisions, and iteration; it is not runtime monitoring.",
     "status": "M2 · Dogfood pending",
     "repo": "niuverse/niuse",
     "language": "Rust"
@@ -14,44 +14,44 @@
       "id": "M0",
       "title": "Bootstrap",
       "status": "done",
-      "goal": "把「身份 + 记忆」做成可运行的最小闭环。",
+      "goal": "Ship the smallest runnable loop for identity and memory.",
       "exit": [
-        "五件套 0600 原子写",
-        "带内协议端到端可用",
-        "REPL 跑通一个真实 turn"
+        "five stores with atomic 0600 writes",
+        "in-band protocol works end to end",
+        "the REPL completes one real turn"
       ]
     },
     {
       "id": "M1",
       "title": "Memory loop",
       "status": "done",
-      "goal": "让记忆可信：确认、冲突、过期、隐私与冷启动。",
+      "goal": "Make memory trustworthy: confirmation, conflicts, expiry, privacy, and cold start.",
       "exit": [
-        "bootstrap → review → memory 全链路",
-        "密钥命中即拒",
-        "同一 session 逐 turn 换 cwd"
+        "bootstrap → review → memory works end to end",
+        "a secret match is refused",
+        "per-turn cwd on one session"
       ]
     },
     {
       "id": "M2",
       "title": "Dogfood",
       "status": "active",
-      "goal": "用真实工作验证「记得住、靠得住、敢反对」，而不是再加功能。",
+      "goal": "Prove with real work that it remembers, is reliable, and dares to disagree, instead of adding features.",
       "exit": [
-        "连续 10 个工作日，每天 ≥ 1 次真实任务经由 niuse",
-        "候选接受率 ≥ 60%",
-        "≥ 1 次它明确反对你、你被说服"
+        "ten consecutive working days, at least one real task per day through niuse",
+        "candidate acceptance rate ≥ 60%",
+        "at least once it disagrees and you change your mind"
       ]
     },
     {
       "id": "M3",
       "title": "Distribution",
       "status": "planned",
-      "goal": "让项目可安装、可发布、可维护。",
+      "goal": "Make the project installable, publishable, and maintainable.",
       "exit": [
-        "niucode 依赖可版本化，或明确只走 git 安装",
-        "cargo package / 安装路径可复现",
-        "名称、许可证与发布渠道明确"
+        "the niucode dependency is versioned, or git install is the stated path",
+        "cargo package and installation are reproducible",
+        "name, license, and release channels are settled"
       ]
     }
   ],
@@ -59,27 +59,27 @@
     {
       "id": "interface",
       "name": "Interface",
-      "note": "REPL、命令、渲染"
+      "note": "REPL, commands, rendering"
     },
     {
       "id": "engine",
       "name": "Engine",
-      "note": "prompt、协议、策略"
+      "note": "prompt, protocol, policy"
     },
     {
       "id": "adapters",
       "name": "Adapters",
-      "note": "niucode 边界与冷启动"
+      "note": "niucode boundary and cold start"
     },
     {
       "id": "state",
       "name": "State",
-      "note": "五件套与 session"
+      "note": "five stores and sessions"
     },
     {
       "id": "engineering",
       "name": "Engineering",
-      "note": "构建、看板、测试"
+      "note": "build, dashboard, tests"
     }
   ],
   "modules": [
@@ -88,17 +88,17 @@
       "title": "CLI",
       "layer": "interface",
       "status": "done",
-      "summary": "Clap 入口、子命令分发、离线命令，以及 bootstrap / review 的装配。",
-      "contract": "解析参数并分派；离线命令不构造 provider，只有 agent 命令才解析凭证。",
+      "summary": "Clap entry, subcommand dispatch, offline commands, and bootstrap / review wiring.",
+      "contract": "Parse flags and dispatch; offline commands never construct a provider; only agent commands resolve credentials.",
       "paths": [
         "crates/niuse-cli/src/main.rs",
         "crates/niuse-cli/src/commands.rs",
         "crates/niuse-cli/src/config.rs"
       ],
       "notes": [
-        "niuse 裸启动进入 REPL。",
-        "mem / loops / journal / identity / status 离线可用。",
-        "sandbox / approval / network 三轴沿用 niucode 语义。"
+        "Bare niuse starts the REPL.",
+        "mem / loops / journal / identity / status work offline.",
+        "sandbox / approval / network keep niucode's semantics."
       ]
     },
     {
@@ -106,17 +106,17 @@
       "title": "REPL",
       "layer": "interface",
       "status": "done",
-      "summary": "交互式对话、斜杠命令、候选确认、编辑与流式渲染。",
-      "contract": "每个 turn 组一次 AgentConfig；只通过 driver 调 run_with_history；记忆写入一律发生在确认之后。",
+      "summary": "Interactive conversation, slash commands, candidate confirmation, editing, and streaming render.",
+      "contract": "Build one AgentConfig per turn; call run_with_history only through the driver; memory writes always happen after confirmation.",
       "paths": [
         "crates/niuse-cli/src/repl.rs",
         "crates/niuse-cli/src/render.rs"
       ],
       "notes": [
-        "尾部缓冲保证协议块不会漏给用户。",
-        "候选每 turn 最多一条；拒绝后本次 session 不再提议。",
-        "Ctrl-C 取消当前 turn，Ctrl-D 退出。",
-        "system prompt 每个 session 只组装一次。"
+        "The tail buffer keeps protocol blocks from leaking to the user.",
+        "At most one candidate per turn; after a rejection the session stops proposing.",
+        "Ctrl-C cancels the current turn; Ctrl-D exits.",
+        "The system prompt is assembled once per session."
       ]
     },
     {
@@ -124,15 +124,15 @@
       "title": "Prompt",
       "layer": "engine",
       "status": "done",
-      "summary": "稳定前缀的 system prompt 组装，按段预算裁剪。",
-      "contract": "输入五件套与日期，输出 Composition；不读磁盘、不调模型、不写状态。",
+      "summary": "Stable-prefix system prompt assembly with per-section budget trimming.",
+      "contract": "Takes the five stores and a date, returns a Composition; reads no disk, calls no model, writes no state.",
       "paths": [
         "crates/niuse-core/src/prompt.rs"
       ],
       "notes": [
-        "顺序固定：persona → identity → user → memory → protocol → today → loops → journal。",
-        "过期记忆不注入；30 天以上的条目带 unverified 标注。",
-        "预算约 4k token，超预算先丢最老的 unverified 事实。"
+        "Fixed order: persona → identity → user → memory → protocol → today → loops → journal.",
+        "Expired memory is not injected; entries older than 30 days carry an unverified label.",
+        "About 4k tokens; over budget, drop the oldest unverified facts first."
       ]
     },
     {
@@ -140,15 +140,15 @@
       "title": "Protocol",
       "layer": "engine",
       "status": "done",
-      "summary": "带内 memory / loop / journal 块的解析与流式剥离。",
-      "contract": "StreamFilter 只放行安全文本；parse 返回 visible + blocks；不碰存储。",
+      "summary": "Parsing and streaming-aware stripping of the in-band memory / loop / journal blocks.",
+      "contract": "StreamFilter releases only safe text; parse returns visible + blocks; no storage access.",
       "paths": [
         "crates/niuse-core/src/candidate.rs"
       ],
       "notes": [
-        "不额外调用模型。",
-        "未闭合的块按普通文本显示，不静默吞掉回答。",
-        "journal 与 loop 自动落盘；memory 必须确认。"
+        "No extra model call.",
+        "An unterminated block is shown as ordinary text instead of silently eaten.",
+        "journal and loop are written automatically; memory requires confirmation."
       ]
     },
     {
@@ -156,15 +156,15 @@
       "title": "Policy",
       "layer": "engine",
       "status": "done",
-      "summary": "软过期、冲突相似度、密钥模式扫描。",
-      "contract": "纯函数；拒绝是默认，放行需要显式的 --force。",
+      "summary": "Soft expiry, conflict similarity, and secret-pattern scanning.",
+      "contract": "Pure functions; refusal is the default, and overriding requires an explicit --force.",
       "paths": [
         "crates/niuse-core/src/policy.rs"
       ],
       "notes": [
-        "字符 bigram Jaccard 同时适配中英文。",
-        "同一标签下阈值放宽到 0.35。",
-        "密钥扫描是兜底，不是保证。"
+        "Character-bigram Jaccard works for both Chinese and English.",
+        "Sharing a tag lowers the threshold to 0.35.",
+        "The secret scan is a backstop, not a guarantee."
       ]
     },
     {
@@ -172,15 +172,15 @@
       "title": "Driver",
       "layer": "adapters",
       "status": "done",
-      "summary": "niucode 边界：session 打开与恢复、history 投影、per-turn cwd、事件转发。",
-      "contract": "只有这一层 import niucode-agent；目标 200 行；不改 loop，不 fork。",
+      "summary": "The niucode boundary: open and resume sessions, project history, per-turn cwd, forward events.",
+      "contract": "Only this file imports niucode-agent; target about 200 lines; do not change the loop or fork it.",
       "paths": [
         "crates/niuse-cli/src/driver.rs"
       ],
       "notes": [
-        "同一 session 逐 turn 切换 working_dir 已验证。",
-        "history 由 project_history 从事件日志投影，不另存对话。",
-        "Ctrl-C 通过 drop future 取消 provider 与工具。"
+        "Per-turn working_dir on one session is verified.",
+        "History is projected by project_history from the event log; there is no second transcript.",
+        "Ctrl-C cancels provider and tools by dropping the future."
       ]
     },
     {
@@ -188,15 +188,15 @@
       "title": "Bootstrap",
       "layer": "adapters",
       "status": "done",
-      "summary": "扫描旧 niucode session，抽取候选写入 inbox，再由 review 逐条确认。",
-      "contract": "只送 user / assistant 文本；每个 session 一次无工具调用；不直接写记忆。",
+      "summary": "Mine old niucode sessions into an inbox, then review candidates one by one.",
+      "contract": "Send only user / assistant text; one tool-free call per session; never write memory directly.",
       "paths": [
         "crates/niuse-cli/src/bootstrap.rs"
       ],
       "notes": [
-        "工具输出在抽取前丢弃。",
-        "只保留有对话内容的 session，避免浪费模型调用。",
-        "与现有记忆和同批候选做相似度去重。"
+        "Tool output is dropped before extraction.",
+        "Only sessions with dialogue are kept, to avoid wasting model calls.",
+        "Candidates are deduplicated against existing memory and within the batch."
       ]
     },
     {
@@ -204,17 +204,17 @@
       "title": "Stores",
       "layer": "state",
       "status": "done",
-      "summary": "五件套的解析与原子写回，0700 / 0600，journal 按天合并。",
-      "contract": "Markdown 是唯一格式；写临时文件再 rename；读操作容忍坏行。",
+      "summary": "Parse and atomically save the five stores with 0700 / 0600, merging journal entries by day.",
+      "contract": "Markdown is the only format; write a temporary file then rename; reads tolerate bad lines.",
       "paths": [
         "crates/niuse-core/src/store.rs",
         "crates/niuse-core/src/model.rs",
         "crates/niuse-core/src/date.rs"
       ],
       "notes": [
-        "identity 缺失是合法状态，不是空字符串。",
-        "memory 可按类型拆成 preferences.md / lessons.md。",
-        "日期按 UTC 计算，避免引入时区数据库。"
+        "A missing identity.md is a legal state, not an empty string.",
+        "Memory is split into preferences.md / lessons.md.",
+        "Dates are UTC-based to avoid a timezone database."
       ]
     },
     {
@@ -222,8 +222,8 @@
       "title": "Dashboard",
       "layer": "engineering",
       "status": "done",
-      "summary": "单文件离线看板：Architecture / Work / Docs / Decisions。",
-      "contract": "从 project.json、board/*.md、docs/**/*.md 生成；--check 保证生成物不过期。",
+      "summary": "A single-file offline board: Architecture / Work / Docs / Decisions.",
+      "contract": "Generate from project.json, board/*.md, and docs/**/*.md; --check fails when output is stale.",
       "paths": [
         "crates/xtask/src/main.rs",
         "crates/xtask/src/load.rs",
@@ -233,9 +233,9 @@
         "docs/dashboard/project.json"
       ],
       "notes": [
-        "生成物是 docs/index.html 与 docs/dashboard/model.json。",
-        "架构是第一屏；接口默认值与看板无关。",
-        "看板只读，状态变更走仓库。"
+        "Generated artifacts are docs/index.html and docs/dashboard/model.json.",
+        "Architecture is the first screen.",
+        "The board is read-only; state changes go through the repository."
       ]
     }
   ],
@@ -290,36 +290,36 @@
     {
       "date": "2026-10-21",
       "kind": "decision",
-      "title": "定位为跨项目工程记忆",
-      "detail": "不做通用 agent，也不做第二大脑；只沉淀偏好、决策与踩坑，项目知识留在 AGENTS.md。",
+      "title": "Position niuse as cross-project engineering memory",
+      "detail": "Not a general agent, not a second brain. Only preferences, decisions, and pitfalls; project knowledge stays in AGENTS.md.",
       "refs": ["adr-0001", "plan"]
     },
     {
       "date": "2026-10-21",
       "kind": "decision",
-      "title": "身份层独立于记忆层",
-      "detail": "identity 由人写、只能提议修改；journal 与 loops 自动写；memory 必须确认。常驻的是身份，不是进程。",
+      "title": "Keep the identity layer separate from memory",
+      "detail": "identity is human-written and the agent may only propose; journal and loops are automatic; memory requires confirmation. What persists is the identity, not a process.",
       "refs": ["adr-0002"]
     },
     {
       "date": "2026-10-21",
       "kind": "decision",
-      "title": "协议块由主模型带内输出",
-      "detail": "不额外调用模型；漏记可接受，错记不可接受。流式渲染需要尾部缓冲。",
+      "title": "Emit protocol blocks in-band from the main model",
+      "detail": "No extra model call. Missing a memory is acceptable; recording a wrong one is not. Streaming needs a tail buffer.",
       "refs": ["plan", "M0-002"]
     },
     {
       "date": "2026-10-21",
       "kind": "milestone",
-      "title": "MVP 实现完成",
-      "detail": "五件套、prompt、协议、REPL、driver、bootstrap 全部落地；35 个 core 单测与 2 个 bootstrap 单测通过。",
+      "title": "MVP implemented",
+      "detail": "Five stores, prompt, protocol, REPL, driver, and bootstrap landed; 35 core tests and 2 bootstrap tests pass.",
       "refs": ["M0-001", "M0-002", "M0-003", "M0-004", "M0-005"]
     },
     {
       "date": "2026-10-21",
       "kind": "decision",
-      "title": "看板复用 niucode 的架构优先布局",
-      "detail": "同一套 xtask 生成器与三栏壳，只换项目模型；看板记录架构与实现，不承担运行时监控。",
+      "title": "Reuse niucode's architecture-first board",
+      "detail": "Same xtask generator and three-column shell, with a niuse project model. The board records architecture and implementation, not runtime monitoring.",
       "refs": ["M0-006"]
     }
   ]

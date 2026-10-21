@@ -1,6 +1,6 @@
 +++
 id = "M0-002"
-title = "Prompt 组装与带内协议"
+title = "Prompt assembly and in-band protocol"
 status = "done"
 milestone = "M0"
 module = "prompt"
@@ -12,21 +12,21 @@ depends_on = ["M0-001"]
 docs = ["architecture", "plan"]
 +++
 
-## 范围
+## Scope
 
-- 稳定前缀：persona → identity → user → memory → protocol。
-- 易变段后置：today → loops → journal。
-- 分段预算：identity / user 各 600，memory 2000，loops 300，journal 600。
-- 带内协议：`<<niuse:memory>>`、`<<niuse:loop>>`、`<<niuse:journal>>`。
-- 流式剥离需要尾部缓冲，未闭合块按普通文本显示。
+- Stable prefix: persona → identity → user → memory → protocol.
+- Volatile sections last: today → loops → journal.
+- Section budgets: 600 each for identity and user, 2000 for memory, 300 for loops, 600 for journal.
+- In-band protocol: `<<niuse:memory>>`, `<<niuse:loop>>`, `<<niuse:journal>>`.
+- Streaming strip needs a tail buffer; unterminated blocks stay visible.
 
-## 验收
+## Acceptance
 
-- [x] 段顺序有单测，过期记忆不注入、30 天以上带 unverified。
-- [x] 超长 identity 会截断并标注。
-- [x] 协议块跨 chunk、部分前缀、伪标记、未闭合都有测试。
-- [x] 真实调用中候选块被剥离，正文完整。
+- [x] Section order covered by a test; expired memory excluded; entries older than 30 days marked unverified.
+- [x] Oversized identity is truncated and labelled.
+- [x] Protocol tests cover blocks split across chunks, partial prefixes, false markers, and unterminated blocks.
+- [x] In real calls the candidate block is stripped and the prose is intact.
 
-## 记录
+## Notes
 
-原计划只有 memory / loop 两种块。为了让 journal 不额外调模型，增加 journal 块并由 niuse 自动落盘。
+The original plan had memory and loop blocks only. To avoid a second model call, a journal block was added and is written automatically.

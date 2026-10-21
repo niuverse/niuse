@@ -1,6 +1,6 @@
 +++
 id = "M0-001"
-title = "五件套与原子存储"
+title = "Five stores and atomic storage"
 status = "done"
 milestone = "M0"
 module = "stores"
@@ -11,20 +11,20 @@ completed = "2026-10-21"
 docs = ["architecture", "adr-0001", "adr-0002"]
 +++
 
-## 范围
+## Scope
 
-- `identity.md`、`user.md`、`memory/`、`journal/`、`loops.md` 五个持久化存储。
-- 全部 Markdown，目录 `0700`、文件 `0600`，写临时文件再 rename。
-- memory 按类型拆成 `preferences.md` / `lessons.md`；journal 按月一个文件、按天合并。
-- 日期用自带的 civil-date 换算，不引入时区库。
+- Five persistent stores: `identity.md`, `user.md`, `memory/`, `journal/`, `loops.md`.
+- Plain Markdown; directories `0700`, files `0600`; write to a temporary file, then rename.
+- Memory split into `preferences.md` / `lessons.md`; one journal file per month, merged by day.
+- Civil dates computed in-tree, no timezone dependency.
 
-## 验收
+## Acceptance
 
-- [x] 五件套读写往返有单测。
-- [x] journal 同一天追加会合并，不同日期按序。
-- [x] 权限实测为 `0700` / `0600`。
-- [x] 缺失 `identity.md` 时返回 `None`，不伪造空字符串。
+- [x] Round-trip tests for all five stores.
+- [x] Same-day journal appends merge; different days stay ordered.
+- [x] Permissions verified as `0700` / `0600`.
+- [x] Missing `identity.md` returns `None` instead of a fabricated empty string.
 
-## 记录
+## Notes
 
-Markdown 是唯一格式：单用户、200 条以内，文件就是最好的查询引擎。写回会重排格式，手工加的注释可能丢失，这是接受的代价。
+Markdown is the only format: for a single user under 200 entries, files are the best query engine. Saving rewrites the layout, so hand-written comments may disappear; that is the accepted cost.

@@ -1,6 +1,6 @@
 +++
 id = "M2-001"
-title = "连续十个工作日 dogfood"
+title = "Ten working days of dogfood"
 status = "ready"
 milestone = "M2"
 module = "repl"
@@ -11,21 +11,21 @@ depends_on = ["M0-003", "M0-005"]
 docs = ["plan"]
 +++
 
-## 范围
+## Scope
 
-- 每天至少一次真实任务经由 niuse，而不是 niucode。
-- 记录候选提议数、接受数，以及「因为记忆少解释一轮」的具体例子。
-- 至少一次它明确反对你、你被说服。
-- 记忆库保持在 50 条以内；超过说明门槛太低。
+- At least one real task per day goes through niuse, not niucode.
+- Record proposals, acceptances, and concrete cases where memory saved a round of explanation.
+- At least once it should disagree and change your mind.
+- Keep the store under 50 entries; more means the bar is too low.
 
-## 验收
+## Acceptance
 
-- [ ] 连续 10 个工作日。
-- [ ] 候选接受率 ≥ 60%。
-- [ ] ≥ 3 次引用过去的判断且引用正确。
-- [ ] ≥ 1 次被它说服。
-- [ ] `NIUSE_MEMORY=off` 的 A/B 至少 1 个 case 输出不同。
+- [ ] Ten consecutive working days.
+- [ ] Candidate acceptance rate ≥ 60%.
+- [ ] At least 3 correct citations of a past judgement.
+- [ ] At least 1 case of being persuaded.
+- [ ] At least 1 A/B case where `NIUSE_MEMORY=off` changes the answer.
 
-## 记录
+## Notes
 
-这一卡不写代码。它的作用是阻止在验证之前继续加功能。
+This card writes no code. Its job is to stop new features before the current ones are validated.

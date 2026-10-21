@@ -1,61 +1,64 @@
 # niuse
 
-**niucode 是身体，niuse 是身份。**
+[![CI](https://github.com/niuverse/niuse/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/niuverse/niuse/actions/workflows/ci.yml)
+[![Pages](https://github.com/niuverse/niuse/actions/workflows/pages.yml/badge.svg?branch=main)](https://github.com/niuverse/niuse/actions/workflows/pages.yml)
 
-niuse 是一个站在 [niucode](https://github.com/niuverse/niucode) 之上的个人工程伙伴。它把你的判断、偏好和踩过的坑沉淀成可读、可改、可回滚的 Markdown，让同一个它跨项目、跨会话地记得你、追踪自己答应过的事，并在你判断错的时候开口。
+**niucode is the body. niuse is the identity.**
 
-> 状态：**MVP 可运行**。五件套、候选协议、软过期、历史冷启动、REPL 都已实现；缺的是真实终端里的长期 dogfood。
+niuse is a personal engineering companion built on top of [niucode](https://github.com/niuverse/niucode). It keeps your judgements, preferences, and hard-won pitfalls in human-readable Markdown, so the same companion can remember you across projects and sessions, track what it promised, and speak up when you are wrong.
 
-## 快速开始
+> Status: **runnable MVP**. The five stores, candidate protocol, soft expiry, bootstrap from history, and the REPL are implemented. What is missing is long-term dogfooding in a real terminal.
 
-需要 Rust 1.85+，以及本机 `../niuverse/niucode` 的检出（当前用 path 依赖；后续换成钉死 rev 的 git 依赖）。
+## Quick start
+
+Requires Rust 1.85+ and a local checkout of `../niuverse/niucode` (the current build uses path dependencies; a pinned git dependency is planned).
 
 ```sh
 cargo build --release
 
-./target/release/niuse                     # 进入 REPL
-./target/release/niuse identity init       # 八问，写 ~/.niuse/identity.md
-./target/release/niuse status              # 看看现在注入多少 token
-./target/release/niuse bootstrap --limit 5 # 从旧 niucode session 里挖候选
-./target/release/niuse review              # 逐条确认
+./target/release/niuse                     # enter the REPL
+./target/release/niuse identity init       # eight questions, writes ~/.niuse/identity.md
+./target/release/niuse status              # inspect prompt size and store counts
+./target/release/niuse bootstrap --limit 5 # mine old niucode sessions for candidates
+./target/release/niuse review              # accept or discard them one by one
 ```
 
-模型凭证复用 niucode：
+Model credentials are shared with niucode:
 
 ```sh
 niucode auth set deepseek
 ```
 
-## 它记得什么
+## What it remembers
 
 ```text
 ~/.niuse/
-  identity.md      它是谁（你写，它只能提建议）
-  user.md          你是谁（冷启动时从历史会话挖，你审）
-  memory/          事实：偏好 / 决策 / 踩坑（要确认，会过期）
-  journal/         经历：每次会话后它自己写（不确认）
-  loops.md         承诺：它说要做的事（带截止）
-  thread.jsonl     关系主线（可恢复的 niucode session）
-  inbox.md         待审队列（bootstrap 的产物）
+  identity.md      who it is (you write it; it may only propose changes)
+  user.md          who you are (bootstrapped from history, reviewed by you)
+  memory/          facts: preferences, decisions, pitfalls (confirmed, expires)
+  journal/         experience: written by the companion after sessions (no confirmation)
+  loops.md         promises it made, with optional due dates
+  thread.jsonl     the relationship thread (a resumable niucode session)
+  inbox.md         review queue produced by bootstrap
 ```
 
-注入顺序固定为稳定 → 易变：`identity → user → memory → protocol → today → loops → journal`。整个 system prompt 每个 session 只组装一次，避免每轮击穿 prompt cache。
+Injection order is stable-to-volatile: `identity → user → memory → protocol → today → loops → journal`. The system prompt is assembled once per session so the provider's prompt cache survives every turn.
 
-**写入门槛分级**：
+**Write thresholds are graded:**
 
-| 写什么 | 谁决定 | 要不要确认 |
+| What | Who decides | Confirmation |
 |---|---|---|
-| journal、loops | 它自己 | 不要 |
-| memory | 它提议 | 要 |
-| identity | 你 | 只有你能改 |
+| journal, loops | the companion | none |
+| memory | it proposes | required |
+| identity | you | only you can change it |
 
-## 命令
+## Commands
 
-全局参数：`--preset`、`--model`、`--no-thinking`、`--cwd`、`--sandbox`、`--approval`、`--network`、`--home`、`--max-steps`。
+Global flags: `--preset`, `--model`, `--no-thinking`, `--cwd`, `--sandbox`, `--approval`, `--network`, `--home`, `--max-steps`.
 
 ```text
-niuse                         交互式 REPL（恢复同一条主线）
-niuse exec "<task>"           跑一个 turn，候选只打印不写入
+niuse                         interactive REPL (resumes the same thread)
+niuse exec "<task>"           run one turn; candidates are printed, never written
 niuse identity init|show
 niuse mem list|add|forget|confirm|review
 niuse loops list|done
@@ -65,73 +68,77 @@ niuse review
 niuse status
 ```
 
-REPL 内：`/help`、`/mem`、`/mem review`、`/remember`、`/forget`、`/loops`、`/done`、`/journal`、`/identity`、`/cd`、`/status`、`/prompt`、`/quit`。
+Inside the REPL: `/help`, `/mem`, `/mem review`, `/remember`, `/forget`, `/loops`, `/done`, `/journal`, `/identity`, `/cd`, `/status`, `/prompt`, `/quit`.
 
-## 它是怎么工作的
+Set `NIUSE_MEMORY=off` to disable both memory injection and new candidates, for A/B runs and for recovering trust.
 
-一个 turn：
+## How it works
+
+One turn:
 
 ```text
-读五件套 → 组装 prompt（一次）→ run_with_history
-        → 流式渲染，尾部缓冲剥离协议块
-        → journal / loop 自动落盘
-        → memory 候选：y / n / e / s
+load the five stores → compose the prompt (once) → run_with_history
+                     → stream, with a tail buffer that strips protocol blocks
+                     → journal / loop blocks are written automatically
+                     → memory candidates: y / n / e / s
 ```
 
-模型在回答末尾可以带三种块，niuse 解析后从可见文本里剥离：
+The model may end an answer with three block types. niuse parses them and removes them from the visible text:
 
 ```text
 <<niuse:memory kind=preference tags=rust,testing>>
-一句话结论
+one self-contained conclusion
 <</niuse:memory>>
 
 <<niuse:loop due=2026-10-22>>
-答应过的事
+something it promised to do
 <</niuse:loop>>
 
 <<niuse:journal>>
-- 今天与上次不同的决定或转折
+- a decision or turning point that differs from last time
 <</niuse:journal>>
 ```
 
-不额外调用模型。漏记是可接受的，错记不是。
+No second model call is involved. Missing a memory is acceptable; recording a wrong one is not.
 
-## 代码结构
+## Layout
 
 ```text
 crates/
-  niuse-core/   纯领域：日期、五件套解析/写回、prompt、协议块、过期/冲突/密钥扫描
-  niuse-cli/    REPL、命令、provider 装配、session 驱动、bootstrap
+  niuse-core/   pure domain: dates, five stores, prompt, protocol, policy
+  niuse-cli/    REPL, commands, provider wiring, session driver, bootstrap
+  xtask/        offline dashboard generator
 ```
 
-`niuse-core` 没有 IO 副作用（存储层除外），测试不需要 API key。当前共 41 个单测（core 35、bootstrap 2、看板 4）。`niuse-cli` 用一层约 200 行的 driver 把 niucode 的 API 挡在外面。
+`niuse-core` has no IO side effects outside the store layer; its 35 tests need no API key. `niuse-cli` keeps niucode behind a single ~200-line driver.
 
-## 架构看板
+## Dashboard
 
 ```sh
-cargo xtask dashboard          # 生成 docs/index.html
-cargo xtask dashboard --check  # 生成物过期或引用断开时失败
+cargo xtask dashboard          # writes docs/index.html
+cargo xtask dashboard --check  # fails when the generated board is stale
 ```
 
-四个视图：Architecture（默认）、Work、Docs、Decisions。源文件是 `docs/dashboard/project.json`、`docs/board/*.md` 和 `docs/**/*.md`；维护方式见 [docs/README.md](docs/README.md)。
+Four views: Architecture (default), Work, Docs, Decisions. Sources are `docs/dashboard/project.json`, `docs/board/*.md`, and `docs/**/*.md`; see [docs/README.md](docs/README.md) for the maintenance ritual.
 
-## 明确不做
+`.github/workflows/pages.yml` deploys the generated board to GitHub Pages. A private repository needs GitHub Pro/Team/Enterprise; on the Free plan the workflow skips with a notice until Pages is available.
 
-常驻进程、Web UI、微信 / 飞书通道、定时推送、向量检索、session 全量索引、自动改 repo、多人协作、TUI（MVP 阶段）、通用 agent 框架。
+## Not building
 
-## 已知限制
+A daemon, a web UI, WeChat / Feishu bridges, scheduled push notifications, vector search, full session indexing, automatic repo edits, multi-user support, a TUI (for now), or a general agent framework.
 
-- `NIUSE_MEMORY=off` 关闭记忆注入与候选，用于 A/B 验证。
+## Known limits
 
-- 单线程：一条 `thread.jsonl`，没有 `/new`。
-- 审批只打印摘要和增删行数，还没有结构化 diff 预览。
-- 记忆上限约 200 条，超出靠预算裁剪和人工复核。
-- 日期按 UTC 计算，午夜附近可能差一天。
-- `bootstrap` 会把旧会话的 user/assistant 文本发给 provider（不含工具输出）。
-- 相似度用字符 bigram Jaccard，阈值是启发式，跑两周后再调。
+- One thread: a single `thread.jsonl`, no `/new`.
+- Approval shows a summary and +/- line counts, not a structured diff yet.
+- Memory is capped around 200 entries; overflow is handled by budget trimming and manual review.
+- Dates are computed in UTC, so near midnight the journal may be one day off.
+- `bootstrap` sends old user/assistant text to the provider (tool output is dropped).
+- Similarity uses character-bigram Jaccard; the thresholds are heuristics and will be tuned after two weeks.
 
-## 文档
+## Docs
 
-- [实施计划](docs/plan.md)：决策、五件套、turn 生命周期、里程碑与验收。
-- [ADR-0001：记忆层](docs/adr/0001-memory-layer.md)
-- [ADR-0002：身份层](docs/adr/0002-identity-layer.md)
+- [Implementation plan](docs/plan.md): decisions, stores, turn lifecycle, milestones, acceptance.
+- [Architecture](docs/architecture.md): boundaries, data flow, write thresholds.
+- [ADR-0001: memory layer](docs/adr/0001-memory-layer.md)
+- [ADR-0002: identity layer](docs/adr/0002-identity-layer.md)

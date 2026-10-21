@@ -1,59 +1,59 @@
 +++
 id = "adr-0001"
-title = "ADR-0001：全局记忆层"
+title = "ADR-0001: A global memory layer"
 kind = "adr"
 status = "accepted"
 order = 20
-summary = "记忆是全局小库而非 session 索引：纯 Markdown、全量注入、软过期、确认后用；项目知识留在 AGENTS.md。"
+summary = "Memory is a small global store, not a session index: plain Markdown, full injection, soft expiry, confirmation before writing; project knowledge stays in AGENTS.md."
 +++
 
-## 状态
+## Status
 
-Accepted · 2026-10-21。W1 spike 通过；MVP 已实现于 `crates/niuse-core`（store / policy / prompt / candidate）。
+Accepted · 2026-10-21. The W1 spike passed; the MVP is implemented in `crates/niuse-core` (`store`, `policy`, `prompt`, `candidate`).
 
-## 背景
+## Context
 
-niucode 已经有 `AGENTS.md`、skills、session resume、compaction 和 fork，但它刻意不提供跨会话、跨项目的记忆（roadmap 中列为后置）。结果是：每换一个项目，偏好、决策和踩过的坑都要重新讲一遍。
+niucode already has `AGENTS.md`, skills, session resume, compaction, and fork, but it deliberately does not provide memory across sessions or projects (the roadmap lists it as deferred). The result: every new project starts by repeating preferences, decisions, and old pitfalls.
 
-直接的诱惑是把所有 session 索引起来做检索。这个方向有三个具体问题：
+The obvious temptation is to index every session and retrieve from it. That direction has three concrete problems:
 
-1. 仓库里的代码事实用 `grep` 就能拿到，索引是重复建设；
-2. 检索质量需要评测集，而 niuse 现在没有；
-3. 向量化会把「可审阅」变成「不可审阅」，一条错误记忆无法被人一眼看出。
+1. Code facts are one `grep` away; indexing duplicates the repository.
+2. Retrieval quality needs an evaluation set, and niuse does not have one.
+3. Vectorising turns "reviewable" into "opaque": a wrong memory cannot be spotted at a glance.
 
-## 决策
+## Decision
 
-1. **记忆是全局的，不是 session 的。** 只存跨项目仍然成立的内容；项目级知识留在仓库的 `AGENTS.md`，niuse 不自动写入。
-2. **只收三类**：偏好、决策、踩坑。准入标准是「跨会话有用、repo 里 grep 不出来、一句话说得清」。
-3. **纯 Markdown 存储**，位于 `~/.niuse/memory/`，文件 `0600`，可单独 git 化。不用 SQLite，不用 JSONL。
-4. **全量注入**，按全局作用域过滤，总预算 2k token。不按查询检索，避免每轮改变 system prompt 前缀而击穿 prompt cache。
-5. **写入必须确认**，每 turn 至多一条候选；候选由主模型在回答末尾用带内标记给出，不额外增加模型调用。
-6. **软过期**：30 天内正常、31–90 天标注 `unverified`、90 天以上不自动注入。永不自动删除。
-7. **冲突不自动合并**：词面相似度过阈值时让你选「替换 / 并存 / 丢弃」。
-8. **写入前做密钥模式扫描**，命中直接拒绝。记忆每轮都会发给 provider，泄露面远大于普通文件。
+1. **Memory is global, not per-session.** It stores only what still holds across projects; project-level knowledge stays in the repository's `AGENTS.md`, and niuse never writes there automatically.
+2. **Three kinds only**: preferences, decisions, pitfalls. Admission requires: useful across sessions, not greppable in the repo, expressible in one reviewable sentence.
+3. **Plain Markdown**, under `~/.niuse/memory/`, files `0600`, optionally its own git repo. No SQLite, no JSONL.
+4. **Full injection**, filtered by scope, 2k-token budget. No query-time retrieval, so the system-prompt prefix stays stable and prompt caching survives.
+5. **Confirmation before writing**, at most one candidate per turn. The candidate is emitted in-band by the main model; no extra model call.
+6. **Soft expiry**: normal within 30 days, marked `unverified` from 31 to 90 days, not injected after 90. Never deleted automatically.
+7. **Conflicts are never merged silently**: lexical similarity above threshold offers replace / keep both / discard.
+8. **Secret-pattern scan before writing**; a match is refused. Memory is sent to the provider every turn, so the leak surface is much larger than an ordinary file.
 
-## 后果
+## Consequences
 
-**变好的：**
+**Better:**
 
-- 记忆可读、可改、可 diff、可回滚，错误可以被你直接看见并修正。
-- 零检索依赖，离线可用，不需要 embedding 服务和评测集。
-- 稳定的 system prompt 前缀保住了 niucode 依赖的 prompt cache 行为。
+- Memory is readable, editable, diffable, and revertible; mistakes are visible and fixable.
+- No retrieval dependency, works offline, no embedding service or evaluation set required.
+- The stable prompt prefix preserves the prompt-cache behaviour niucode relies on.
 
-**变差的：**
+**Worse:**
 
-- 容量硬上限约 200 条，超出后必须人工合并或清理。
-- 召回靠「全量注入 + 模型自己判断」，没有相关性排序；记忆多了会稀释注意力。
-- 候选依赖主模型自觉，漏记是常态。
+- A hard capacity limit around 200 entries; beyond that, manual merging or pruning is required.
+- Recall is "inject everything and let the model judge"; no relevance ranking, and too much memory dilutes attention.
+- Candidates depend on the main model volunteering them; missing one is normal.
 
-**接受的取舍：** 宁愿漏记，不可错记。错记会进入后续每一轮，且难以察觉；漏记最多再踩一次坑。
+**Accepted trade-off:** prefer missing a memory to recording a wrong one. A wrong memory enters every subsequent turn and is hard to notice; a missing one costs at most one repeated mistake.
 
-## 备选方案
+## Alternatives
 
-| 方案 | 否决理由 |
+| Option | Rejected because |
 |---|---|
-| 全量 session 向量索引 | 无评测集、不可审阅、与 grep 重复，且破坏稳定前缀 |
-| SQLite 存储 | 单用户 200 条规模下没有收益，人不可读、diff 不可读 |
-| 自动蒸馏入库 | 噪声高、错误记忆先污染一轮；与「宁可漏记」冲突 |
-| 项目记忆也进全局库 | 与 `AGENTS.md` 重复，且脱离代码后会过期 |
-| 直接做进 niucode 内核 | 违背 niucode「最小 harness」的边界；记忆应是可替换的产品层 |
+| Vector index over all sessions | No evaluation set, not reviewable, duplicates grep, breaks the stable prefix |
+| SQLite storage | No benefit at single-user, 200-entry scale; unreadable to humans and to diffs |
+| Automatic distillation | Noisy, and a wrong memory pollutes a turn before anyone can catch it; conflicts with "prefer missing" |
+| Project memory in the global store | Duplicates `AGENTS.md` and drifts away from the code |
+| Build it into the niucode kernel | Violates niucode's minimal-harness boundary; memory should be a replaceable product layer |

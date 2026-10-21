@@ -307,7 +307,7 @@
     let html = viewHead(
       'Architecture',
       'How niuse is shaped',
-      '语义分层，不是目录树。悬停或选中模块聚焦依赖流向；状态仅表示落地程度。',
+      'Semantic layers, not a directory tree. Hover or select a module to focus its dependency flow; status only shows implementation state.',
       stats,
     );
 
@@ -374,7 +374,7 @@
     let html = viewHead(
       'Work',
       'Handoff, not a dashboard',
-      '卡片是 agent 的交接面。进度在这里和 git 里，不在 Architecture 第一屏。',
+      'Cards are the agent handoff surface. Progress lives here and in git, not on the Architecture screen.',
     );
 
     html += `<div class="filters">${milestoneFilter()}</div>`;
@@ -427,7 +427,7 @@
     return viewHead(
       'Docs',
       'Source material',
-      'ADR、架构说明和维护指南。点开在右栏阅读；深链可以直接分享。',
+      'ADRs, architecture notes, and maintenance guides. Open one in the right pane; deep links are shareable.',
       stats,
     ) + `<div class="doc-grid">${docs.map(docCard).join('')}${docs.length ? '' : '<div class="empty">No documents match this filter.</div>'}</div>`;
   }
@@ -454,7 +454,7 @@
     let html = viewHead(
       'Decisions',
       'Why niuse is shaped this way',
-      'ADR 与关键决策。进度事件不进入这里。',
+      'ADRs and key decisions. Progress events do not belong here.',
       stats,
     );
 
@@ -533,9 +533,9 @@
     </div>`;
 
     html += `<div class="detail-section"><h2>How to read</h2><ul class="notes">
-      <li><strong>Architecture</strong>：先看层和依赖，再点模块看契约与源码。</li>
-      <li><strong>Work</strong>：需要接手任务时再看卡片；进度不在第一屏。</li>
-      <li><strong>Docs / Decisions</strong>：为什么这样切，以及被否决的方案。</li>
+      <li><strong>Architecture</strong>: start with layers and dependencies, then open a module for its contract and source.</li>
+      <li><strong>Work</strong>: open cards when you need to take over a task; progress is not the first screen.</li>
+      <li><strong>Docs / Decisions</strong>: why it is shaped this way, and which options were rejected.</li>
     </ul></div>`;
 
     if (focus?.card) {
@@ -545,8 +545,8 @@
     html += `<div class="detail-section"><h2>Read next</h2><div class="path-list">
       <button class="path-chip" type="button" data-view="arch"><span class="chip-id">VIEW</span><span>Architecture map</span></button>
       <button class="path-chip" type="button" data-doc="architecture"><span class="chip-id">DOC</span><span>Architecture doc</span></button>
-      <button class="path-chip" type="button" data-doc="adr-0001"><span class="chip-id">ADR</span><span>ADR-0001 · 全局记忆层</span></button>
-      <button class="path-chip" type="button" data-doc="adr-0002"><span class="chip-id">ADR</span><span>ADR-0002 · 身份层</span></button>
+      <button class="path-chip" type="button" data-doc="adr-0001"><span class="chip-id">ADR</span><span>ADR-0001 · Global memory layer</span></button>
+      <button class="path-chip" type="button" data-doc="adr-0002"><span class="chip-id">ADR</span><span>ADR-0002 · Identity layer</span></button>
     </div></div>`;
     html += `</div>`;
 

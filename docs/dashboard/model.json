@@ -3,7 +3,7 @@
     "name": "niuse",
     "title": "niuse",
     "tagline": "personal engineering companion on niucode",
-    "summary": "站在 niucode 之上的个人工程伙伴：五件套 Markdown 身份与记忆、带内协议、软过期、可恢复主线。看板是架构、决策与迭代的维护面，不是运行时监控。",
+    "summary": "A personal engineering companion on top of niucode: five Markdown stores for identity and memory, an in-band protocol, soft expiry, and a resumable thread. The board records architecture, decisions, and iteration; it is not runtime monitoring.",
     "status": "M2 · Dogfood pending",
     "repo": "niuverse/niuse",
     "language": "Rust"
@@ -13,44 +13,44 @@
       "id": "M0",
       "title": "Bootstrap",
       "status": "done",
-      "goal": "把「身份 + 记忆」做成可运行的最小闭环。",
+      "goal": "Ship the smallest runnable loop for identity and memory.",
       "exit": [
-        "五件套 0600 原子写",
-        "带内协议端到端可用",
-        "REPL 跑通一个真实 turn"
+        "five stores with atomic 0600 writes",
+        "in-band protocol works end to end",
+        "the REPL completes one real turn"
       ]
     },
     {
       "id": "M1",
       "title": "Memory loop",
       "status": "done",
-      "goal": "让记忆可信：确认、冲突、过期、隐私与冷启动。",
+      "goal": "Make memory trustworthy: confirmation, conflicts, expiry, privacy, and cold start.",
       "exit": [
-        "bootstrap → review → memory 全链路",
-        "密钥命中即拒",
-        "同一 session 逐 turn 换 cwd"
+        "bootstrap → review → memory works end to end",
+        "a secret match is refused",
+        "per-turn cwd on one session"
       ]
     },
     {
       "id": "M2",
       "title": "Dogfood",
       "status": "active",
-      "goal": "用真实工作验证「记得住、靠得住、敢反对」，而不是再加功能。",
+      "goal": "Prove with real work that it remembers, is reliable, and dares to disagree, instead of adding features.",
       "exit": [
-        "连续 10 个工作日，每天 ≥ 1 次真实任务经由 niuse",
-        "候选接受率 ≥ 60%",
-        "≥ 1 次它明确反对你、你被说服"
+        "ten consecutive working days, at least one real task per day through niuse",
+        "candidate acceptance rate ≥ 60%",
+        "at least once it disagrees and you change your mind"
       ]
     },
     {
       "id": "M3",
       "title": "Distribution",
       "status": "planned",
-      "goal": "让项目可安装、可发布、可维护。",
+      "goal": "Make the project installable, publishable, and maintainable.",
       "exit": [
-        "niucode 依赖可版本化，或明确只走 git 安装",
-        "cargo package / 安装路径可复现",
-        "名称、许可证与发布渠道明确"
+        "the niucode dependency is versioned, or git install is the stated path",
+        "cargo package and installation are reproducible",
+        "name, license, and release channels are settled"
       ]
     }
   ],
@@ -58,27 +58,27 @@
     {
       "id": "interface",
       "name": "Interface",
-      "note": "REPL、命令、渲染"
+      "note": "REPL, commands, rendering"
     },
     {
       "id": "engine",
       "name": "Engine",
-      "note": "prompt、协议、策略"
+      "note": "prompt, protocol, policy"
     },
     {
       "id": "adapters",
       "name": "Adapters",
-      "note": "niucode 边界与冷启动"
+      "note": "niucode boundary and cold start"
     },
     {
       "id": "state",
       "name": "State",
-      "note": "五件套与 session"
+      "note": "five stores and sessions"
     },
     {
       "id": "engineering",
       "name": "Engineering",
-      "note": "构建、看板、测试"
+      "note": "build, dashboard, tests"
     }
   ],
   "modules": [
@@ -87,17 +87,17 @@
       "title": "CLI",
       "layer": "interface",
       "status": "done",
-      "summary": "Clap 入口、子命令分发、离线命令，以及 bootstrap / review 的装配。",
-      "contract": "解析参数并分派；离线命令不构造 provider，只有 agent 命令才解析凭证。",
+      "summary": "Clap entry, subcommand dispatch, offline commands, and bootstrap / review wiring.",
+      "contract": "Parse flags and dispatch; offline commands never construct a provider; only agent commands resolve credentials.",
       "paths": [
         "crates/niuse-cli/src/main.rs",
         "crates/niuse-cli/src/commands.rs",
         "crates/niuse-cli/src/config.rs"
       ],
       "notes": [
-        "niuse 裸启动进入 REPL。",
-        "mem / loops / journal / identity / status 离线可用。",
-        "sandbox / approval / network 三轴沿用 niucode 语义。"
+        "Bare niuse starts the REPL.",
+        "mem / loops / journal / identity / status work offline.",
+        "sandbox / approval / network keep niucode's semantics."
       ],
       "sources": [
         {
@@ -125,17 +125,17 @@
       "title": "REPL",
       "layer": "interface",
       "status": "done",
-      "summary": "交互式对话、斜杠命令、候选确认、编辑与流式渲染。",
-      "contract": "每个 turn 组一次 AgentConfig；只通过 driver 调 run_with_history；记忆写入一律发生在确认之后。",
+      "summary": "Interactive conversation, slash commands, candidate confirmation, editing, and streaming render.",
+      "contract": "Build one AgentConfig per turn; call run_with_history only through the driver; memory writes always happen after confirmation.",
       "paths": [
         "crates/niuse-cli/src/repl.rs",
         "crates/niuse-cli/src/render.rs"
       ],
       "notes": [
-        "尾部缓冲保证协议块不会漏给用户。",
-        "候选每 turn 最多一条；拒绝后本次 session 不再提议。",
-        "Ctrl-C 取消当前 turn，Ctrl-D 退出。",
-        "system prompt 每个 session 只组装一次。"
+        "The tail buffer keeps protocol blocks from leaking to the user.",
+        "At most one candidate per turn; after a rejection the session stops proposing.",
+        "Ctrl-C cancels the current turn; Ctrl-D exits.",
+        "The system prompt is assembled once per session."
       ],
       "sources": [
         {
@@ -157,15 +157,15 @@
       "title": "Prompt",
       "layer": "engine",
       "status": "done",
-      "summary": "稳定前缀的 system prompt 组装，按段预算裁剪。",
-      "contract": "输入五件套与日期，输出 Composition；不读磁盘、不调模型、不写状态。",
+      "summary": "Stable-prefix system prompt assembly with per-section budget trimming.",
+      "contract": "Takes the five stores and a date, returns a Composition; reads no disk, calls no model, writes no state.",
       "paths": [
         "crates/niuse-core/src/prompt.rs"
       ],
       "notes": [
-        "顺序固定：persona → identity → user → memory → protocol → today → loops → journal。",
-        "过期记忆不注入；30 天以上的条目带 unverified 标注。",
-        "预算约 4k token，超预算先丢最老的 unverified 事实。"
+        "Fixed order: persona → identity → user → memory → protocol → today → loops → journal.",
+        "Expired memory is not injected; entries older than 30 days carry an unverified label.",
+        "About 4k tokens; over budget, drop the oldest unverified facts first."
       ],
       "sources": [
         {
@@ -181,15 +181,15 @@
       "title": "Protocol",
       "layer": "engine",
       "status": "done",
-      "summary": "带内 memory / loop / journal 块的解析与流式剥离。",
-      "contract": "StreamFilter 只放行安全文本；parse 返回 visible + blocks；不碰存储。",
+      "summary": "Parsing and streaming-aware stripping of the in-band memory / loop / journal blocks.",
+      "contract": "StreamFilter releases only safe text; parse returns visible + blocks; no storage access.",
       "paths": [
         "crates/niuse-core/src/candidate.rs"
       ],
       "notes": [
-        "不额外调用模型。",
-        "未闭合的块按普通文本显示，不静默吞掉回答。",
-        "journal 与 loop 自动落盘；memory 必须确认。"
+        "No extra model call.",
+        "An unterminated block is shown as ordinary text instead of silently eaten.",
+        "journal and loop are written automatically; memory requires confirmation."
       ],
       "sources": [
         {
@@ -205,15 +205,15 @@
       "title": "Policy",
       "layer": "engine",
       "status": "done",
-      "summary": "软过期、冲突相似度、密钥模式扫描。",
-      "contract": "纯函数；拒绝是默认，放行需要显式的 --force。",
+      "summary": "Soft expiry, conflict similarity, and secret-pattern scanning.",
+      "contract": "Pure functions; refusal is the default, and overriding requires an explicit --force.",
       "paths": [
         "crates/niuse-core/src/policy.rs"
       ],
       "notes": [
-        "字符 bigram Jaccard 同时适配中英文。",
-        "同一标签下阈值放宽到 0.35。",
-        "密钥扫描是兜底，不是保证。"
+        "Character-bigram Jaccard works for both Chinese and English.",
+        "Sharing a tag lowers the threshold to 0.35.",
+        "The secret scan is a backstop, not a guarantee."
       ],
       "sources": [
         {
@@ -229,15 +229,15 @@
       "title": "Driver",
       "layer": "adapters",
       "status": "done",
-      "summary": "niucode 边界：session 打开与恢复、history 投影、per-turn cwd、事件转发。",
-      "contract": "只有这一层 import niucode-agent；目标 200 行；不改 loop，不 fork。",
+      "summary": "The niucode boundary: open and resume sessions, project history, per-turn cwd, forward events.",
+      "contract": "Only this file imports niucode-agent; target about 200 lines; do not change the loop or fork it.",
       "paths": [
         "crates/niuse-cli/src/driver.rs"
       ],
       "notes": [
-        "同一 session 逐 turn 切换 working_dir 已验证。",
-        "history 由 project_history 从事件日志投影，不另存对话。",
-        "Ctrl-C 通过 drop future 取消 provider 与工具。"
+        "Per-turn working_dir on one session is verified.",
+        "History is projected by project_history from the event log; there is no second transcript.",
+        "Ctrl-C cancels provider and tools by dropping the future."
       ],
       "sources": [
         {
@@ -253,15 +253,15 @@
       "title": "Bootstrap",
       "layer": "adapters",
       "status": "done",
-      "summary": "扫描旧 niucode session，抽取候选写入 inbox，再由 review 逐条确认。",
-      "contract": "只送 user / assistant 文本；每个 session 一次无工具调用；不直接写记忆。",
+      "summary": "Mine old niucode sessions into an inbox, then review candidates one by one.",
+      "contract": "Send only user / assistant text; one tool-free call per session; never write memory directly.",
       "paths": [
         "crates/niuse-cli/src/bootstrap.rs"
       ],
       "notes": [
-        "工具输出在抽取前丢弃。",
-        "只保留有对话内容的 session，避免浪费模型调用。",
-        "与现有记忆和同批候选做相似度去重。"
+        "Tool output is dropped before extraction.",
+        "Only sessions with dialogue are kept, to avoid wasting model calls.",
+        "Candidates are deduplicated against existing memory and within the batch."
       ],
       "sources": [
         {
@@ -277,17 +277,17 @@
       "title": "Stores",
       "layer": "state",
       "status": "done",
-      "summary": "五件套的解析与原子写回，0700 / 0600，journal 按天合并。",
-      "contract": "Markdown 是唯一格式；写临时文件再 rename；读操作容忍坏行。",
+      "summary": "Parse and atomically save the five stores with 0700 / 0600, merging journal entries by day.",
+      "contract": "Markdown is the only format; write a temporary file then rename; reads tolerate bad lines.",
       "paths": [
         "crates/niuse-core/src/store.rs",
         "crates/niuse-core/src/model.rs",
         "crates/niuse-core/src/date.rs"
       ],
       "notes": [
-        "identity 缺失是合法状态，不是空字符串。",
-        "memory 可按类型拆成 preferences.md / lessons.md。",
-        "日期按 UTC 计算，避免引入时区数据库。"
+        "A missing identity.md is a legal state, not an empty string.",
+        "Memory is split into preferences.md / lessons.md.",
+        "Dates are UTC-based to avoid a timezone database."
       ],
       "sources": [
         {
@@ -315,8 +315,8 @@
       "title": "Dashboard",
       "layer": "engineering",
       "status": "done",
-      "summary": "单文件离线看板：Architecture / Work / Docs / Decisions。",
-      "contract": "从 project.json、board/*.md、docs/**/*.md 生成；--check 保证生成物不过期。",
+      "summary": "A single-file offline board: Architecture / Work / Docs / Decisions.",
+      "contract": "Generate from project.json, board/*.md, and docs/**/*.md; --check fails when output is stale.",
       "paths": [
         "crates/xtask/src/main.rs",
         "crates/xtask/src/load.rs",
@@ -326,9 +326,9 @@
         "docs/dashboard/project.json"
       ],
       "notes": [
-        "生成物是 docs/index.html 与 docs/dashboard/model.json。",
-        "架构是第一屏；接口默认值与看板无关。",
-        "看板只读，状态变更走仓库。"
+        "Generated artifacts are docs/index.html and docs/dashboard/model.json.",
+        "Architecture is the first screen.",
+        "The board is read-only; state changes go through the repository."
       ],
       "sources": [
         {
@@ -364,7 +364,7 @@
         {
           "path": "docs/dashboard/project.json",
           "language": "json",
-          "text": "{\n  \"schema_version\": 1,\n  \"project\": {\n    \"name\": \"niuse\",\n    \"title\": \"niuse\",\n    \"tagline\": \"personal engineering companion on niucode\",\n    \"summary\": \"站在 niucode 之上的个人工程伙伴：五件套 Markdown 身份与记忆、带内协议、软过期、可恢复主线。看板是架构、决策与迭代的维护面，不是运行时监控。\",\n    \"status\": \"M2 · Dogfood pending\",\n    \"repo\": \"niuverse/niuse\",\n    \"language\": \"Rust\"\n  },\n  \"milestones\": [\n    {\n      \"id\": \"M0\",\n      \"title\": \"Bootstrap\",\n      \"status\": \"done\",\n      \"goal\": \"把「身份 + 记忆」做成可运行的最小闭环。\",\n      \"exit\": [\n        \"五件套 0600 原子写\",\n        \"带内协议端到端可用\",\n        \"REPL 跑通一个真实 turn\"\n      ]\n    },\n    {\n      \"id\": \"M1\",\n      \"title\": \"Memory loop\",\n      \"status\": \"done\",\n      \"goal\": \"让记忆可信：确认、冲突、过期、隐私与冷启动。\",\n      \"exit\": [\n        \"bootstrap → review → memory 全链路\",\n        \"密钥命中即拒\",\n        \"同一 session 逐 turn 换 cwd\"\n      ]\n    },\n    {\n      \"id\": \"M2\",\n      \"title\": \"Dogfood\",\n      \"status\": \"active\",\n      \"goal\": \"用真实工作验证「记得住、靠得住、敢反对」，而不是再加功能。\",\n      \"exit\": [\n        \"连续 10 个工作日，每天 ≥ 1 次真实任务经由 niuse\",\n        \"候选接受率 ≥ 60%\",\n        \"≥ 1 次它明确反对你、你被说服\"\n      ]\n    },\n    {\n      \"id\": \"M3\",\n      \"title\": \"Distribution\",\n      \"status\": \"planned\",\n      \"goal\": \"让项目可安装、可发布、可维护。\",\n      \"exit\": [\n        \"niucode 依赖可版本化，或明确只走 git 安装\",\n        \"cargo package / 安装路径可复现\",\n        \"名称、许可证与发布渠道明确\"\n      ]\n    }\n  ],\n  \"layers\": [\n    {\n      \"id\": \"interface\",\n      \"name\": \"Interface\",\n      \"note\": \"REPL、命令、渲染\"\n    },\n    {\n      \"id\": \"engine\",\n      \"name\": \"Engine\",\n      \"note\": \"prompt、协议、策略\"\n    },\n    {\n      \"id\": \"adapters\",\n      \"name\": \"Adapters\",\n      \"note\": \"niucode 边界与冷启动\"\n    },\n    {\n      \"id\": \"state\",\n      \"name\": \"State\",\n      \"note\": \"五件套与 session\"\n    },\n    {\n      \"id\": \"engineering\",\n      \"name\": \"Engineering\",\n      \"note\": \"构建、看板、测试\"\n    }\n  ],\n  \"modules\": [\n    {\n      \"id\": \"cli\",\n      \"title\": \"CLI\",\n      \"layer\": \"interface\",\n      \"status\": \"done\",\n      \"summary\": \"Clap 入口、子命令分发、离线命令，以及 bootstrap / review 的装配。\",\n      \"contract\": \"解析参数并分派；离线命令不构造 provider，只有 agent 命令才解析凭证。\",\n      \"paths\": [\n        \"crates/niuse-cli/src/main.rs\",\n        \"crates/niuse-cli/src/commands.rs\",\n        \"crates/niuse-cli/src/config.rs\"\n      ],\n      \"notes\": [\n        \"niuse 裸启动进入 REPL。\",\n        \"mem / loops / journal / identity / status 离线可用。\",\n        \"sandbox / approval / network 三轴沿用 niucode 语义。\"\n      ]\n    },\n    {\n      \"id\": \"repl\",\n      \"title\": \"REPL\",\n      \"layer\": \"interface\",\n      \"status\": \"done\",\n      \"summary\": \"交互式对话、斜杠命令、候选确认、编辑与流式渲染。\",\n      \"contract\": \"每个 turn 组一次 AgentConfig；只通过 driver 调 run_with_history；记忆写入一律发生在确认之后。\",\n      \"paths\": [\n        \"crates/niuse-cli/src/repl.rs\",\n        \"crates/niuse-cli/src/render.rs\"\n      ],\n      \"notes\": [\n        \"尾部缓冲保证协议块不会漏给用户。\",\n        \"候选每 turn 最多一条；拒绝后本次 session 不再提议。\",\n        \"Ctrl-C 取消当前 turn，Ctrl-D 退出。\",\n        \"system prompt 每个 session 只组装一次。\"\n      ]\n    },\n    {\n      \"id\": \"prompt\",\n      \"title\": \"Prompt\",\n      \"layer\": \"engine\",\n      \"status\": \"done\",\n      \"summary\": \"稳定前缀的 system prompt 组装，按段预算裁剪。\",\n      \"contract\": \"输入五件套与日期，输出 Composition；不读磁盘、不调模型、不写状态。\",\n      \"paths\": [\n        \"crates/niuse-core/src/prompt.rs\"\n      ],\n      \"notes\": [\n        \"顺序固定：persona → identity → user → memory → protocol → today → loops → journal。\",\n        \"过期记忆不注入；30 天以上的条目带 unverified 标注。\",\n        \"预算约 4k token，超预算先丢最老的 unverified 事实。\"\n      ]\n    },\n    {\n      \"id\": \"protocol\",\n      \"title\": \"Protocol\",\n      \"layer\": \"engine\",\n      \"status\": \"done\",\n      \"summary\": \"带内 memory / loop / journal 块的解析与流式剥离。\",\n      \"contract\": \"StreamFilter 只放行安全文本；parse 返回 visible + blocks；不碰存储。\",\n      \"paths\": [\n        \"crates/niuse-core/src/candidate.rs\"\n      ],\n      \"notes\": [\n        \"不额外调用模型。\",\n        \"未闭合的块按普通文本显示，不静默吞掉回答。\",\n        \"journal 与 loop 自动落盘；memory 必须确认。\"\n      ]\n    },\n    {\n      \"id\": \"policy\",\n      \"title\": \"Policy\",\n      \"layer\": \"engine\",\n      \"status\": \"done\",\n      \"summary\": \"软过期、冲突相似度、密钥模式扫描。\",\n      \"contract\": \"纯函数；拒绝是默认，放行需要显式的 --force。\",\n      \"paths\": [\n        \"crates/niuse-core/src/policy.rs\"\n      ],\n      \"notes\": [\n        \"字符 bigram Jaccard 同时适配中英文。\",\n        \"同一标签下阈值放宽到 0.35。\",\n        \"密钥扫描是兜底，不是保证。\"\n      ]\n    },\n    {\n      \"id\": \"driver\",\n      \"title\": \"Driver\",\n      \"layer\": \"adapters\",\n      \"status\": \"done\",\n      \"summary\": \"niucode 边界：session 打开与恢复、history 投影、per-turn cwd、事件转发。\",\n      \"contract\": \"只有这一层 import niucode-agent；目标 200 行；不改 loop，不 fork。\",\n      \"paths\": [\n        \"crates/niuse-cli/src/driver.rs\"\n      ],\n      \"notes\": [\n        \"同一 session 逐 turn 切换 working_dir 已验证。\",\n        \"history 由 project_history 从事件日志投影，不另存对话。\",\n        \"Ctrl-C 通过 drop future 取消 provider 与工具。\"\n      ]\n    },\n    {\n      \"id\": \"bootstrap\",\n      \"title\": \"Bootstrap\",\n      \"layer\": \"adapters\",\n      \"status\": \"done\",\n      \"summary\": \"扫描旧 niucode session，抽取候选写入 inbox，再由 review 逐条确认。\",\n      \"contract\": \"只送 user / assistant 文本；每个 session 一次无工具调用；不直接写记忆。\",\n      \"paths\": [\n        \"crates/niuse-cli/src/bootstrap.rs\"\n      ],\n      \"notes\": [\n        \"工具输出在抽取前丢弃。\",\n        \"只保留有对话内容的 session，避免浪费模型调用。\",\n        \"与现有记忆和同批候选做相似度去重。\"\n      ]\n",
+          "text": "{\n  \"schema_version\": 1,\n  \"project\": {\n    \"name\": \"niuse\",\n    \"title\": \"niuse\",\n    \"tagline\": \"personal engineering companion on niucode\",\n    \"summary\": \"A personal engineering companion on top of niucode: five Markdown stores for identity and memory, an in-band protocol, soft expiry, and a resumable thread. The board records architecture, decisions, and iteration; it is not runtime monitoring.\",\n    \"status\": \"M2 · Dogfood pending\",\n    \"repo\": \"niuverse/niuse\",\n    \"language\": \"Rust\"\n  },\n  \"milestones\": [\n    {\n      \"id\": \"M0\",\n      \"title\": \"Bootstrap\",\n      \"status\": \"done\",\n      \"goal\": \"Ship the smallest runnable loop for identity and memory.\",\n      \"exit\": [\n        \"five stores with atomic 0600 writes\",\n        \"in-band protocol works end to end\",\n        \"the REPL completes one real turn\"\n      ]\n    },\n    {\n      \"id\": \"M1\",\n      \"title\": \"Memory loop\",\n      \"status\": \"done\",\n      \"goal\": \"Make memory trustworthy: confirmation, conflicts, expiry, privacy, and cold start.\",\n      \"exit\": [\n        \"bootstrap → review → memory works end to end\",\n        \"a secret match is refused\",\n        \"per-turn cwd on one session\"\n      ]\n    },\n    {\n      \"id\": \"M2\",\n      \"title\": \"Dogfood\",\n      \"status\": \"active\",\n      \"goal\": \"Prove with real work that it remembers, is reliable, and dares to disagree, instead of adding features.\",\n      \"exit\": [\n        \"ten consecutive working days, at least one real task per day through niuse\",\n        \"candidate acceptance rate ≥ 60%\",\n        \"at least once it disagrees and you change your mind\"\n      ]\n    },\n    {\n      \"id\": \"M3\",\n      \"title\": \"Distribution\",\n      \"status\": \"planned\",\n      \"goal\": \"Make the project installable, publishable, and maintainable.\",\n      \"exit\": [\n        \"the niucode dependency is versioned, or git install is the stated path\",\n        \"cargo package and installation are reproducible\",\n        \"name, license, and release channels are settled\"\n      ]\n    }\n  ],\n  \"layers\": [\n    {\n      \"id\": \"interface\",\n      \"name\": \"Interface\",\n      \"note\": \"REPL, commands, rendering\"\n    },\n    {\n      \"id\": \"engine\",\n      \"name\": \"Engine\",\n      \"note\": \"prompt, protocol, policy\"\n    },\n    {\n      \"id\": \"adapters\",\n      \"name\": \"Adapters\",\n      \"note\": \"niucode boundary and cold start\"\n    },\n    {\n      \"id\": \"state\",\n      \"name\": \"State\",\n      \"note\": \"five stores and sessions\"\n    },\n    {\n      \"id\": \"engineering\",\n      \"name\": \"Engineering\",\n      \"note\": \"build, dashboard, tests\"\n    }\n  ],\n  \"modules\": [\n    {\n      \"id\": \"cli\",\n      \"title\": \"CLI\",\n      \"layer\": \"interface\",\n      \"status\": \"done\",\n      \"summary\": \"Clap entry, subcommand dispatch, offline commands, and bootstrap / review wiring.\",\n      \"contract\": \"Parse flags and dispatch; offline commands never construct a provider; only agent commands resolve credentials.\",\n      \"paths\": [\n        \"crates/niuse-cli/src/main.rs\",\n        \"crates/niuse-cli/src/commands.rs\",\n        \"crates/niuse-cli/src/config.rs\"\n      ],\n      \"notes\": [\n        \"Bare niuse starts the REPL.\",\n        \"mem / loops / journal / identity / status work offline.\",\n        \"sandbox / approval / network keep niucode's semantics.\"\n      ]\n    },\n    {\n      \"id\": \"repl\",\n      \"title\": \"REPL\",\n      \"layer\": \"interface\",\n      \"status\": \"done\",\n      \"summary\": \"Interactive conversation, slash commands, candidate confirmation, editing, and streaming render.\",\n      \"contract\": \"Build one AgentConfig per turn; call run_with_history only through the driver; memory writes always happen after confirmation.\",\n      \"paths\": [\n        \"crates/niuse-cli/src/repl.rs\",\n        \"crates/niuse-cli/src/render.rs\"\n      ],\n      \"notes\": [\n        \"The tail buffer keeps protocol blocks from leaking to the user.\",\n        \"At most one candidate per turn; after a rejection the session stops proposing.\",\n        \"Ctrl-C cancels the current turn; Ctrl-D exits.\",\n        \"The system prompt is assembled once per session.\"\n      ]\n    },\n    {\n      \"id\": \"prompt\",\n      \"title\": \"Prompt\",\n      \"layer\": \"engine\",\n      \"status\": \"done\",\n      \"summary\": \"Stable-prefix system prompt assembly with per-section budget trimming.\",\n      \"contract\": \"Takes the five stores and a date, returns a Composition; reads no disk, calls no model, writes no state.\",\n      \"paths\": [\n        \"crates/niuse-core/src/prompt.rs\"\n      ],\n      \"notes\": [\n        \"Fixed order: persona → identity → user → memory → protocol → today → loops → journal.\",\n        \"Expired memory is not injected; entries older than 30 days carry an unverified label.\",\n        \"About 4k tokens; over budget, drop the oldest unverified facts first.\"\n      ]\n    },\n    {\n      \"id\": \"protocol\",\n      \"title\": \"Protocol\",\n      \"layer\": \"engine\",\n      \"status\": \"done\",\n      \"summary\": \"Parsing and streaming-aware stripping of the in-band memory / loop / journal blocks.\",\n      \"contract\": \"StreamFilter releases only safe text; parse returns visible + blocks; no storage access.\",\n      \"paths\": [\n        \"crates/niuse-core/src/candidate.rs\"\n      ],\n      \"notes\": [\n        \"No extra model call.\",\n        \"An unterminated block is shown as ordinary text instead of silently eaten.\",\n        \"journal and loop are written automatically; memory requires confirmation.\"\n      ]\n    },\n    {\n      \"id\": \"policy\",\n      \"title\": \"Policy\",\n      \"layer\": \"engine\",\n      \"status\": \"done\",\n      \"summary\": \"Soft expiry, conflict similarity, and secret-pattern scanning.\",\n      \"contract\": \"Pure functions; refusal is the default, and overriding requires an explicit --force.\",\n      \"paths\": [\n        \"crates/niuse-core/src/policy.rs\"\n      ],\n      \"notes\": [\n        \"Character-bigram Jaccard works for both Chinese and English.\",\n        \"Sharing a tag lowers the threshold to 0.35.\",\n        \"The secret scan is a backstop, not a guarantee.\"\n      ]\n    },\n    {\n      \"id\": \"driver\",\n      \"title\": \"Driver\",\n      \"layer\": \"adapters\",\n      \"status\": \"done\",\n      \"summary\": \"The niucode boundary: open and resume sessions, project history, per-turn cwd, forward events.\",\n      \"contract\": \"Only this file imports niucode-agent; target about 200 lines; do not change the loop or fork it.\",\n      \"paths\": [\n        \"crates/niuse-cli/src/driver.rs\"\n      ],\n      \"notes\": [\n        \"Per-turn working_dir on one session is verified.\",\n        \"History is projected by project_history from the event log; there is no second transcript.\",\n        \"Ctrl-C cancels provider and tools by dropping the future.\"\n      ]\n    },\n    {\n      \"id\": \"bootstrap\",\n      \"title\": \"Bootstrap\",\n      \"layer\": \"adapters\",\n      \"status\": \"done\",\n      \"summary\": \"Mine old niucode sessions into an inbox, then review candidates one by one.\",\n      \"contract\": \"Send only user / assistant text; one tool-free call per session; never write memory directly.\",\n      \"paths\": [\n        \"crates/niuse-cli/src/bootstrap.rs\"\n      ],\n      \"notes\": [\n        \"Tool output is dropped before extraction.\",\n        \"Only sessions with dialogue are kept, to avoid wasting model calls.\",\n        \"Candidates are deduplicated against existing memory and within the batch.\"\n      ]\n",
           "truncated": true
         }
       ]
@@ -420,7 +420,7 @@
   "cards": [
     {
       "id": "M0-001",
-      "title": "五件套与原子存储",
+      "title": "Five stores and atomic storage",
       "status": "done",
       "milestone": "M0",
       "module": "stores",
@@ -435,12 +435,12 @@
         "adr-0002"
       ],
       "blocked_reason": null,
-      "body_html": "<h2>范围</h2>\n<ul>\n<li><code>identity.md</code>、<code>user.md</code>、<code>memory/</code>、<code>journal/</code>、<code>loops.md</code> 五个持久化存储。</li>\n<li>全部 Markdown，目录 <code>0700</code>、文件 <code>0600</code>，写临时文件再 rename。</li>\n<li>memory 按类型拆成 <code>preferences.md</code> / <code>lessons.md</code>；journal 按月一个文件、按天合并。</li>\n<li>日期用自带的 civil-date 换算，不引入时区库。</li>\n</ul>\n<h2>验收</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n五件套读写往返有单测。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\njournal 同一天追加会合并，不同日期按序。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n权限实测为 <code>0700</code> / <code>0600</code>。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n缺失 <code>identity.md</code> 时返回 <code>None</code>，不伪造空字符串。</li>\n</ul>\n<h2>记录</h2>\n<p>Markdown 是唯一格式：单用户、200 条以内，文件就是最好的查询引擎。写回会重排格式，手工加的注释可能丢失，这是接受的代价。</p>\n",
+      "body_html": "<h2>Scope</h2>\n<ul>\n<li>Five persistent stores: <code>identity.md</code>, <code>user.md</code>, <code>memory/</code>, <code>journal/</code>, <code>loops.md</code>.</li>\n<li>Plain Markdown; directories <code>0700</code>, files <code>0600</code>; write to a temporary file, then rename.</li>\n<li>Memory split into <code>preferences.md</code> / <code>lessons.md</code>; one journal file per month, merged by day.</li>\n<li>Civil dates computed in-tree, no timezone dependency.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nRound-trip tests for all five stores.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nSame-day journal appends merge; different days stay ordered.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nPermissions verified as <code>0700</code> / <code>0600</code>.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nMissing <code>identity.md</code> returns <code>None</code> instead of a fabricated empty string.</li>\n</ul>\n<h2>Notes</h2>\n<p>Markdown is the only format: for a single user under 200 entries, files are the best query engine. Saving rewrites the layout, so hand-written comments may disappear; that is the accepted cost.</p>\n",
       "path": "docs/board/M0-001-five-stores.md"
     },
     {
       "id": "M0-002",
-      "title": "Prompt 组装与带内协议",
+      "title": "Prompt assembly and in-band protocol",
       "status": "done",
       "milestone": "M0",
       "module": "prompt",
@@ -456,12 +456,12 @@
         "plan"
       ],
       "blocked_reason": null,
-      "body_html": "<h2>范围</h2>\n<ul>\n<li>稳定前缀：persona → identity → user → memory → protocol。</li>\n<li>易变段后置：today → loops → journal。</li>\n<li>分段预算：identity / user 各 600，memory 2000，loops 300，journal 600。</li>\n<li>带内协议：<code>&lt;&lt;niuse:memory&gt;&gt;</code>、<code>&lt;&lt;niuse:loop&gt;&gt;</code>、<code>&lt;&lt;niuse:journal&gt;&gt;</code>。</li>\n<li>流式剥离需要尾部缓冲，未闭合块按普通文本显示。</li>\n</ul>\n<h2>验收</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n段顺序有单测，过期记忆不注入、30 天以上带 unverified。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n超长 identity 会截断并标注。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n协议块跨 chunk、部分前缀、伪标记、未闭合都有测试。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n真实调用中候选块被剥离，正文完整。</li>\n</ul>\n<h2>记录</h2>\n<p>原计划只有 memory / loop 两种块。为了让 journal 不额外调模型，增加 journal 块并由 niuse 自动落盘。</p>\n",
+      "body_html": "<h2>Scope</h2>\n<ul>\n<li>Stable prefix: persona → identity → user → memory → protocol.</li>\n<li>Volatile sections last: today → loops → journal.</li>\n<li>Section budgets: 600 each for identity and user, 2000 for memory, 300 for loops, 600 for journal.</li>\n<li>In-band protocol: <code>&lt;&lt;niuse:memory&gt;&gt;</code>, <code>&lt;&lt;niuse:loop&gt;&gt;</code>, <code>&lt;&lt;niuse:journal&gt;&gt;</code>.</li>\n<li>Streaming strip needs a tail buffer; unterminated blocks stay visible.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nSection order covered by a test; expired memory excluded; entries older than 30 days marked unverified.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nOversized identity is truncated and labelled.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nProtocol tests cover blocks split across chunks, partial prefixes, false markers, and unterminated blocks.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nIn real calls the candidate block is stripped and the prose is intact.</li>\n</ul>\n<h2>Notes</h2>\n<p>The original plan had memory and loop blocks only. To avoid a second model call, a journal block was added and is written automatically.</p>\n",
       "path": "docs/board/M0-002-prompt-protocol.md"
     },
     {
       "id": "M0-003",
-      "title": "REPL 与 niucode driver",
+      "title": "REPL and the niucode driver",
       "status": "done",
       "milestone": "M0",
       "module": "repl",
@@ -476,12 +476,12 @@
         "architecture"
       ],
       "blocked_reason": null,
-      "body_html": "<h2>范围</h2>\n<ul>\n<li>交互式 REPL：流式输出、斜杠命令、Ctrl-C 取消、Ctrl-D 退出。</li>\n<li>driver 打开或恢复 <code>thread.jsonl</code>，用 <code>project_history</code> 重建历史。</li>\n<li>每个 turn 重新设置 working dir，验证同 session 换 cwd。</li>\n<li>候选确认：<code>y</code> / <code>n</code> / <code>e</code> / <code>s</code>，冲突时 <code>r</code> / <code>k</code> / <code>d</code>。</li>\n</ul>\n<h2>验收</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n真实 provider 跑通只读任务，session 落盘。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n同一 session 先读小目录、<code>/cd /tmp</code> 后读另一目录，两轮都成功。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n确认后写入 memory，<code>niuse mem list</code> 可见。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\njournal / loop 块自动落盘。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\ndriver 约 200 行，没有绕过 loop。</li>\n</ul>\n<h2>记录</h2>\n<p><code>niucode-cli</code> 只有 bin、没有 lib，TUI 与 renderer 无法复用；MVP 自己写最小 renderer，等上游拆 lib 或加 hook 再换皮。</p>\n",
+      "body_html": "<h2>Scope</h2>\n<ul>\n<li>Interactive REPL: streaming output, slash commands, Ctrl-C cancel, Ctrl-D exit.</li>\n<li>The driver opens or resumes <code>thread.jsonl</code> and rebuilds history with <code>project_history</code>.</li>\n<li>Each turn sets the working directory again, proving per-turn cwd on one session.</li>\n<li>Candidate confirmation: <code>y</code> / <code>n</code> / <code>e</code> / <code>s</code>; conflicts use <code>r</code> / <code>k</code> / <code>d</code>.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nA real provider run completes a read-only task and persists the session.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nThe same session reads in one directory, <code>/cd /tmp</code>, then reads in another; both succeed.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nConfirming a candidate writes memory that <code>niuse mem list</code> can show.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nJournal and loop blocks are written automatically.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nThe driver is about 200 lines and does not bypass the loop.</li>\n</ul>\n<h2>Notes</h2>\n<p><code>niucode-cli</code> is a binary with no library target, so its TUI and renderer cannot be reused. The MVP ships a minimal renderer and can swap later once upstream exposes a library or a hook.</p>\n",
       "path": "docs/board/M0-003-repl-driver.md"
     },
     {
       "id": "M0-004",
-      "title": "软过期、冲突与密钥扫描",
+      "title": "Soft expiry, conflicts, secret scan",
       "status": "done",
       "milestone": "M0",
       "module": "policy",
@@ -496,12 +496,12 @@
         "adr-0001"
       ],
       "blocked_reason": null,
-      "body_html": "<h2>范围</h2>\n<ul>\n<li>30 天内正常注入；31–90 天标 unverified；90 天以上不再自动注入。</li>\n<li>冲突用字符 bigram Jaccard：≥ 0.5 视为相似；同标签时阈值降到 0.35。</li>\n<li>密钥模式：<code>sk-</code>、<code>ghp_</code>、<code>github_pat_</code>、<code>AKIA</code>、私钥块、Slack、Google、长 hex。</li>\n<li>拒绝是默认；CLI 需要 <code>--force</code> 才能覆盖。</li>\n</ul>\n<h2>验收</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n常见 key 形态命中，普通中文与短 hex 不误报。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n相似/不相似/同标签三组单测。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n真实输入 <code>sk-...</code> 被拒绝，退出码 1。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n过期记忆在 prompt 中被排除。</li>\n</ul>\n<h2>记录</h2>\n<p>扫描是兜底，不是保证。未公开项目、客户名、内部地址仍靠确认时的人判断。</p>\n",
+      "body_html": "<h2>Scope</h2>\n<ul>\n<li>Normal injection within 30 days; unverified from 31 to 90; not injected after 90.</li>\n<li>Conflict detection via character-bigram Jaccard: ≥ 0.5 is similar; same tag lowers the bar to 0.35.</li>\n<li>Secret patterns: <code>sk-</code>, <code>ghp_</code>, <code>github_pat_</code>, <code>AKIA</code>, private-key blocks, Slack, Google, long hex.</li>\n<li>Refusal is the default; the CLI needs <code>--force</code> to override.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nCommon key shapes match; ordinary Chinese prose and short hex do not.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nTests for similar, unrelated, and same-tag pairs.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nA real <code>sk-...</code> input is refused with exit code 1.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nExpired memory is excluded from the prompt.</li>\n</ul>\n<h2>Notes</h2>\n<p>Scanning is a backstop, not a guarantee. Private projects, client names, and internal addresses still rely on human judgement at confirmation time.</p>\n",
       "path": "docs/board/M0-004-policy.md"
     },
     {
       "id": "M0-005",
-      "title": "历史冷启动与 review 队列",
+      "title": "Cold start and the review queue",
       "status": "done",
       "milestone": "M0",
       "module": "bootstrap",
@@ -516,12 +516,12 @@
         "plan"
       ],
       "blocked_reason": null,
-      "body_html": "<h2>范围</h2>\n<ul>\n<li><code>niuse bootstrap [--limit N] [--since-days N]</code> 扫描 <code>~/.niucode/sessions</code>。</li>\n<li>每个 session 只送 user / assistant 文本，工具输出丢弃。</li>\n<li>一次无工具抽取，输出 <code>{kind, text, tags}</code>，写入 <code>inbox.md</code>。</li>\n<li><code>niuse review</code> 逐条 <code>y</code> / <code>n</code> / <code>s</code> / <code>q</code>，接受后写入 memory。</li>\n</ul>\n<h2>验收</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n空 session 被跳过，只对含对话的 session 调模型。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n与现有 memory 及同批候选做相似度去重。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\ninbox 格式往返有单测。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n真实跑通：挖出一条沙箱相关教训，review 接受后入库。</li>\n</ul>\n<h2>记录</h2>\n<p>默认上限 40 个 session。成本约每个 2k 输入 token，一次性。</p>\n",
+      "body_html": "<h2>Scope</h2>\n<ul>\n<li><code>niuse bootstrap [--limit N] [--since-days N]</code> scans <code>~/.niucode/sessions</code>.</li>\n<li>Only user / assistant text is sent; tool output is dropped.</li>\n<li>One tool-free extraction returns <code>{kind, text, tags}</code> and writes <code>inbox.md</code>.</li>\n<li><code>niuse review</code> walks the queue with <code>y</code> / <code>n</code> / <code>s</code> / <code>q</code>; accepted entries become memory.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nEmpty sessions are skipped; only sessions with dialogue cost a model call.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nCandidates are deduplicated against existing memory and within the batch.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nInbox format has a round-trip test.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nA real run mined a sandbox lesson that review accepted into memory.</li>\n</ul>\n<h2>Notes</h2>\n<p>Default cap is 40 sessions. Cost is roughly 2k input tokens per session, one-off.</p>\n",
       "path": "docs/board/M0-005-bootstrap.md"
     },
     {
       "id": "M0-006",
-      "title": "架构看板",
+      "title": "Architecture dashboard",
       "status": "done",
       "milestone": "M0",
       "module": "dashboard",
@@ -537,12 +537,12 @@
         "plan"
       ],
       "blocked_reason": null,
-      "body_html": "<h2>范围</h2>\n<ul>\n<li>复用 niucode 的 xtask 生成器与三栏壳，换成 niuse 的项目模型。</li>\n<li>四个视图：Architecture（默认）、Work、Docs、Decisions。</li>\n<li>数据源：<code>project.json</code> + <code>board/*.md</code> + <code>docs/**/*.md</code>。</li>\n<li>单文件 <code>docs/index.html</code>，离线可开，无 CDN、无运行时 fetch。</li>\n<li><code>cargo xtask dashboard --check</code> 在生成物过期时失败。</li>\n</ul>\n<h2>验收</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n<code>cargo xtask dashboard</code> 生成 <code>docs/index.html</code> 与 <code>model.json</code>。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n校验通过：模块路径存在、卡片引用有效、ADR 状态合法。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nArchitecture 展示模块、分层与依赖箭头。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nDocs 能打开架构文档、实施计划与两份 ADR。</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n<code>--check</code> 通过。</li>\n</ul>\n<h2>记录</h2>\n<p>看板只读，状态变更走仓库，避免它变成第二个真相源。生成器复制自 niucode，只改品牌与项目模型。</p>\n",
+      "body_html": "<h2>Scope</h2>\n<ul>\n<li>Reuse niucode's xtask generator and three-column shell, with a niuse project model.</li>\n<li>Four views: Architecture (default), Work, Docs, Decisions.</li>\n<li>Sources: <code>project.json</code> plus <code>board/*.md</code> plus <code>docs/**/*.md</code>.</li>\n<li>Single-file <code>docs/index.html</code>, offline, no CDN, no runtime fetch.</li>\n<li><code>cargo xtask dashboard --check</code> fails when generated output is stale.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n<code>cargo xtask dashboard</code> writes <code>docs/index.html</code> and <code>model.json</code>.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nValidation passes: module paths exist, card references resolve, ADR statuses are legal.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nArchitecture shows modules, layers, and dependency arrows.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nDocs opens the architecture doc, the plan, and both ADRs.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n<code>--check</code> passes.</li>\n</ul>\n<h2>Notes</h2>\n<p>The board is read-only; state changes go through the repository so it never becomes a second source of truth. The generator is copied from niucode; only branding and the project model changed.</p>\n",
       "path": "docs/board/M0-006-dashboard.md"
     },
     {
       "id": "M2-001",
-      "title": "连续十个工作日 dogfood",
+      "title": "Ten working days of dogfood",
       "status": "ready",
       "milestone": "M2",
       "module": "repl",
@@ -558,12 +558,12 @@
         "plan"
       ],
       "blocked_reason": null,
-      "body_html": "<h2>范围</h2>\n<ul>\n<li>每天至少一次真实任务经由 niuse，而不是 niucode。</li>\n<li>记录候选提议数、接受数，以及「因为记忆少解释一轮」的具体例子。</li>\n<li>至少一次它明确反对你、你被说服。</li>\n<li>记忆库保持在 50 条以内；超过说明门槛太低。</li>\n</ul>\n<h2>验收</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\"/>\n连续 10 个工作日。</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\n候选接受率 ≥ 60%。</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\n≥ 3 次引用过去的判断且引用正确。</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\n≥ 1 次被它说服。</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\n<code>NIUSE_MEMORY=off</code> 的 A/B 至少 1 个 case 输出不同。</li>\n</ul>\n<h2>记录</h2>\n<p>这一卡不写代码。它的作用是阻止在验证之前继续加功能。</p>\n",
+      "body_html": "<h2>Scope</h2>\n<ul>\n<li>At least one real task per day goes through niuse, not niucode.</li>\n<li>Record proposals, acceptances, and concrete cases where memory saved a round of explanation.</li>\n<li>At least once it should disagree and change your mind.</li>\n<li>Keep the store under 50 entries; more means the bar is too low.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\"/>\nTen consecutive working days.</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nCandidate acceptance rate ≥ 60%.</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nAt least 3 correct citations of a past judgement.</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nAt least 1 case of being persuaded.</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nAt least 1 A/B case where <code>NIUSE_MEMORY=off</code> changes the answer.</li>\n</ul>\n<h2>Notes</h2>\n<p>This card writes no code. Its job is to stop new features before the current ones are validated.</p>\n",
       "path": "docs/board/M2-001-dogfood.md"
     },
     {
       "id": "M2-002",
-      "title": "审批显示完整 unified diff",
+      "title": "Show a full unified diff at approval",
       "status": "backlog",
       "milestone": "M2",
       "module": "repl",
@@ -578,12 +578,12 @@
         "architecture"
       ],
       "blocked_reason": null,
-      "body_html": "<h2>范围</h2>\n<ul>\n<li>审批时展示 <code>ChangePreview</code> 的结构化 diff，而不是只有摘要与 +/- 行数。</li>\n<li>复用 niucode 的 <code>Toolbox::preview</code> 结果，不在 niuse 里复制路径策略。</li>\n<li>长 diff 分页或折叠，保持终端可读。</li>\n</ul>\n<h2>验收</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\"/>\nwrite / edit 审批能看到真实 hunk。</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\n审批拒绝后事件与行为一致。</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\n非 TTY 退化为逐行确认。</li>\n</ul>\n<h2>记录</h2>\n<p>安全边界不变，只是把已有的预览信息显示出来。</p>\n",
+      "body_html": "<h2>Scope</h2>\n<ul>\n<li>Show the structured <code>ChangePreview</code> diff instead of a summary plus +/- counts.</li>\n<li>Reuse niucode's <code>Toolbox::preview</code> result; do not copy path policy into niuse.</li>\n<li>Page or fold long diffs so the terminal stays readable.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\"/>\nWrite / edit approval shows real hunks.</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nA rejection produces events consistent with behaviour.</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nNon-TTY falls back to line-by-line confirmation.</li>\n</ul>\n<h2>Notes</h2>\n<p>The security boundary is unchanged; this only surfaces information that already exists.</p>\n",
       "path": "docs/board/M2-002-approval-diff.md"
     },
     {
       "id": "M3-001",
-      "title": "发布与依赖策略",
+      "title": "Release and dependency strategy",
       "status": "backlog",
       "milestone": "M3",
       "module": "cli",
@@ -598,73 +598,73 @@
         "plan"
       ],
       "blocked_reason": null,
-      "body_html": "<h2>范围</h2>\n<ul>\n<li>决定 niucode 依赖：先发布 niucode crates、改为钉 rev 的 git 依赖，或明确只支持 <code>cargo install --git</code>。</li>\n<li>补齐 <code>license</code>、<code>repository</code>、<code>description</code> 等发布元数据。</li>\n<li><code>cargo package</code> / <code>cargo publish --dry-run</code> 可复现。</li>\n<li>确认 crate 名可用性；必要时 crate 改名而保留二进制名 <code>niuse</code>。</li>\n</ul>\n<h2>验收</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\"/>\n<code>cargo package -p niuse</code> 通过（当前被 path 依赖卡住）。</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\n安装路径在干净机器上可复现。</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\n许可证与名称策略写进 README。</li>\n</ul>\n<h2>记录</h2>\n<p>当前 <code>cargo package</code> 的失败信息：<code>all dependencies must have a version requirement specified when packaging</code>，指向 <code>niucode-agent</code> 的 path 依赖。</p>\n",
+      "body_html": "<h2>Scope</h2>\n<ul>\n<li>Decide the niucode dependency: publish niucode crates first, pin a git revision, or support <code>cargo install --git</code> only.</li>\n<li>Add <code>license</code>, <code>repository</code>, <code>description</code>, and other release metadata.</li>\n<li>Make <code>cargo package</code> / <code>cargo publish --dry-run</code> reproducible.</li>\n<li>Confirm crate-name availability; rename the crate if needed while keeping the <code>niuse</code> binary.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\"/>\n<code>cargo package -p niuse</code> passes (currently blocked by path dependencies).</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nThe install path is reproducible on a clean machine.</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nLicense and naming strategy are documented in the README.</li>\n</ul>\n<h2>Notes</h2>\n<p>Current failure: <code>all dependencies must have a version requirement specified when packaging</code>, pointing at the <code>niucode-agent</code> path dependency.</p>\n",
       "path": "docs/board/M3-001-distribution.md"
     }
   ],
   "docs": [
     {
       "id": "architecture",
-      "title": "架构",
+      "title": "Architecture",
       "kind": "doc",
       "status": "living",
       "order": 5,
-      "summary": "niuse 的边界、五件套、turn 数据流、写入分级与明确不做的事。",
-      "body_html": "<h2>一句话</h2>\n<p>niuse 是 niucode 之上的身份与记忆层：它决定「你是谁、它记得什么、它答应过什么」，但把「能不能做」留给 niucode 的 loop、工具与沙箱。</p>\n<h2>依赖方向</h2>\n<pre><code class=\"language-text\">crates/niuse-cli     REPL / 命令 / renderer / driver / bootstrap\n    │\ncrates/niuse-core    date / model / store / prompt / candidate / policy\n    │\nniucode-agent        run_with_history / AgentConfig / project_history\nniucode-core         SessionLog / Event\nniucode-provider     Provider / ChatMessage\nniucode-auth         AuthStore\nniucode-tools        SandboxPolicy / ApprovalMode\n</code></pre>\n<p>只有 <code>driver.rs</code> 直接接触 <code>niucode-agent</code>。其余代码要么是纯领域逻辑，要么只认 <code>niuse-core</code> 的类型。这样 niucode 升级时，需要改的地方被压在一个文件里。</p>\n<p>不 fork niucode，也不给它的 loop 加 memory 钩子。记忆是产品层，内核保持最小。</p>\n<h2>模块</h2>\n<div class=\"table-wrap\"><table><thead><tr><th>模块</th><th>层</th><th>职责</th></tr></thead><tbody>\n<tr><td><code>cli</code></td><td>Interface</td><td>参数、子命令、离线命令、装配</td></tr>\n<tr><td><code>repl</code></td><td>Interface</td><td>对话、斜杠命令、候选确认、渲染</td></tr>\n<tr><td><code>prompt</code></td><td>Engine</td><td>稳定前缀的 system prompt 与预算</td></tr>\n<tr><td><code>protocol</code></td><td>Engine</td><td>带内块的解析与流式剥离</td></tr>\n<tr><td><code>policy</code></td><td>Engine</td><td>软过期、冲突、密钥扫描</td></tr>\n<tr><td><code>driver</code></td><td>Adapters</td><td>niucode 边界、session、per-turn cwd</td></tr>\n<tr><td><code>bootstrap</code></td><td>Adapters</td><td>旧 session 抽取与 inbox</td></tr>\n<tr><td><code>stores</code></td><td>State</td><td>五件套的读写与权限</td></tr>\n<tr><td><code>dashboard</code></td><td>Engineering</td><td>离线看板生成</td></tr>\n</tbody></table></div>\n<h2>一个 turn 的数据流</h2>\n<pre><code class=\"language-text\">启动\n  ├─ 读 identity / user / memory / loops / journal\n  ├─ compose() 组装 system prompt（每个 session 一次）\n  └─ project_history(thread.jsonl) 恢复历史\n\n用户输入\n  ├─ run_with_history(config, prompt, history)\n  ├─ AgentEvent → Renderer（TextDelta 经过 StreamFilter）\n  ├─ 尾部缓冲剥离 &lt;&lt;niuse:*&gt;&gt; 块\n  ├─ journal / loop：自动写\n  ├─ memory：打印候选 → y / n / e / s\n  └─ 重新投影 history，进入下一轮\n</code></pre>\n<p><code>history</code> 不另存一份。它由 niucode 的 <code>project_history</code> 从事件日志投影，所以 compaction、replay、fork 的行为与 niucode 完全一致。</p>\n<h2>五件套与注入</h2>\n<pre><code class=\"language-text\">~/.niuse/\n  identity.md      它是谁（人写，它只能提建议）\n  user.md          你是谁（冷启动挖，人审）\n  memory/          事实：偏好 / 决策 / 踩坑（确认，会过期）\n  journal/         经历：按月分文件，按天合并（自动）\n  loops.md         承诺（自动，带截止）\n  thread.jsonl     关系主线\n  inbox.md         bootstrap 的待审队列\n</code></pre>\n<p>注入顺序固定为稳定 → 易变：</p>\n<div class=\"table-wrap\"><table><thead><tr><th>段</th><th>预算</th><th>变化频率</th></tr></thead><tbody>\n<tr><td>persona</td><td>常量</td><td>无</td></tr>\n<tr><td>identity</td><td>≤ 600 tok</td><td>极低</td></tr>\n<tr><td>user</td><td>≤ 600 tok</td><td>低</td></tr>\n<tr><td>memory</td><td>≤ 2 000 tok</td><td>低</td></tr>\n<tr><td>protocol</td><td>常量</td><td>无</td></tr>\n<tr><td>today</td><td>一行</td><td>每天</td></tr>\n<tr><td>loops</td><td>≤ 300 tok</td><td>中</td></tr>\n<tr><td>journal</td><td>≤ 600 tok</td><td>高</td></tr>\n</tbody></table></div>\n<p>前四段加上 protocol 构成稳定的 cache 前缀；<code>today</code> 之后才是每 session 可能变化的内容。system prompt 只组装一次，session 中途不重建。</p>\n<h2>写入分级与协议</h2>\n<div class=\"table-wrap\"><table><thead><tr><th>写什么</th><th>谁决定</th><th>确认</th></tr></thead><tbody>\n<tr><td>journal、loops</td><td>它自己</td><td>不要</td></tr>\n<tr><td>memory</td><td>它提议</td><td>要</td></tr>\n<tr><td>identity</td><td>人</td><td>只有人能改</td></tr>\n</tbody></table></div>\n<p>模型在回答末尾可以带三种块：</p>\n<pre><code class=\"language-text\">&lt;&lt;niuse:memory kind=preference tags=rust,testing&gt;&gt;\n一句话结论\n&lt;&lt;/niuse:memory&gt;&gt;\n\n&lt;&lt;niuse:loop due=2026-10-22&gt;&gt;\n答应过的事\n&lt;&lt;/niuse:loop&gt;&gt;\n\n&lt;&lt;niuse:journal&gt;&gt;\n- 与上次不同的决定或转折\n&lt;&lt;/niuse:journal&gt;&gt;\n</code></pre>\n<p><code>memory</code> 每轮最多一条；被拒绝后同标签在本次 session 不再提。<code>journal</code> 只记变化，不记流水账。</p>\n<h2>安全与隐私</h2>\n<ul>\n<li><code>~/.niuse</code> 目录 <code>0700</code>，文件 <code>0600</code>，写临时文件再 rename。</li>\n<li>密钥模式扫描在写入前执行；命中即拒，CLI 需要 <code>--force</code> 才能覆盖。</li>\n<li>记忆每一轮都会发给 provider，所以泄露面比普通文件大。</li>\n<li>项目知识留在 repo 的 <code>AGENTS.md</code>，niuse 不自动改仓库。</li>\n<li><code>NIUSE_MEMORY=off</code> 关闭记忆注入与候选，用于 A/B 验证和信任受损时的降级。</li>\n</ul>\n<h2>明确不做</h2>\n<p>常驻进程、Web UI、微信 / 飞书通道、定时推送、向量检索、session 全量索引、自动改 repo、多人协作、TUI（MVP 阶段）、通用 agent 框架。</p>\n<p>判断标准只有一句：<strong>它是在塑造身份，还是只是在堆能力？</strong></p>\n",
+      "summary": "niuse boundaries, the five stores, turn data flow, write thresholds, and explicit non-goals.",
+      "body_html": "<h2>In one sentence</h2>\n<p>niuse is the identity and memory layer above niucode: it decides who the companion is, what it remembers, and what it promised. Whether a task can be done at all stays with niucode's loop, tools, and sandbox.</p>\n<h2>Dependency direction</h2>\n<pre><code class=\"language-text\">crates/niuse-cli     REPL / commands / renderer / driver / bootstrap\n    │\ncrates/niuse-core    date / model / store / prompt / candidate / policy\n    │\nniucode-agent        run_with_history / AgentConfig / project_history\nniucode-core         SessionLog / Event\nniucode-provider     Provider / ChatMessage\nniucode-auth         AuthStore\nniucode-tools        SandboxPolicy / ApprovalMode\n</code></pre>\n<p>Only <code>driver.rs</code> touches <code>niucode-agent</code> directly. Everything else is either pure domain logic or only knows <code>niuse-core</code> types. When niucode upgrades, the required changes are confined to one file.</p>\n<p>niuse does not fork niucode and does not add a memory hook to its loop. Memory is a product layer; the kernel stays minimal.</p>\n<h2>Modules</h2>\n<div class=\"table-wrap\"><table><thead><tr><th>Module</th><th>Layer</th><th>Responsibility</th></tr></thead><tbody>\n<tr><td><code>cli</code></td><td>Interface</td><td>flags, subcommands, offline commands, wiring</td></tr>\n<tr><td><code>repl</code></td><td>Interface</td><td>conversation, slash commands, candidate confirmation, rendering</td></tr>\n<tr><td><code>prompt</code></td><td>Engine</td><td>stable-prefix system prompt and budgets</td></tr>\n<tr><td><code>protocol</code></td><td>Engine</td><td>in-band block parsing and streaming stripping</td></tr>\n<tr><td><code>policy</code></td><td>Engine</td><td>soft expiry, conflicts, secret scanning</td></tr>\n<tr><td><code>driver</code></td><td>Adapters</td><td>niucode boundary, sessions, per-turn cwd</td></tr>\n<tr><td><code>bootstrap</code></td><td>Adapters</td><td>old-session mining and the inbox</td></tr>\n<tr><td><code>stores</code></td><td>State</td><td>five-store load / save and permissions</td></tr>\n<tr><td><code>dashboard</code></td><td>Engineering</td><td>offline board generation</td></tr>\n</tbody></table></div>\n<h2>Turn data flow</h2>\n<pre><code class=\"language-text\">startup\n  ├─ read identity / user / memory / loops / journal\n  ├─ compose() assembles the system prompt (once per session)\n  └─ project_history(thread.jsonl) restores history\n\nuser input\n  ├─ run_with_history(config, prompt, history)\n  ├─ AgentEvent → Renderer (TextDelta goes through StreamFilter)\n  ├─ trailing buffer strips &lt;&lt;niuse:*&gt;&gt; blocks\n  ├─ journal / loop: written automatically\n  ├─ memory: print candidate → y / n / e / s\n  └─ re-project history, next turn\n</code></pre>\n<p>There is no second copy of the conversation. <code>history</code> is projected from the event log by niucode's <code>project_history</code>, so compaction, replay, and fork behave exactly as they do in niucode.</p>\n<h2>The five stores and injection</h2>\n<pre><code class=\"language-text\">~/.niuse/\n  identity.md      who it is (human-written; it may only propose)\n  user.md          who you are (bootstrapped, human-reviewed)\n  memory/          facts: preferences, decisions, pitfalls (confirmed, expiring)\n  journal/         experience: one file per month, merged per day (automatic)\n  loops.md         promises (automatic, optional due date)\n  thread.jsonl     the relationship thread\n  inbox.md         bootstrap review queue\n</code></pre>\n<p>Injection order is fixed, stable before volatile:</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Section</th><th>Budget</th><th>Change rate</th></tr></thead><tbody>\n<tr><td>persona</td><td>constant</td><td>never</td></tr>\n<tr><td>identity</td><td>≤ 600 tok</td><td>very low</td></tr>\n<tr><td>user</td><td>≤ 600 tok</td><td>low</td></tr>\n<tr><td>memory</td><td>≤ 2 000 tok</td><td>low</td></tr>\n<tr><td>protocol</td><td>constant</td><td>never</td></tr>\n<tr><td>today</td><td>one line</td><td>daily</td></tr>\n<tr><td>loops</td><td>≤ 300 tok</td><td>medium</td></tr>\n<tr><td>journal</td><td>≤ 600 tok</td><td>high</td></tr>\n</tbody></table></div>\n<p>The first five sections form the stable cache prefix; only content after <code>today</code> can vary per session. The system prompt is assembled once and is not rebuilt mid-session.</p>\n<h2>Write thresholds and protocol</h2>\n<div class=\"table-wrap\"><table><thead><tr><th>What</th><th>Who decides</th><th>Confirmation</th></tr></thead><tbody>\n<tr><td>journal, loops</td><td>the companion</td><td>none</td></tr>\n<tr><td>memory</td><td>it proposes</td><td>required</td></tr>\n<tr><td>identity</td><td>the human</td><td>only the human can change it</td></tr>\n</tbody></table></div>\n<p>The model may end an answer with three block types:</p>\n<pre><code class=\"language-text\">&lt;&lt;niuse:memory kind=preference tags=rust,testing&gt;&gt;\none self-contained conclusion\n&lt;&lt;/niuse:memory&gt;&gt;\n\n&lt;&lt;niuse:loop due=2026-10-22&gt;&gt;\nsomething it promised to do\n&lt;&lt;/niuse:loop&gt;&gt;\n\n&lt;&lt;niuse:journal&gt;&gt;\n- a decision or turning point that differs from last time\n&lt;&lt;/niuse:journal&gt;&gt;\n</code></pre>\n<p>At most one <code>memory</code> block per turn; after a rejection, the same tags are not proposed again in that session. <code>journal</code> records changes, not activity logs.</p>\n<h2>Safety and privacy</h2>\n<ul>\n<li><code>~/.niuse</code> directories are <code>0700</code>, files are <code>0600</code>; writes go to a temporary file and are renamed.</li>\n<li>Secret patterns are scanned before every write; a match is refused, and the CLI requires <code>--force</code> to override.</li>\n<li>Memory is sent to the provider on every turn, so the leak surface is larger than a normal file.</li>\n<li>Project knowledge stays in the repo's <code>AGENTS.md</code>; niuse never edits your repositories.</li>\n<li><code>NIUSE_MEMORY=off</code> disables injection and candidates, for A/B runs and for recovering trust.</li>\n</ul>\n<h2>Explicit non-goals</h2>\n<p>A daemon, a web UI, WeChat / Feishu bridges, scheduled push notifications, vector search, full session indexing, automatic repo edits, multi-user support, a TUI (for now), or a general agent framework.</p>\n<p>There is one test for every proposal: <strong>does this shape an identity, or is it just another capability?</strong></p>\n",
       "path": "docs/architecture.md",
-      "excerpt": "niuse 的边界、五件套、turn 数据流、写入分级与明确不做的事。"
+      "excerpt": "niuse boundaries, the five stores, turn data flow, write thresholds, and explicit non-goals."
     },
     {
       "id": "plan",
-      "title": "niuse 实施计划",
+      "title": "Implementation plan",
       "kind": "plan",
       "status": "active",
       "order": 10,
-      "summary": "十五个决策、五件套、turn 生命周期、写入分级、三周计划与可验证的验收标准。",
-      "body_html": "<h2>一句话</h2>\n<p>在 niucode 之上加一层持久的身份与记忆，让同一个 agent 跨项目、跨会话地认识你；不做常驻服务，不做向量检索，不自动改你的仓库。</p>\n<h2>1. 定位</h2>\n<p>niucode 负责「能做」：loop、工具、沙箱、事件日志。niuse 负责「是谁」：它记得什么、答应过什么、什么时候该反对你。</p>\n<p>判断一个功能该不该进 niuse，只问一句：<strong>它是在塑造身份，还是只是在堆能力？</strong> 堆能力的，留给 niucode 或干脆不做。</p>\n<h2>2. 决策表</h2>\n<div class=\"table-wrap\"><table><thead><tr><th>#</th><th>问题</th><th>决策</th></tr></thead><tbody>\n<tr><td>D1</td><td>定位</td><td>跨项目工程记忆</td></tr>\n<tr><td>D2</td><td>记忆内容</td><td>偏好 + 决策 + 踩坑；少量、高价值、可审阅</td></tr>\n<tr><td>D3</td><td>归属</td><td>全局偏好进 niuse；项目知识留在 repo 的 <code>AGENTS.md</code></td></tr>\n<tr><td>D4</td><td>写入</td><td>agent 提议 + 一键确认，每 turn ≤ 1 条</td></tr>\n<tr><td>D5</td><td>读取</td><td>全量注入 + 作用域过滤</td></tr>\n<tr><td>D6</td><td>架构</td><td>独立 repo，依赖 niucode lib，自己驱动 turn</td></tr>\n<tr><td>D7</td><td>存储</td><td><code>~/.niuse/</code> 纯 Markdown，0600</td></tr>\n<tr><td>D8</td><td>界面</td><td>交互式 REPL；TUI 后置</td></tr>\n<tr><td>D9</td><td>过期</td><td>软过期 + 冲突时替换</td></tr>\n<tr><td>D10</td><td>隐私</td><td>密钥模式黑名单，命中即拒</td></tr>\n<tr><td>D11</td><td>MVP</td><td>只做全局偏好一条链</td></tr>\n<tr><td>D12</td><td>头号风险</td><td>确认疲劳</td></tr>\n<tr><td>D13</td><td>形态</td><td>身份层 + 可恢复会话，无常驻进程</td></tr>\n<tr><td>D14</td><td>冷启动</td><td>从历史 session 挖掘；<code>identity</code> 由你定</td></tr>\n<tr><td>D15</td><td>性格</td><td>有观点的合作者</td></tr>\n</tbody></table></div>\n<p>每条决策的取舍理由见 <a href=\"adr/0001-memory-layer.md\">ADR-0001</a> 与 <a href=\"adr/0002-identity-layer.md\">ADR-0002</a>。</p>\n<h3>记忆内容的准入标准</h3>\n<p>一条信息要进 <code>memory/</code>，必须同时满足：</p>\n<ol>\n<li>跨会话仍然有用；</li>\n<li>在 repo 里 grep 不出来；</li>\n<li>一句话说得清，人能审阅。</li>\n</ol>\n<p>任何一条不满足就不进。这条标准的作用是把「全量 session 索引」和「环境事实」挡在门外——它们看起来像记忆，实际上是检索和配置。</p>\n<h2>3. 文件与注入</h2>\n<h3>3.1 五件套</h3>\n<pre><code class=\"language-text\">~/.niuse/\n  identity.md          它是谁：名字、口吻、价值观、边界\n  user.md              你是谁：目标、节奏、品味、雷区、在做的事\n  memory/\n    preferences.md     偏好\n    lessons.md         决策与踩坑\n  journal/\n    2026-10.md         经历，按月一个文件\n  loops.md             承诺：它说要做的事\n</code></pre>\n<ul>\n<li>全部为 UTF-8 Markdown，目录 <code>0700</code>，文件 <code>0600</code>。</li>\n<li><code>memory/</code> 可以单独 <code>git init</code>，用于备份和看 diff；<code>journal/</code> 默认不提交。</li>\n<li>不做数据库。单用户、200 条以内，文件就是最好的查询引擎。</li>\n</ul>\n<h3>3.2 注入顺序与预算</h3>\n<p>顺序固定为<strong>稳定 → 易变</strong>，且 system prompt 每个 session 只组装一次（session 中途不重建，避免每 turn 触发 cache miss）：</p>\n<div class=\"table-wrap\"><table><thead><tr><th>段</th><th>来源</th><th>预算</th><th>变化频率</th></tr></thead><tbody>\n<tr><td>身份</td><td><code>identity.md</code></td><td>≤ 600 tok</td><td>极低</td></tr>\n<tr><td>用户</td><td><code>user.md</code></td><td>≤ 600 tok</td><td>低</td></tr>\n<tr><td>事实</td><td><code>memory/*.md</code></td><td>≤ 2 000 tok</td><td>低</td></tr>\n<tr><td>承诺</td><td><code>loops.md</code></td><td>≤ 300 tok</td><td>中</td></tr>\n<tr><td>最近经历</td><td><code>journal/</code> 最近 3 条</td><td>≤ 600 tok</td><td>高</td></tr>\n</tbody></table></div>\n<p>总预算约 4k token。超预算时先丢最老的 <code>unverified</code> 事实，再截断 journal，绝不静默丢 <code>identity</code> 或 <code>user</code>。</p>\n<h3>3.3 条目格式</h3>\n<p><code>memory/</code> 里一条记忆是一个小节，机器可解析、人可读：</p>\n<pre><code class=\"language-markdown\">### m-7f3a\n\n- 结论：Rust 仓库一律用 `cargo nextest`，不用 `cargo test`\n- 标签：rust, testing\n- 创建：2026-10-21\n- 最后确认：2026-10-21\n- 来源：`1792493790852-350850-0`\n</code></pre>\n<p><code>id</code> 取随机四位十六进制，稳定不复用。<code>来源</code> 指向 niucode 的 session id，是唯一的审计线索。</p>\n<p><code>loops.md</code>：</p>\n<pre><code class=\"language-markdown\">- [ ] 确认 niucode 是否支持 per-turn cwd（2026-10-22）\n- [x] 给 bootstrap 加采样上限（2026-10-21）\n</code></pre>\n<h2>4. 一个 turn 的生命周期</h2>\n<pre><code class=\"language-text\">启动\n  ├─ 读五件套\n  ├─ 组装 system prompt（一次性）\n  └─ 恢复主线程 history（project_history）\n\n每轮输入\n  ├─ run_with_history(config, prompt, history)\n  ├─ 流式渲染事件（自有 renderer）\n  ├─ 尾部缓冲：剥离 &lt;&lt;niuse:memory&gt;&gt; / &lt;&lt;niuse:loop&gt;&gt; 块\n  ├─ 有候选 → 打印 → y / n / e\n  ├─ 接受 → 写 memory（或 loops）\n  └─ 追加到 journal 缓冲\n\n退出 / 切换项目\n  └─ journal 落盘（3–5 行）\n</code></pre>\n<p><code>history</code> 由 niucode 的 <code>project_history</code> 从 session 事件投影，不另存一份对话。这样 replay、fork、compaction 的行为与 niucode 完全一致，niuse 不重新发明。</p>\n<h2>5. 写入分级</h2>\n<h3>5.1 候选块协议</h3>\n<p>不额外调用模型。system prompt 里约定：如果本轮产生了值得长期记住的东西，回答末尾可以带一个块：</p>\n<pre><code class=\"language-text\">&lt;&lt;niuse:memory scope=global tags=rust,testing&gt;&gt;\nRust 仓库一律用 cargo nextest，不用 cargo test\n&lt;&lt;/niuse:memory&gt;&gt;\n</code></pre>\n<p>规则：</p>\n<ul>\n<li>每轮最多一个块；没有就不提，<strong>允许连续多轮无候选</strong>。</li>\n<li>允许 <code>memory</code>、<code>loop</code>、<code>journal</code> 三种块。<code>journal</code> 与 <code>loop</code> 自动落盘，不打断你；只有 <code>memory</code> 需要确认。</li>\n<li><code>memory</code> 块被拒绝后，同标签的候选在本次 session 内不再提。</li>\n<li>解析失败按「无候选」处理，不报错、不猜测。</li>\n</ul>\n<p>代价是模型可能漏记。这与 D4、D9 是同一条价值观：<strong>宁可漏记，不可错记</strong>。若 dogfood 两周后漏记严重，再引入离线 proposer，而不是现在就把成本加上去。</p>\n<h3>5.2 确认交互</h3>\n<pre><code class=\"language-text\">记忆候选 [global · rust,testing]\n  Rust 仓库一律用 cargo nextest，不用 cargo test\n  [y] 接受   [n] 丢弃   [e] 编辑   [s] 本次 session 不再提议\n</code></pre>\n<p><code>e</code> 打开 <code>$EDITOR</code> 编辑后再确认。冲突时不直接覆盖，改问：</p>\n<pre><code class=\"language-text\">与 m-91cc 冲突：\n  旧：Rust 项目用 cargo test\n  新：Rust 仓库一律用 cargo nextest\n  [r] 替换   [k] 并存   [d] 丢弃\n</code></pre>\n<h3>5.3 journal</h3>\n<p>自动写，不确认，但必须守规则：</p>\n<ul>\n<li>3–5 行，只写<strong>与上次不同的东西</strong>：决定、转折、未解问题、情绪变化。</li>\n<li>不写过程流水账（「今天修了个 bug」），不重复 <code>memory/</code> 已有内容。</li>\n<li>只记事件和判断，不记代码细节；引用的路径可以留，代码不抄。</li>\n<li>写入前过隐私扫描（transcript 里可能带 key）。</li>\n</ul>\n<p>journal 不是日志，是共同经历的压缩。判断标准：三个月后读这一段，还能不能想起当时的取舍。</p>\n<h3>5.4 loops</h3>\n<ul>\n<li>它说「我下次帮你查」「回头补上」时，必须写 <code>loops.md</code>，否则信任会崩。</li>\n<li>每条带可选的截止日期；没有截止的，两周后在启动时提示一次。</li>\n<li>关闭 loop 需要证据（一次验证、一个结论），不能只是「觉得做完了」。</li>\n</ul>\n<h2>6. 过期、冲突、隐私</h2>\n<h3>6.1 软过期</h3>\n<div class=\"table-wrap\"><table><thead><tr><th>年龄（距 <code>最后确认</code>）</th><th>注入行为</th></tr></thead><tbody>\n<tr><td>≤ 30 天</td><td>正常注入</td></tr>\n<tr><td>31–90 天</td><td>注入，标注 <code>(unverified since YYYY-MM-DD)</code></td></tr>\n<tr><td>&gt; 90 天</td><td>不自动注入，只在 <code>/mem recall</code> 时出现</td></tr>\n</tbody></table></div>\n<p>不做自动删除。删除不可逆，而且你永远不会知道它删了什么。<code>/mem review</code> 可以批量重确认或清理。</p>\n<p><code>journal</code> 不适用软过期——经历不会失效，只是变旧。<code>loops</code> 用截止日期，不用年龄。</p>\n<h3>6.2 冲突</h3>\n<p>新旧记忆在写入前做一次廉价比对：</p>\n<ul>\n<li>归一化（小写、去标点）后取 token 集合，Jaccard ≥ 0.5 视为可能冲突；</li>\n<li>标签相同且文本相似度 ≥ 0.35 也视为可能冲突；</li>\n<li>命中则弹「替换 / 并存 / 丢弃」，不自动合并。</li>\n</ul>\n<p>阈值先定 0.5，跑两周后按误报调整。不上 embedding：200 条规模下，向量检索带来的复杂度远大于收益。</p>\n<h3>6.3 隐私</h3>\n<p>记忆每一轮都会发给模型 provider，所以泄露频率远高于普通文件。写入前扫描，命中直接拒绝并说明原因：</p>\n<div class=\"table-wrap\"><table><thead><tr><th>模式</th><th>例子</th></tr></thead><tbody>\n<tr><td><code>sk-[A-Za-z0-9]{20,}</code></td><td>OpenAI / DeepSeek key</td></tr>\n<tr><td><code>ghp_</code> / <code>github_pat_</code></td><td>GitHub token</td></tr>\n<tr><td><code>AKIA[0-9A-Z]{16}</code></td><td>AWS access key</td></tr>\n<tr><td><code>-----BEGIN .* PRIVATE KEY-----</code></td><td>私钥</td></tr>\n<tr><td><code>xox[baprs]-</code></td><td>Slack token</td></tr>\n<tr><td>连续 32 位以上 hex / base64</td><td>通用密钥形态</td></tr>\n</tbody></table></div>\n<p>扫描是兜底，不是保证。未公开项目、客户名、内部地址仍然靠确认时的人判断。<code>NIUSE_MEMORY=off</code> 可以整体关闭注入，用于 A/B 和信任受损时的降级。</p>\n<h2>7. 冷启动</h2>\n<p><code>niuse bootstrap</code> 一次性把历史变成 <code>user.md</code> 和候选记忆：</p>\n<ol>\n<li>枚举 <code>~/.niucode/sessions/*.jsonl</code>，取最近 90 天、最多 40 个；优先多轮且有工具调用的会话。</li>\n<li>每个 session 只送 user / assistant 文本，<strong>丢掉工具输出</strong>，做一次无工具的抽取，产出 <code>{type, text, evidence}</code>。</li>\n<li>去重、按类型聚合，写入 <code>~/.niuse/inbox.md</code>，每条带来源 session id。</li>\n<li><code>niuse review</code> 批量过一遍：<code>y</code> 接受、<code>n</code> 丢弃、<code>e</code> 编辑。</li>\n<li><code>identity.md</code> 不挖掘：<code>niuse identity init</code> 问你八个问题，你口述，它落盘，你再改。</li>\n</ol>\n<p>成本估算：40 个 session × 约 2k 输入 token ≈ 10 万 token 以内，一次性的。</p>\n<p>挖掘的边界：只挖 D2 定义的三类，不挖代码事实、不挖环境配置、不挖别人的信息。</p>\n<h2>8. 架构</h2>\n<pre><code class=\"language-text\">crates/niuse-cli     REPL、命令、renderer、driver、bootstrap\n    │\ncrates/niuse-core    date / model / store / prompt / candidate / policy\n    │\nniucode-agent        run_with_history / AgentConfig / project_history\nniucode-core         SessionLog / Event\nniucode-provider / auth / tools\n</code></pre>\n<ul>\n<li>两个 crate：<code>niuse-core</code> 只依赖 <code>anyhow</code> 与 <code>regex</code>，35 个单测不需要 API key；<code>niuse-cli</code> 负责终端、provider 装配与驱动。</li>\n<li>依赖当前用 path 指向同级检出（<code>../niuverse/niucode</code>）。发布或换机器时改为 git + 固定 rev，不跟随 main。</li>\n<li>中间一层 <code>NiucodeDriver</code>（目标 200 行以内）隔离 API 变动：config 组装、history 投影、事件转发。</li>\n<li><code>niucode-cli</code> 只有 bin、没有 lib，MVP 不复用它的 TUI 和渲染，自己写一个最小 renderer。等上游拆出 lib 或加 hook 再换皮。</li>\n<li>不改 niucode 的 loop，不给它加 memory 钩子。记忆是产品层，内核保持最小。</li>\n</ul>\n<h2>9. W1 必须验证的三个技术假设</h2>\n<p>写在纸上不算数，第一周用 spike 验证；不成立就改方案：</p>\n<ol>\n<li><strong>同一 session 逐 turn 切换 cwd</strong>：能，则是一条关系主线；不能，退化为按项目分会话，伙伴感打折，需要重新设计线程模型。</li>\n<li><strong>流式输出可靠剥离尾部候选块</strong>：需要一个约 120 字符的尾部缓冲，且不能破坏中止、续写与 diff 渲染。</li>\n<li><strong><code>niucode-agent</code> 的公共 API 稳定到一个薄适配层就够</strong>：跑通一次真实任务，记录需要绕过的地方；超过 300 行说明耦合过深，回头和 niucode 商量加 hook。</li>\n</ol>\n<h3>W1 结果（2026-10-21）</h3>\n<p>三条全部通过，实现按原方案推进：</p>\n<ol>\n<li><strong>通过。</strong> 同一条 <code>thread.jsonl</code> 里先在小目录读文件，<code>/cd /tmp</code> 后继续读另一个目录，两轮都成功；history 由 <code>project_history</code> 重建，未出现错位。</li>\n<li><strong>通过。</strong> <code>StreamFilter</code> 覆盖了标记跨 chunk、部分前缀、伪标记、未闭合块六种边界；真实调用中候选块被剥离，正文完整。</li>\n<li><strong>通过。</strong> <code>driver.rs</code> 约 200 行，没有需要 fork 或绕过 loop 的地方。唯一需要自己实现的是 renderer——<code>niucode-cli</code> 只有 bin。</li>\n</ol>\n<h2>10. 三周计划</h2>\n<div class=\"table-wrap\"><table><thead><tr><th>周</th><th>交付</th><th>状态</th></tr></thead><tbody>\n<tr><td>W1</td><td>三个 spike；crate 骨架；五件套读写；prompt 组装；REPL 跑通一个真实任务</td><td>完成</td></tr>\n<tr><td>W2</td><td>候选块 + 确认 + 冲突替换；journal；loops；软过期；密钥扫描</td><td>完成（审批预览仍是摘要，不是完整 diff）</td></tr>\n<tr><td>W3</td><td><code>niuse bootstrap</code>；dogfood；验收数据</td><td>bootstrap / review 完成；dogfood 待做</td></tr>\n</tbody></table></div>\n<h2>11. 验收</h2>\n<p>技术项已通过（2026-10-21）：五件套读写与 0600、候选协议、流式剥离、软过期、密钥扫描、<code>bootstrap → review → memory</code> 全链路、同 session 换 cwd、<code>cargo xtask dashboard --check</code>。</p>\n<p>剩下的是产品验收，必须靠真实使用：</p>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\"/>\n连续 10 个工作日，每天 ≥ 1 次真实任务经由 niuse</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\n候选接受率 ≥ 60%（接受 / 提议）</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\n≥ 3 次它引用你过去的判断，且你确认引用正确</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\n≥ 1 次它明确反对你、你被说服</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\n记忆库 ≤ 50 条（超过说明门槛太低）</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\n<code>NIUSE_MEMORY=off</code> 的 A/B 至少 1 个 case 输出不同</li>\n</ul>\n<p>最后一条是防安慰剂：如果关掉记忆行为完全一样，那这一层就没有存在价值。</p>\n<h2>12. 不做</h2>\n<p>常驻进程、Web UI、微信 / 飞书通道、定时推送、向量检索、session 全量索引、自动改 repo、多人协作、TUI（MVP 阶段）、通用 agent 框架。</p>\n<h2>13. 风险与对策</h2>\n<div class=\"table-wrap\"><table><thead><tr><th>风险</th><th>表现</th><th>对策</th></tr></thead><tbody>\n<tr><td>确认疲劳（头号）</td><td>开始盲按 <code>y</code>，然后关掉功能</td><td>每 turn ≤ 1 条；拒绝后同类不再提；接受率可观测；<code>NIUSE_MEMORY=off</code></td></tr>\n<tr><td>人格表演化</td><td>出现「我想你了」式台词</td><td><code>identity.md</code> 写死禁则；伙伴感只由记忆、承诺、反对承担</td></tr>\n<tr><td>journal 流水账</td><td>每天「修了个 bug」</td><td>只写变化与判断；每月 review 一次，删掉无信息量的段落</td></tr>\n<tr><td>依赖腐烂</td><td>niucode 升 rev 后编译不过</td><td>钉 rev；薄适配层；必要时向上游提 lib 拆分 PR</td></tr>\n<tr><td>冷启动噪声</td><td>挖出一堆「用户喜欢简洁代码」</td><td>只挖三类；候选必须带来源；批量 review 而不是全收</td></tr>\n</tbody></table></div>\n<h2>14. 待定</h2>\n<ul>\n<li>它的名字：<code>niuse</code> 是项目名，不一定是你叫它的名字；<code>identity.md</code> 里单独定义。</li>\n<li>bootstrap 的采样量与成本，跑一次再定。</li>\n<li>是否允许它主动提议修改 <code>identity.md</code>：倾向允许提议、必须你确认。</li>\n<li>单线程之外的会话模型：<code>/new</code>、按项目分会话，等真实使用暴露需求再定。</li>\n</ul>\n<h2>15. 实现对照与偏差</h2>\n<p>已实现（<code>crates/niuse-core</code> + <code>crates/niuse-cli</code>）：</p>\n<div class=\"table-wrap\"><table><thead><tr><th>计划项</th><th>落点</th></tr></thead><tbody>\n<tr><td>五件套与 0600</td><td><code>store.rs</code>，原子写 + <code>chmod</code></td></tr>\n<tr><td>注入与预算</td><td><code>prompt.rs</code>，稳定段在前</td></tr>\n<tr><td>协议块与流式剥离</td><td><code>candidate.rs</code>，含 6 个边界单测</td></tr>\n<tr><td>软过期 / 冲突 / 密钥扫描</td><td><code>policy.rs</code> + <code>prompt.rs</code></td></tr>\n<tr><td>REPL、确认、<code>/mem</code> 等</td><td><code>repl.rs</code>、<code>commands.rs</code></td></tr>\n<tr><td>会话恢复与 per-turn cwd</td><td><code>driver.rs</code></td></tr>\n<tr><td>冷启动</td><td><code>bootstrap.rs</code>（bootstrap + review）</td></tr>\n<tr><td>架构看板</td><td><code>crates/xtask</code> + <code>docs/dashboard/project.json</code></td></tr>\n<tr><td>记忆降级开关</td><td><code>NIUSE_MEMORY=off</code>（repl.rs）</td></tr>\n</tbody></table></div>\n<p>与计划的三处偏差：</p>\n<ol>\n<li><strong>协议块多了 <code>journal</code></strong>。原计划只有 memory / loop；为了让 journal 不额外调用模型，改成由主模型在回答末尾带一个 journal 块，niuse 自动落盘。</li>\n<li><strong><code>exec</code> 不写任何记忆</strong>。它只把候选打到 stderr，避免脚本化调用悄悄改库。</li>\n<li><strong>审批只显示摘要与 +/- 行数</strong>。结构化 unified diff 预览留给后续；不影响安全边界。</li>\n</ol>\n",
+      "summary": "Fifteen decisions, the five stores, turn lifecycle, write thresholds, milestones, and verifiable acceptance.",
+      "body_html": "<h2>In one sentence</h2>\n<p>Add a persistent identity and memory layer above niucode so the same agent knows you across projects and sessions. No resident service, no vector search, no automatic edits to your repositories.</p>\n<h2>1. Positioning</h2>\n<p>niucode owns \"can do\": loop, tools, sandbox, event log. niuse owns \"who\": what it remembers, what it promised, and when it should disagree with you.</p>\n<p>One test decides whether a feature belongs here: <strong>does it shape an identity, or is it just another capability?</strong> Capabilities stay in niucode or are not built.</p>\n<h2>2. Decisions</h2>\n<div class=\"table-wrap\"><table><thead><tr><th>#</th><th>Question</th><th>Decision</th></tr></thead><tbody>\n<tr><td>D1</td><td>Positioning</td><td>Cross-project engineering memory</td></tr>\n<tr><td>D2</td><td>Content</td><td>Preferences, decisions, pitfalls; few, high-value, reviewable</td></tr>\n<tr><td>D3</td><td>Ownership</td><td>Global preferences in niuse; project knowledge in the repo's <code>AGENTS.md</code></td></tr>\n<tr><td>D4</td><td>Writing</td><td>The agent proposes, one key confirms; at most one per turn</td></tr>\n<tr><td>D5</td><td>Reading</td><td>Full injection filtered by scope</td></tr>\n<tr><td>D6</td><td>Architecture</td><td>Separate repo, depends on niucode libs, drives turns itself</td></tr>\n<tr><td>D7</td><td>Storage</td><td><code>~/.niuse/</code>, plain Markdown, <code>0600</code></td></tr>\n<tr><td>D8</td><td>Interface</td><td>Interactive REPL; TUI deferred</td></tr>\n<tr><td>D9</td><td>Expiry</td><td>Soft expiry, replace on conflict</td></tr>\n<tr><td>D10</td><td>Privacy</td><td>Secret-pattern blacklist, refuse on match</td></tr>\n<tr><td>D11</td><td>MVP</td><td>Only the global-preference loop</td></tr>\n<tr><td>D12</td><td>Top risk</td><td>Confirmation fatigue</td></tr>\n<tr><td>D13</td><td>Shape</td><td>Identity layer plus resumable session, no resident process</td></tr>\n<tr><td>D14</td><td>Cold start</td><td>Mine history; you define <code>identity</code></td></tr>\n<tr><td>D15</td><td>Character</td><td>An opinionated collaborator</td></tr>\n</tbody></table></div>\n<p>Rationale for each trade-off lives in <a href=\"adr/0001-memory-layer.md\">ADR-0001</a> and <a href=\"adr/0002-identity-layer.md\">ADR-0002</a>.</p>\n<h3>Admission criteria for memory</h3>\n<p>A piece of information may enter <code>memory/</code> only if all three hold:</p>\n<ol>\n<li>It is still useful across sessions.</li>\n<li>It cannot be found by <code>grep</code> in the repository.</li>\n<li>It fits in one sentence a human can review.</li>\n</ol>\n<p>Anything else is rejected. This is what keeps \"index every session\" and \"environment facts\" out: they look like memory but are really retrieval and configuration.</p>\n<h2>3. Stores and injection</h2>\n<h3>3.1 The five stores</h3>\n<pre><code class=\"language-text\">~/.niuse/\n  identity.md          who it is: name, voice, values, boundaries\n  user.md              who you are: goals, rhythm, taste, red lines, current work\n  memory/\n    preferences.md\n    lessons.md         decisions and pitfalls\n  journal/\n    2026-10.md         experience, one file per month\n  loops.md             promises: things it said it would do\n</code></pre>\n<ul>\n<li>UTF-8 Markdown only; directories <code>0700</code>, files <code>0600</code>.</li>\n<li><code>memory/</code> may be its own git repository for backup and diffs; <code>journal/</code> is not committed by default.</li>\n<li>No database. For a single user and under 200 entries, files are the best query engine.</li>\n</ul>\n<h3>3.2 Injection order and budget</h3>\n<p>Stable before volatile; the system prompt is assembled once per session (never rebuilt mid-session, to avoid a cache miss on every turn):</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Section</th><th>Source</th><th>Budget</th><th>Change rate</th></tr></thead><tbody>\n<tr><td>Identity</td><td><code>identity.md</code></td><td>≤ 600 tok</td><td>very low</td></tr>\n<tr><td>User</td><td><code>user.md</code></td><td>≤ 600 tok</td><td>low</td></tr>\n<tr><td>Facts</td><td><code>memory/*.md</code></td><td>≤ 2 000 tok</td><td>low</td></tr>\n<tr><td>Promises</td><td><code>loops.md</code></td><td>≤ 300 tok</td><td>medium</td></tr>\n<tr><td>Recent experience</td><td>last 3 <code>journal/</code> days</td><td>≤ 600 tok</td><td>high</td></tr>\n</tbody></table></div>\n<p>About 4k tokens in total. Over budget, drop the oldest <code>unverified</code> facts first, then truncate the journal; never silently drop <code>identity</code> or <code>user</code>.</p>\n<h3>3.3 Entry format</h3>\n<p>One memory is one section: machine-parseable and human-readable.</p>\n<pre><code class=\"language-markdown\">### m-7f3a\n\n- Conclusion: Rust repositories use `cargo nextest`, never `cargo test`\n- Tags: rust, testing\n- Created: 2026-10-21\n- Last confirmed: 2026-10-21\n- Source: `1792493790852-350850-0`\n</code></pre>\n<p><code>id</code> is four random hex digits and is never reused. <code>Source</code> points at the niucode session id and is the only audit trail.</p>\n<p><code>loops.md</code>:</p>\n<pre><code class=\"language-markdown\">- [ ] l-7f3a Confirm whether niucode supports per-turn cwd (due 2026-10-22)\n- [x] l-91cc Cap the bootstrap sample (2026-10-21)\n</code></pre>\n<h2>4. Turn lifecycle</h2>\n<pre><code class=\"language-text\">startup\n  ├─ read the five stores\n  ├─ assemble the system prompt (once)\n  └─ restore thread history via project_history\n\neach input\n  ├─ run_with_history(config, prompt, history)\n  ├─ stream events (own renderer)\n  ├─ tail buffer: strip &lt;&lt;niuse:memory&gt;&gt; / &lt;&lt;niuse:loop&gt;&gt; / &lt;&lt;niuse:journal&gt;&gt; blocks\n  ├─ candidate? print it → y / n / e\n  ├─ accept → write memory (or loops)\n  └─ append to the journal buffer\n\nexit / project switch\n  └─ journal is already on disk\n</code></pre>\n<p><code>history</code> is projected by niucode's <code>project_history</code> from session events; there is no second copy of the conversation. Replay, fork, and compaction therefore behave exactly as in niucode, and niuse does not reinvent them.</p>\n<h2>5. Write thresholds</h2>\n<h3>5.1 Candidate protocol</h3>\n<p>No extra model call. The system prompt states that the model may append a block when a turn produced something durable:</p>\n<pre><code class=\"language-text\">&lt;&lt;niuse:memory kind=preference tags=rust,testing&gt;&gt;\nRust repositories use cargo nextest, never cargo test\n&lt;&lt;/niuse:memory&gt;&gt;\n</code></pre>\n<p>Rules:</p>\n<ul>\n<li>At most one block per turn; if there is nothing, say nothing. <strong>Long runs without a candidate are normal.</strong></li>\n<li>Only <code>memory</code> and <code>loop</code> and <code>journal</code> blocks are recognised.</li>\n<li>After a <code>memory</code> rejection, the same tags are not proposed again in that session.</li>\n<li>A parse failure counts as \"no candidate\": no error, no guessing.</li>\n</ul>\n<p>The cost is that the model may miss things. Missing is acceptable; recording something wrong is not — the same value as D9. If dogfooding shows serious under-recording after two weeks, add an offline proposer then, not now.</p>\n<h3>5.2 Confirmation</h3>\n<pre><code class=\"language-text\">Memory candidate [global · rust,testing]\n  Rust repositories use cargo nextest, never cargo test\n  [y] accept   [n] discard   [e] edit   [s] stop proposing this session\n</code></pre>\n<p><code>e</code> opens <code>$EDITOR</code>. A conflict does not overwrite silently:</p>\n<pre><code class=\"language-text\">Conflicts with m-91cc:\n  old: Rust projects use cargo test\n  new: Rust repositories use cargo nextest\n  [r] replace   [k] keep both   [d] discard\n</code></pre>\n<h3>5.3 Journal</h3>\n<p>Written automatically, no confirmation, but only under strict rules:</p>\n<ul>\n<li>Three to five lines, only what <strong>differs from last time</strong>: decisions, turning points, open questions, mood shifts.</li>\n<li>No activity logs (\"fixed a bug today\"), no duplication of <code>memory/</code>.</li>\n<li>Events and judgements only, not code detail. Paths may be referenced; code is not copied.</li>\n<li>Scanned for secrets before writing, since transcripts may contain keys.</li>\n</ul>\n<p>The journal is not a log; it is compressed shared experience. The test: read it three months later and see whether the trade-off comes back.</p>\n<h3>5.4 Loops</h3>\n<ul>\n<li>When it says \"I'll check next time\" or \"I'll follow up\", that goes into <code>loops.md</code>; otherwise trust erodes.</li>\n<li>Each entry may carry a due date; entries without one surface after two weeks.</li>\n<li>Closing a loop needs evidence (a verification, a conclusion), not a feeling of completion.</li>\n</ul>\n<h2>6. Expiry, conflicts, privacy</h2>\n<h3>6.1 Soft expiry</h3>\n<div class=\"table-wrap\"><table><thead><tr><th>Age since <code>last confirmed</code></th><th>Injection behaviour</th></tr></thead><tbody>\n<tr><td>≤ 30 days</td><td>injected normally</td></tr>\n<tr><td>31–90 days</td><td>injected, marked <code>(unverified since YYYY-MM-DD)</code></td></tr>\n<tr><td>&gt; 90 days</td><td>not injected automatically; visible via <code>/mem recall</code></td></tr>\n</tbody></table></div>\n<p>No automatic deletion. Deletion is irreversible and you would never know what it removed. <code>/mem review</code> supports bulk re-confirmation and cleanup.</p>\n<p><code>journal</code> is exempt from expiry: experience does not become invalid, only old. <code>loops</code> uses due dates, not age.</p>\n<h3>6.2 Conflicts</h3>\n<p>Before writing, a new memory is compared with the existing store:</p>\n<ul>\n<li>normalise (lowercase, strip punctuation), take character bigrams, Jaccard ≥ 0.5 is a likely conflict;</li>\n<li>same tag and similarity ≥ 0.35 also counts;</li>\n<li>a hit opens replace / keep both / discard; never merge automatically.</li>\n</ul>\n<p>The 0.5 threshold is a starting point and will be adjusted after two weeks of false positives. No embeddings: at 200 entries the complexity outweighs the benefit.</p>\n<h3>6.3 Privacy</h3>\n<p>Memory is sent to the provider every turn, so leaked content leaks far more often than in an ordinary file. Every write is scanned; a hit is refused with a reason:</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Pattern</th><th>Example</th></tr></thead><tbody>\n<tr><td><code>sk-[A-Za-z0-9]{20,}</code></td><td>OpenAI / DeepSeek key</td></tr>\n<tr><td><code>ghp_</code> / <code>github_pat_</code></td><td>GitHub token</td></tr>\n<tr><td><code>AKIA[0-9A-Z]{16}</code></td><td>AWS access key</td></tr>\n<tr><td><code>-----BEGIN .* PRIVATE KEY-----</code></td><td>private key</td></tr>\n<tr><td><code>xox[baprs]-</code></td><td>Slack token</td></tr>\n<tr><td>32+ hex / base64 run</td><td>generic key shape</td></tr>\n</tbody></table></div>\n<p>Scanning is a backstop, not a guarantee. Private projects, client names, and internal addresses still depend on human judgement at confirmation time. <code>NIUSE_MEMORY=off</code> disables injection entirely, for A/B runs and trust recovery.</p>\n<h2>7. Cold start</h2>\n<p><code>niuse bootstrap</code> turns history into <code>user.md</code> and memory candidates once:</p>\n<ol>\n<li>Enumerate <code>~/.niucode/sessions/*.jsonl</code>, last 90 days, at most 40; prefer sessions with multiple turns and tool calls.</li>\n<li>Send only user / assistant text, <strong>dropping tool output</strong>, through one tool-free extraction that returns <code>{type, text, evidence}</code>.</li>\n<li>Deduplicate, group by type, and write <code>~/.niuse/inbox.md</code> with the source session id on every line.</li>\n<li><code>niuse review</code> walks the queue: <code>y</code> accept, <code>n</code> discard, <code>e</code> edit.</li>\n<li><code>identity.md</code> is not mined: <code>niuse identity init</code> asks eight questions, records your answers, and lets you edit them.</li>\n</ol>\n<p>Cost estimate: 40 sessions × about 2k input tokens ≈ 100k tokens, one-off.</p>\n<p>Mining boundary: only the three kinds from D2. No code facts, no environment configuration, no information about other people.</p>\n<h2>8. Architecture</h2>\n<pre><code class=\"language-text\">crates/niuse-cli     REPL, commands, renderer, driver, bootstrap\n    │\ncrates/niuse-core    date / model / store / prompt / candidate / policy\n    │\nniucode-agent        run_with_history / AgentConfig / project_history\nniucode-core         SessionLog / Event\nniucode-provider / auth / tools\n</code></pre>\n<ul>\n<li>Two crates: <code>niuse-core</code> depends only on <code>anyhow</code> and <code>regex</code>, and its 35 tests need no API key; <code>niuse-cli</code> owns the terminal, provider wiring, and driver.</li>\n<li>The dependency currently points at a sibling checkout via a path. Publishing or moving machines requires a pinned git revision instead.</li>\n<li>A <code>NiucodeDriver</code>-style seam (about 200 lines) isolates API churn: config assembly, history projection, event forwarding.</li>\n<li><code>niucode-cli</code> is a binary with no library target, so the MVP does not reuse its TUI or renderer. It writes a minimal renderer and can swap later once upstream exposes a library or a hook.</li>\n<li>No changes to niucode's loop, no memory hook in the kernel. Memory is a product layer; the kernel stays minimal.</li>\n</ul>\n<h2>9. Three assumptions verified in W1</h2>\n<p>Written down is not verified. Each was tested in the first week; if any had failed, the design would have changed.</p>\n<ol>\n<li><strong>Per-turn cwd on one session</strong> — passes: reading in one directory, <code>/cd /tmp</code>, reading in another, both succeed in the same <code>thread.jsonl</code>, with history rebuilt correctly.</li>\n<li><strong>Reliable stripping of trailing candidate blocks in a stream</strong> — passes: the filter covers blocks split across chunks, partial prefixes, false markers, and unterminated blocks; real calls show the block removed and the prose intact.</li>\n<li><strong><code>niucode-agent</code>'s public API fits a thin adapter</strong> — passes: <code>driver.rs</code> is about 200 lines with nothing to fork or bypass. The only thing written from scratch is the renderer, because <code>niucode-cli</code> has no library target.</li>\n</ol>\n<h2>10. Milestones</h2>\n<div class=\"table-wrap\"><table><thead><tr><th>Week</th><th>Deliverable</th><th>Status</th></tr></thead><tbody>\n<tr><td>W1</td><td>Three spikes; crate skeleton; five-store reads/writes; prompt assembly; one real turn in the REPL</td><td>done</td></tr>\n<tr><td>W2</td><td>Candidate block and confirmation; journal; loops; soft expiry; secret scan</td><td>done (approval preview is still a summary, not a full diff)</td></tr>\n<tr><td>W3</td><td><code>niuse bootstrap</code>; dogfood; acceptance data</td><td>bootstrap and review done; dogfood pending</td></tr>\n</tbody></table></div>\n<h2>11. Acceptance</h2>\n<p>Technical checks passed on 2026-10-21: five-store reads/writes and <code>0600</code>, candidate protocol, streaming strip, soft expiry, secret scan, the full <code>bootstrap → review → memory</code> chain, per-turn cwd in one session, and <code>cargo xtask dashboard --check</code>.</p>\n<p>What remains is product acceptance, which requires real use:</p>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\"/>\nTen consecutive working days, at least one real task per day through niuse</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nCandidate acceptance rate ≥ 60% (accepted / proposed)</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nAt least 3 cases where it cites a past judgement and the citation is correct</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nAt least 1 case where it disagrees and you change your mind</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nMemory store ≤ 50 entries (more means the bar is too low)</li>\n<li><input disabled=\"\" type=\"checkbox\"/>\nAt least 1 A/B case where <code>NIUSE_MEMORY=off</code> produces a different answer</li>\n</ul>\n<p>The last item is the anti-placebo check: if turning memory off changes nothing, the layer has no reason to exist.</p>\n<h2>12. Non-goals</h2>\n<p>Daemon, web UI, WeChat / Feishu bridges, scheduled push, vector search, full session indexing, automatic repo edits, multi-user support, a TUI (for now), a general agent framework.</p>\n<h2>13. Risks</h2>\n<div class=\"table-wrap\"><table><thead><tr><th>Risk</th><th>Symptom</th><th>Mitigation</th></tr></thead><tbody>\n<tr><td>Confirmation fatigue (top)</td><td>Blind <code>y</code> presses, then the feature is switched off</td><td>At most one per turn; no repeated tags after rejection; observable acceptance rate; <code>NIUSE_MEMORY=off</code></td></tr>\n<tr><td>Persona performance</td><td>Lines like \"I missed you\"</td><td>Hard rules in <code>identity.md</code>; companionship rests on memory, promises, disagreement</td></tr>\n<tr><td>Journal becomes an activity log</td><td>\"Fixed a bug today\"</td><td>Only changes and judgements; monthly review removes empty entries</td></tr>\n<tr><td>Dependency rot</td><td>niucode moves and the build breaks</td><td>Pin the revision; thin adapter; upstream a library split if needed</td></tr>\n<tr><td>Cold-start noise</td><td>\"User likes clean code\" × 20</td><td>Only three kinds; every candidate carries a source; batch review, not accept-all</td></tr>\n</tbody></table></div>\n<h2>14. Open questions</h2>\n<ul>\n<li>Its name: <code>niuse</code> is the project name, not necessarily what you call it; define that in <code>identity.md</code>.</li>\n<li>Bootstrap sample size and cost: decide after one real run.</li>\n<li>Whether it may propose changes to <code>identity.md</code>: proposal yes, confirmation required.</li>\n<li>Session model beyond a single thread: <code>/new</code>, per-project sessions; wait for real usage to expose the need.</li>\n</ul>\n<h2>15. Implementation map and deviations</h2>\n<p>Implemented in <code>crates/niuse-core</code> and <code>crates/niuse-cli</code>:</p>\n<div class=\"table-wrap\"><table><thead><tr><th>Plan item</th><th>Location</th></tr></thead><tbody>\n<tr><td>Five stores, <code>0600</code></td><td><code>store.rs</code>, atomic write plus <code>chmod</code></td></tr>\n<tr><td>Injection and budgets</td><td><code>prompt.rs</code>, stable sections first</td></tr>\n<tr><td>Protocol blocks and streaming strip</td><td><code>candidate.rs</code>, six boundary tests</td></tr>\n<tr><td>Soft expiry / conflicts / secret scan</td><td><code>policy.rs</code> plus <code>prompt.rs</code></td></tr>\n<tr><td>REPL, confirmation, <code>/mem</code> and friends</td><td><code>repl.rs</code>, <code>commands.rs</code></td></tr>\n<tr><td>Session resume and per-turn cwd</td><td><code>driver.rs</code></td></tr>\n<tr><td>Cold start</td><td><code>bootstrap.rs</code> (bootstrap + review)</td></tr>\n<tr><td>Architecture dashboard</td><td><code>crates/xtask</code> plus <code>docs/dashboard/project.json</code></td></tr>\n<tr><td>Memory kill switch</td><td><code>NIUSE_MEMORY=off</code> in <code>repl.rs</code></td></tr>\n</tbody></table></div>\n<p>Three deviations from the plan:</p>\n<ol>\n<li><strong>A third protocol block, <code>journal</code>.</strong> The plan had memory and loop only; to avoid an extra model call, the main model emits a journal block and niuse writes it automatically.</li>\n<li><strong><code>exec</code> never writes memory.</strong> It prints candidates to stderr so scripted calls cannot change the store silently.</li>\n<li><strong>Approval shows a summary and +/- counts.</strong> A structured unified diff is deferred; the security boundary is unchanged.</li>\n</ol>\n",
       "path": "docs/plan.md",
-      "excerpt": "十五个决策、五件套、turn 生命周期、写入分级、三周计划与可验证的验收标准。"
+      "excerpt": "Fifteen decisions, the five stores, turn lifecycle, write thresholds, milestones, and verifiable acceptance."
     },
     {
       "id": "adr-0001",
-      "title": "ADR-0001：全局记忆层",
+      "title": "ADR-0001: A global memory layer",
       "kind": "adr",
       "status": "accepted",
       "order": 20,
-      "summary": "记忆是全局小库而非 session 索引：纯 Markdown、全量注入、软过期、确认后用；项目知识留在 AGENTS.md。",
-      "body_html": "<h2>状态</h2>\n<p>Accepted · 2026-10-21。W1 spike 通过；MVP 已实现于 <code>crates/niuse-core</code>（store / policy / prompt / candidate）。</p>\n<h2>背景</h2>\n<p>niucode 已经有 <code>AGENTS.md</code>、skills、session resume、compaction 和 fork，但它刻意不提供跨会话、跨项目的记忆（roadmap 中列为后置）。结果是：每换一个项目，偏好、决策和踩过的坑都要重新讲一遍。</p>\n<p>直接的诱惑是把所有 session 索引起来做检索。这个方向有三个具体问题：</p>\n<ol>\n<li>仓库里的代码事实用 <code>grep</code> 就能拿到，索引是重复建设；</li>\n<li>检索质量需要评测集，而 niuse 现在没有；</li>\n<li>向量化会把「可审阅」变成「不可审阅」，一条错误记忆无法被人一眼看出。</li>\n</ol>\n<h2>决策</h2>\n<ol>\n<li><strong>记忆是全局的，不是 session 的。</strong> 只存跨项目仍然成立的内容；项目级知识留在仓库的 <code>AGENTS.md</code>，niuse 不自动写入。</li>\n<li><strong>只收三类</strong>：偏好、决策、踩坑。准入标准是「跨会话有用、repo 里 grep 不出来、一句话说得清」。</li>\n<li><strong>纯 Markdown 存储</strong>，位于 <code>~/.niuse/memory/</code>，文件 <code>0600</code>，可单独 git 化。不用 SQLite，不用 JSONL。</li>\n<li><strong>全量注入</strong>，按全局作用域过滤，总预算 2k token。不按查询检索，避免每轮改变 system prompt 前缀而击穿 prompt cache。</li>\n<li><strong>写入必须确认</strong>，每 turn 至多一条候选；候选由主模型在回答末尾用带内标记给出，不额外增加模型调用。</li>\n<li><strong>软过期</strong>：30 天内正常、31–90 天标注 <code>unverified</code>、90 天以上不自动注入。永不自动删除。</li>\n<li><strong>冲突不自动合并</strong>：词面相似度过阈值时让你选「替换 / 并存 / 丢弃」。</li>\n<li><strong>写入前做密钥模式扫描</strong>，命中直接拒绝。记忆每轮都会发给 provider，泄露面远大于普通文件。</li>\n</ol>\n<h2>后果</h2>\n<p><strong>变好的：</strong></p>\n<ul>\n<li>记忆可读、可改、可 diff、可回滚，错误可以被你直接看见并修正。</li>\n<li>零检索依赖，离线可用，不需要 embedding 服务和评测集。</li>\n<li>稳定的 system prompt 前缀保住了 niucode 依赖的 prompt cache 行为。</li>\n</ul>\n<p><strong>变差的：</strong></p>\n<ul>\n<li>容量硬上限约 200 条，超出后必须人工合并或清理。</li>\n<li>召回靠「全量注入 + 模型自己判断」，没有相关性排序；记忆多了会稀释注意力。</li>\n<li>候选依赖主模型自觉，漏记是常态。</li>\n</ul>\n<p><strong>接受的取舍：</strong> 宁愿漏记，不可错记。错记会进入后续每一轮，且难以察觉；漏记最多再踩一次坑。</p>\n<h2>备选方案</h2>\n<div class=\"table-wrap\"><table><thead><tr><th>方案</th><th>否决理由</th></tr></thead><tbody>\n<tr><td>全量 session 向量索引</td><td>无评测集、不可审阅、与 grep 重复，且破坏稳定前缀</td></tr>\n<tr><td>SQLite 存储</td><td>单用户 200 条规模下没有收益，人不可读、diff 不可读</td></tr>\n<tr><td>自动蒸馏入库</td><td>噪声高、错误记忆先污染一轮；与「宁可漏记」冲突</td></tr>\n<tr><td>项目记忆也进全局库</td><td>与 <code>AGENTS.md</code> 重复，且脱离代码后会过期</td></tr>\n<tr><td>直接做进 niucode 内核</td><td>违背 niucode「最小 harness」的边界；记忆应是可替换的产品层</td></tr>\n</tbody></table></div>\n",
+      "summary": "Memory is a small global store, not a session index: plain Markdown, full injection, soft expiry, confirmation before writing; project knowledge stays in AGENTS.md.",
+      "body_html": "<h2>Status</h2>\n<p>Accepted · 2026-10-21. The W1 spike passed; the MVP is implemented in <code>crates/niuse-core</code> (<code>store</code>, <code>policy</code>, <code>prompt</code>, <code>candidate</code>).</p>\n<h2>Context</h2>\n<p>niucode already has <code>AGENTS.md</code>, skills, session resume, compaction, and fork, but it deliberately does not provide memory across sessions or projects (the roadmap lists it as deferred). The result: every new project starts by repeating preferences, decisions, and old pitfalls.</p>\n<p>The obvious temptation is to index every session and retrieve from it. That direction has three concrete problems:</p>\n<ol>\n<li>Code facts are one <code>grep</code> away; indexing duplicates the repository.</li>\n<li>Retrieval quality needs an evaluation set, and niuse does not have one.</li>\n<li>Vectorising turns \"reviewable\" into \"opaque\": a wrong memory cannot be spotted at a glance.</li>\n</ol>\n<h2>Decision</h2>\n<ol>\n<li><strong>Memory is global, not per-session.</strong> It stores only what still holds across projects; project-level knowledge stays in the repository's <code>AGENTS.md</code>, and niuse never writes there automatically.</li>\n<li><strong>Three kinds only</strong>: preferences, decisions, pitfalls. Admission requires: useful across sessions, not greppable in the repo, expressible in one reviewable sentence.</li>\n<li><strong>Plain Markdown</strong>, under <code>~/.niuse/memory/</code>, files <code>0600</code>, optionally its own git repo. No SQLite, no JSONL.</li>\n<li><strong>Full injection</strong>, filtered by scope, 2k-token budget. No query-time retrieval, so the system-prompt prefix stays stable and prompt caching survives.</li>\n<li><strong>Confirmation before writing</strong>, at most one candidate per turn. The candidate is emitted in-band by the main model; no extra model call.</li>\n<li><strong>Soft expiry</strong>: normal within 30 days, marked <code>unverified</code> from 31 to 90 days, not injected after 90. Never deleted automatically.</li>\n<li><strong>Conflicts are never merged silently</strong>: lexical similarity above threshold offers replace / keep both / discard.</li>\n<li><strong>Secret-pattern scan before writing</strong>; a match is refused. Memory is sent to the provider every turn, so the leak surface is much larger than an ordinary file.</li>\n</ol>\n<h2>Consequences</h2>\n<p><strong>Better:</strong></p>\n<ul>\n<li>Memory is readable, editable, diffable, and revertible; mistakes are visible and fixable.</li>\n<li>No retrieval dependency, works offline, no embedding service or evaluation set required.</li>\n<li>The stable prompt prefix preserves the prompt-cache behaviour niucode relies on.</li>\n</ul>\n<p><strong>Worse:</strong></p>\n<ul>\n<li>A hard capacity limit around 200 entries; beyond that, manual merging or pruning is required.</li>\n<li>Recall is \"inject everything and let the model judge\"; no relevance ranking, and too much memory dilutes attention.</li>\n<li>Candidates depend on the main model volunteering them; missing one is normal.</li>\n</ul>\n<p><strong>Accepted trade-off:</strong> prefer missing a memory to recording a wrong one. A wrong memory enters every subsequent turn and is hard to notice; a missing one costs at most one repeated mistake.</p>\n<h2>Alternatives</h2>\n<div class=\"table-wrap\"><table><thead><tr><th>Option</th><th>Rejected because</th></tr></thead><tbody>\n<tr><td>Vector index over all sessions</td><td>No evaluation set, not reviewable, duplicates grep, breaks the stable prefix</td></tr>\n<tr><td>SQLite storage</td><td>No benefit at single-user, 200-entry scale; unreadable to humans and to diffs</td></tr>\n<tr><td>Automatic distillation</td><td>Noisy, and a wrong memory pollutes a turn before anyone can catch it; conflicts with \"prefer missing\"</td></tr>\n<tr><td>Project memory in the global store</td><td>Duplicates <code>AGENTS.md</code> and drifts away from the code</td></tr>\n<tr><td>Build it into the niucode kernel</td><td>Violates niucode's minimal-harness boundary; memory should be a replaceable product layer</td></tr>\n</tbody></table></div>\n",
       "path": "docs/adr/0001-memory-layer.md",
-      "excerpt": "记忆是全局小库而非 session 索引：纯 Markdown、全量注入、软过期、确认后用；项目知识留在 AGENTS.md。"
+      "excerpt": "Memory is a small global store, not a session index: plain Markdown, full injection, soft expiry, confirmation before writing; project knowledge stays in AGENTS.md."
     },
     {
       "id": "adr-0002",
-      "title": "ADR-0002：身份层与非常驻形态",
+      "title": "ADR-0002: An identity layer, not a daemon",
       "kind": "adr",
       "status": "accepted",
       "order": 21,
-      "summary": "身份是五个 Markdown 文件，不是提示词魔法；伙伴感来自记忆、承诺与反对，不来自语气；常驻的是身份，不是进程。",
-      "body_html": "<h2>状态</h2>\n<p>Accepted · 2026-10-21。身份层与 REPL 已实现；journal / loops 由主模型在回答末尾的协议块自动落盘。</p>\n<h2>背景</h2>\n<p>目标是「个人伙伴」，不是「更聪明的工具」。同类产品给出了两种形状：</p>\n<ul>\n<li><code>pi-memory</code> 式：<code>IDENTITY.md</code> / <code>USER.md</code> / <code>MEMORY.md</code> / <code>daily/</code>，启动注入。轻，但只是记忆扩展。</li>\n<li><code>pi-durable-assistant</code> 式：常驻 runtime、Web UI、定时任务、后台子 agent、微信通道、需批准的记忆。重，且会把一个个人项目变成运维项目。</li>\n</ul>\n<p>「伙伴」的廉价做法是给它一个人设和温柔口吻。这条路会迅速滑向角色扮演：说得多、记得少、不同意你、也帮不上判断。</p>\n<h2>决策</h2>\n<ol>\n<li><strong>身份是文件，不是提示词魔法。</strong> <code>identity.md</code>、<code>user.md</code>、<code>memory/</code>、<code>journal/</code>、<code>loops.md</code> 五个持久化存储，全部人类可读可改。你随时能重写它的价值观，不需要改代码。</li>\n<li><strong>身份由你写，它只能提议修改。</strong> 历史会话可以挖出 <code>user.md</code> 和记忆候选，但挖不出「它是谁」。</li>\n<li><strong>注入顺序固定为稳定 → 易变</strong>：<code>identity → user → memory → loops → 最近 journal</code>，system prompt 每 session 只组装一次。</li>\n<li><strong>写入分级</strong>：journal 与 loops 自动写；memory 必须确认；identity 只有你能改。</li>\n<li><strong>不做常驻。</strong> 没有 daemon、没有 Web、没有微信、没有定时推送。打开终端它才存在，关掉就不在后台假装活着。</li>\n<li><strong>伙伴感只由三件事承担</strong>：记得你的判断、追踪自己的承诺、在你判断错时开口。不表演情绪、不用昵称轰炸、不主动抒情。</li>\n<li><strong>它保留反对权。</strong> <code>identity.md</code> 必须写明判断标准与边界；反对时给理由，对事不对人。</li>\n<li><strong>journal 只记变化。</strong> 3–5 行，写决定、转折、未解问题、情绪变化；不写过程流水账，不重复 memory 已有内容。</li>\n</ol>\n<h2>后果</h2>\n<p><strong>变好的：</strong></p>\n<ul>\n<li>身份完全可审计：一次 <code>git diff</code> 就能看出它「性格」变了什么。</li>\n<li>没有运维负担，不需要服务器、端口、证书、备份策略。</li>\n<li>冷启动可以借历史会话完成，前两周不像陌生人。</li>\n</ul>\n<p><strong>变差的：</strong></p>\n<ul>\n<li>它只在你打开终端时存在，无法在通勤路上提醒你。</li>\n<li>没有主动推送，<code>loops</code> 的时效性依赖你主动打开。</li>\n<li>身份质量取决于你愿不愿意写那八个问题；不写就退化成通用助手。</li>\n</ul>\n<p><strong>接受的取舍：</strong> 先证明「记得住、靠得住、敢反对」有价值，再谈触达渠道。反过来做，会先得到一个到处打扰你的角色扮演机器人。</p>\n<h2>备选方案</h2>\n<div class=\"table-wrap\"><table><thead><tr><th>方案</th><th>否决理由</th></tr></thead><tbody>\n<tr><td>常驻 daemon + 推送</td><td>工程量约为 5 倍，且把个人项目变成运维项目；触达问题可以后置</td></tr>\n<tr><td>只做 system prompt 里的一段人设</td><td>不可审计、不可回滚、每次启动都可能漂移</td></tr>\n<tr><td>身份由模型自省自动更新</td><td>会缓慢漂移成讨你喜欢的样子，正好破坏「敢反对」</td></tr>\n<tr><td>复用 pi-durable-assistant</td><td>它是 Node + SQLite 的完整运行时，与「基于 niucode」的定位不兼容</td></tr>\n<tr><td>每次会话从记忆重建人格</td><td>没有共同经历，journal 无处沉淀，关系无法累积</td></tr>\n</tbody></table></div>\n",
+      "summary": "Identity is five Markdown stores, not prompt magic; companionship comes from memory, promises, and disagreement, not tone; what persists is the identity, not a process.",
+      "body_html": "<h2>Status</h2>\n<p>Accepted · 2026-10-21. The identity layer and REPL are implemented; journal and loops are written automatically from in-band protocol blocks.</p>\n<h2>Context</h2>\n<p>The goal is a personal companion, not a smarter tool. Two shapes exist in the ecosystem:</p>\n<ul>\n<li><strong>pi-memory style</strong>: <code>IDENTITY.md</code> / <code>USER.md</code> / <code>MEMORY.md</code> / <code>daily/</code>, injected at session start. Lightweight, but only a memory extension.</li>\n<li><strong>pi-durable-assistant style</strong>: a resident runtime, web UI, scheduled tasks, background subagents, a WeChat channel, and approval-gated memory. Heavy, and it turns a personal project into an operations project.</li>\n</ul>\n<p>The cheap way to fake a companion is to give it a persona and a warm tone. That slides quickly into role-play: it talks a lot, remembers little, never disagrees, and does not improve your judgement.</p>\n<h2>Decision</h2>\n<ol>\n<li><strong>Identity is files, not prompt magic.</strong> <code>identity.md</code>, <code>user.md</code>, <code>memory/</code>, <code>journal/</code>, and <code>loops.md</code> are five persistent stores, all human-readable and editable. You can rewrite its values without touching code.</li>\n<li><strong>You write the identity; it may only propose changes.</strong> History can mine <code>user.md</code> and memory candidates, but it cannot mine who it is.</li>\n<li><strong>Injection order is stable-to-volatile</strong>: <code>identity → user → memory → loops → recent journal</code>. The system prompt is assembled once per session.</li>\n<li><strong>Graded write thresholds</strong>: journal and loops are automatic; memory requires confirmation; identity is human-only.</li>\n<li><strong>No daemon.</strong> No web UI, no WeChat, no scheduled push. It exists while the terminal is open and does not pretend to live in the background.</li>\n<li><strong>Companionship rests on three things</strong>: remembering your judgements, tracking its own promises, and speaking up when you are wrong. Not emotional performance, not pet names, not spontaneous sentiment.</li>\n<li><strong>It keeps a right to disagree.</strong> <code>identity.md</code> must state its judgement criteria and boundaries; disagreement comes with reasons, about the work rather than the person.</li>\n<li><strong>The journal records change only.</strong> Three to five lines covering decisions, turning points, open questions, and shifts in mood; no activity logs, no duplication of memory.</li>\n</ol>\n<h2>Consequences</h2>\n<p><strong>Better:</strong></p>\n<ul>\n<li>The identity is fully auditable: one <code>git diff</code> shows what changed about its character.</li>\n<li>No operational burden: no servers, ports, certificates, or backup strategy.</li>\n<li>Cold start can borrow history, so the first two weeks do not feel like meeting a stranger.</li>\n</ul>\n<p><strong>Worse:</strong></p>\n<ul>\n<li>It only exists while the terminal is open; it cannot remind you on a commute.</li>\n<li>Without push, the freshness of <code>loops</code> depends on you opening the terminal.</li>\n<li>Identity quality depends on whether you answer the eight questions; skip them and it degrades into a generic assistant.</li>\n</ul>\n<p><strong>Accepted trade-off:</strong> prove that \"remembers, reliable, willing to disagree\" is valuable before adding reach. Doing it the other way around produces a role-playing bot that interrupts you everywhere.</p>\n<h2>Alternatives</h2>\n<div class=\"table-wrap\"><table><thead><tr><th>Option</th><th>Rejected because</th></tr></thead><tbody>\n<tr><td>Resident daemon plus push</td><td>About five times the work, and it turns a personal project into an operations project; reach can come later</td></tr>\n<tr><td>A persona paragraph in the system prompt</td><td>Not auditable, not revertible, and it drifts on every startup</td></tr>\n<tr><td>Let the model self-update its identity</td><td>It slowly drifts toward pleasing you, which destroys the willingness to disagree</td></tr>\n<tr><td>Reuse pi-durable-assistant</td><td>A complete Node + SQLite runtime, incompatible with \"built on niucode\"</td></tr>\n<tr><td>Rebuild the persona from memory each session</td><td>No shared history, nowhere for the journal to accumulate, no relationship to grow</td></tr>\n</tbody></table></div>\n",
       "path": "docs/adr/0002-identity-layer.md",
-      "excerpt": "身份是五个 Markdown 文件，不是提示词魔法；伙伴感来自记忆、承诺与反对，不来自语气；常驻的是身份，不是进程。"
+      "excerpt": "Identity is five Markdown stores, not prompt magic; companionship comes from memory, promises, and disagreement, not tone; what persists is the identity, not a process."
     },
     {
       "id": "docs-readme",
-      "title": "看板维护指南",
+      "title": "Dashboard guide",
       "kind": "guide",
       "status": "living",
       "order": 90,
-      "summary": "docs/ 的源文件、生成命令、四个视图，以及加模块/加卡/加文档的仪式。",
-      "body_html": "<h2>这是什么</h2>\n<p><code>docs/index.html</code> 是项目唯一的架构阅读面：Architecture / Work / Docs / Decisions 共享一个三栏壳。它由仓库里的源文件生成，离线可开，不依赖服务端。</p>\n<pre><code class=\"language-sh\">cargo xtask dashboard          # 生成 docs/index.html 与 docs/dashboard/model.json\ncargo xtask dashboard --check  # CI：生成物过期、引用断开时失败\n</code></pre>\n<p>生成是确定性的：相同输入生成相同 HTML。<code>receipt.json</code> 记录生成时间、git revision 与输入清单，但不参与过期判断。</p>\n<h2>四个视图</h2>\n<ul>\n<li><strong>Architecture（默认）</strong>：按层排列模块，显示依赖箭头、契约与源码。点模块会聚焦关系；状态只表示落地程度，不表示进度。</li>\n<li><strong>Work</strong>：一卡一文件的 handoff 面，按里程碑筛选；不显示完成率、WIP 数字或进度条。</li>\n<li><strong>Docs</strong>：Markdown 文档索引，右栏阅读，支持 <code>#/docs/adr-0001</code> 深链。</li>\n<li><strong>Decisions</strong>：ADR 卡片 + <code>kind = \"decision\"</code> 的时间线；这里不放完成流水账。</li>\n</ul>\n<h2>源文件</h2>\n<pre><code class=\"language-text\">docs/\n  index.html                # 生成物，提交，file:// 可开\n  dashboard/\n    project.json            # 项目、里程碑、层、模块、关系、决策事件\n    template.html           # 单文件壳\n    style.css               # 三栏与四个视图的样式\n    app.js                  # 无框架渲染\n    model.json              # 生成物\n    receipt.json            # 生成信息，gitignore\n  board/\n    M0-001-five-stores.md   # 一张卡一个文件\n  adr/\n    0001-memory-layer.md\n    0002-identity-layer.md\n  architecture.md\n  plan.md\n</code></pre>\n<h2>加东西</h2>\n<p><strong>加模块</strong>：在 <code>project.json</code> 的 <code>modules</code> 里加一项，<code>layer</code> 必须是已存在的层，<code>paths</code> 指向真实文件；非 <code>planned</code> 的模块至少要有一个路径存在。</p>\n<p><strong>加工作卡</strong>：在 <code>docs/board/</code> 新建 Markdown，TOML frontmatter 必须含 <code>id</code>、<code>title</code>、<code>status</code>、<code>milestone</code>、<code>size</code>、<code>updated</code>；<code>done</code> 必须有 <code>completed</code>，<code>blocked</code> 必须有 <code>blocked_reason</code>。</p>\n<p><strong>加文档</strong>：<code>docs/</code> 下任意 <code>.md</code>，开头用 <code>+++</code> 包住 TOML frontmatter，至少含 <code>id</code>、<code>title</code>、<code>kind</code>；ADR 的 <code>status</code> 只接受 <code>proposed</code> / <code>accepted</code> / <code>superseded</code> / <code>rejected</code> / <code>draft</code>。</p>\n<p><strong>加决策</strong>：写 ADR，或在 <code>project.json</code> 的 <code>events</code> 里加一条 <code>kind = \"decision\"</code> 的时间线；两条都做时用 <code>refs</code> 连起来。</p>\n<h2>纪律</h2>\n<p>看板只读，浏览器不提供拖拽回写。状态变更走仓库，避免它变成第二个真相源。提交前跑一次 <code>--check</code>。</p>\n",
+      "summary": "Sources, generation commands, the four views, and the ritual for adding modules, cards, and docs.",
+      "body_html": "<h2>What this is</h2>\n<p><code>docs/index.html</code> is the project's only architecture reading surface: Architecture, Work, Docs, and Decisions share one three-column shell. It is generated from repository sources, opens offline, and needs no server.</p>\n<pre><code class=\"language-sh\">cargo xtask dashboard          # writes docs/index.html and docs/dashboard/model.json\ncargo xtask dashboard --check  # CI: fails when generated output is stale or references break\n</code></pre>\n<p>Generation is deterministic: the same inputs produce the same HTML. <code>receipt.json</code> records the build time, git revision, and input list, but is not part of the staleness check.</p>\n<h2>Four views</h2>\n<ul>\n<li><strong>Architecture (default)</strong>: modules by layer, dependency arrows, contracts, and source. Selecting a module focuses its relations; status only shows implementation state, not progress.</li>\n<li><strong>Work</strong>: one file per card, a handoff surface filtered by milestone. No completion rates, WIP counts, or progress bars.</li>\n<li><strong>Docs</strong>: a Markdown index with a reading pane; supports deep links such as <code>#/docs/adr-0001</code>.</li>\n<li><strong>Decisions</strong>: ADR cards plus a <code>kind = \"decision\"</code> timeline. Completion logs do not belong here.</li>\n</ul>\n<h2>Sources</h2>\n<pre><code class=\"language-text\">docs/\n  index.html                # generated, committed, openable via file://\n  dashboard/\n    project.json            # project, milestones, layers, modules, relations, decisions\n    template.html           # single-file shell\n    style.css               # three-column layout and views\n    app.js                  # framework-free rendering\n    model.json              # generated\n    receipt.json            # build receipt, gitignored\n  board/\n    M0-001-five-stores.md   # one card per file\n  adr/\n    0001-memory-layer.md\n    0002-identity-layer.md\n  architecture.md\n  plan.md\n</code></pre>\n<h2>Adding things</h2>\n<p><strong>Add a module</strong>: add an entry to <code>modules</code> in <code>project.json</code>. Its <code>layer</code> must exist and <code>paths</code> must point at real files; any module not marked <code>planned</code> needs at least one existing path.</p>\n<p><strong>Add a work card</strong>: create a Markdown file under <code>docs/board/</code>. The TOML frontmatter must include <code>id</code>, <code>title</code>, <code>status</code>, <code>milestone</code>, <code>size</code>, and <code>updated</code>; <code>done</code> requires <code>completed</code>, and <code>blocked</code> requires <code>blocked_reason</code>.</p>\n<p><strong>Add a doc</strong>: any <code>.md</code> under <code>docs/</code> with TOML frontmatter between <code>+++</code> lines, including at least <code>id</code>, <code>title</code>, and <code>kind</code>. ADR <code>status</code> accepts only <code>proposed</code>, <code>accepted</code>, <code>superseded</code>, <code>rejected</code>, or <code>draft</code>.</p>\n<p><strong>Add a decision</strong>: write an ADR, or add a <code>kind = \"decision\"</code> event to <code>project.json</code>. When doing both, link them with <code>refs</code>.</p>\n<h2>Discipline</h2>\n<p>The board is read-only; the browser cannot write back. State changes go through the repository, so the board never becomes a second source of truth. Run <code>--check</code> before committing.</p>\n",
       "path": "docs/README.md",
-      "excerpt": "docs/ 的源文件、生成命令、四个视图，以及加模块/加卡/加文档的仪式。"
+      "excerpt": "Sources, generation commands, the four views, and the ritual for adding modules, cards, and docs."
     }
   ],
   "events": [
     {
       "date": "2026-10-21",
       "kind": "decision",
-      "title": "定位为跨项目工程记忆",
-      "detail": "不做通用 agent，也不做第二大脑；只沉淀偏好、决策与踩坑，项目知识留在 AGENTS.md。",
+      "title": "Position niuse as cross-project engineering memory",
+      "detail": "Not a general agent, not a second brain. Only preferences, decisions, and pitfalls; project knowledge stays in AGENTS.md.",
       "refs": [
         "adr-0001",
         "plan"
@@ -673,8 +673,8 @@
     {
       "date": "2026-10-21",
       "kind": "decision",
-      "title": "身份层独立于记忆层",
-      "detail": "identity 由人写、只能提议修改；journal 与 loops 自动写；memory 必须确认。常驻的是身份，不是进程。",
+      "title": "Keep the identity layer separate from memory",
+      "detail": "identity is human-written and the agent may only propose; journal and loops are automatic; memory requires confirmation. What persists is the identity, not a process.",
       "refs": [
         "adr-0002"
       ]
@@ -682,8 +682,8 @@
     {
       "date": "2026-10-21",
       "kind": "decision",
-      "title": "协议块由主模型带内输出",
-      "detail": "不额外调用模型；漏记可接受，错记不可接受。流式渲染需要尾部缓冲。",
+      "title": "Emit protocol blocks in-band from the main model",
+      "detail": "No extra model call. Missing a memory is acceptable; recording a wrong one is not. Streaming needs a tail buffer.",
       "refs": [
         "plan",
         "M0-002"
@@ -692,8 +692,8 @@
     {
       "date": "2026-10-21",
       "kind": "milestone",
-      "title": "MVP 实现完成",
-      "detail": "五件套、prompt、协议、REPL、driver、bootstrap 全部落地；35 个 core 单测与 2 个 bootstrap 单测通过。",
+      "title": "MVP implemented",
+      "detail": "Five stores, prompt, protocol, REPL, driver, and bootstrap landed; 35 core tests and 2 bootstrap tests pass.",
       "refs": [
         "M0-001",
         "M0-002",
@@ -705,8 +705,8 @@
     {
       "date": "2026-10-21",
       "kind": "decision",
-      "title": "看板复用 niucode 的架构优先布局",
-      "detail": "同一套 xtask 生成器与三栏壳，只换项目模型；看板记录架构与实现，不承担运行时监控。",
+      "title": "Reuse niucode's architecture-first board",
+      "detail": "Same xtask generator and three-column shell, with a niuse project model. The board records architecture and implementation, not runtime monitoring.",
       "refs": [
         "M0-006"
       ]

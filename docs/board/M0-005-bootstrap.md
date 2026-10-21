@@ -1,6 +1,6 @@
 +++
 id = "M0-005"
-title = "历史冷启动与 review 队列"
+title = "Cold start and the review queue"
 status = "done"
 milestone = "M0"
 module = "bootstrap"
@@ -12,20 +12,20 @@ depends_on = ["M0-004"]
 docs = ["plan"]
 +++
 
-## 范围
+## Scope
 
-- `niuse bootstrap [--limit N] [--since-days N]` 扫描 `~/.niucode/sessions`。
-- 每个 session 只送 user / assistant 文本，工具输出丢弃。
-- 一次无工具抽取，输出 `{kind, text, tags}`，写入 `inbox.md`。
-- `niuse review` 逐条 `y` / `n` / `s` / `q`，接受后写入 memory。
+- `niuse bootstrap [--limit N] [--since-days N]` scans `~/.niucode/sessions`.
+- Only user / assistant text is sent; tool output is dropped.
+- One tool-free extraction returns `{kind, text, tags}` and writes `inbox.md`.
+- `niuse review` walks the queue with `y` / `n` / `s` / `q`; accepted entries become memory.
 
-## 验收
+## Acceptance
 
-- [x] 空 session 被跳过，只对含对话的 session 调模型。
-- [x] 与现有 memory 及同批候选做相似度去重。
-- [x] inbox 格式往返有单测。
-- [x] 真实跑通：挖出一条沙箱相关教训，review 接受后入库。
+- [x] Empty sessions are skipped; only sessions with dialogue cost a model call.
+- [x] Candidates are deduplicated against existing memory and within the batch.
+- [x] Inbox format has a round-trip test.
+- [x] A real run mined a sandbox lesson that review accepted into memory.
 
-## 记录
+## Notes
 
-默认上限 40 个 session。成本约每个 2k 输入 token，一次性。
+Default cap is 40 sessions. Cost is roughly 2k input tokens per session, one-off.

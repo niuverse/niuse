@@ -1,58 +1,58 @@
 +++
 id = "adr-0002"
-title = "ADR-0002：身份层与非常驻形态"
+title = "ADR-0002: An identity layer, not a daemon"
 kind = "adr"
 status = "accepted"
 order = 21
-summary = "身份是五个 Markdown 文件，不是提示词魔法；伙伴感来自记忆、承诺与反对，不来自语气；常驻的是身份，不是进程。"
+summary = "Identity is five Markdown stores, not prompt magic; companionship comes from memory, promises, and disagreement, not tone; what persists is the identity, not a process."
 +++
 
-## 状态
+## Status
 
-Accepted · 2026-10-21。身份层与 REPL 已实现；journal / loops 由主模型在回答末尾的协议块自动落盘。
+Accepted · 2026-10-21. The identity layer and REPL are implemented; journal and loops are written automatically from in-band protocol blocks.
 
-## 背景
+## Context
 
-目标是「个人伙伴」，不是「更聪明的工具」。同类产品给出了两种形状：
+The goal is a personal companion, not a smarter tool. Two shapes exist in the ecosystem:
 
-- `pi-memory` 式：`IDENTITY.md` / `USER.md` / `MEMORY.md` / `daily/`，启动注入。轻，但只是记忆扩展。
-- `pi-durable-assistant` 式：常驻 runtime、Web UI、定时任务、后台子 agent、微信通道、需批准的记忆。重，且会把一个个人项目变成运维项目。
+- **pi-memory style**: `IDENTITY.md` / `USER.md` / `MEMORY.md` / `daily/`, injected at session start. Lightweight, but only a memory extension.
+- **pi-durable-assistant style**: a resident runtime, web UI, scheduled tasks, background subagents, a WeChat channel, and approval-gated memory. Heavy, and it turns a personal project into an operations project.
 
-「伙伴」的廉价做法是给它一个人设和温柔口吻。这条路会迅速滑向角色扮演：说得多、记得少、不同意你、也帮不上判断。
+The cheap way to fake a companion is to give it a persona and a warm tone. That slides quickly into role-play: it talks a lot, remembers little, never disagrees, and does not improve your judgement.
 
-## 决策
+## Decision
 
-1. **身份是文件，不是提示词魔法。** `identity.md`、`user.md`、`memory/`、`journal/`、`loops.md` 五个持久化存储，全部人类可读可改。你随时能重写它的价值观，不需要改代码。
-2. **身份由你写，它只能提议修改。** 历史会话可以挖出 `user.md` 和记忆候选，但挖不出「它是谁」。
-3. **注入顺序固定为稳定 → 易变**：`identity → user → memory → loops → 最近 journal`，system prompt 每 session 只组装一次。
-4. **写入分级**：journal 与 loops 自动写；memory 必须确认；identity 只有你能改。
-5. **不做常驻。** 没有 daemon、没有 Web、没有微信、没有定时推送。打开终端它才存在，关掉就不在后台假装活着。
-6. **伙伴感只由三件事承担**：记得你的判断、追踪自己的承诺、在你判断错时开口。不表演情绪、不用昵称轰炸、不主动抒情。
-7. **它保留反对权。** `identity.md` 必须写明判断标准与边界；反对时给理由，对事不对人。
-8. **journal 只记变化。** 3–5 行，写决定、转折、未解问题、情绪变化；不写过程流水账，不重复 memory 已有内容。
+1. **Identity is files, not prompt magic.** `identity.md`, `user.md`, `memory/`, `journal/`, and `loops.md` are five persistent stores, all human-readable and editable. You can rewrite its values without touching code.
+2. **You write the identity; it may only propose changes.** History can mine `user.md` and memory candidates, but it cannot mine who it is.
+3. **Injection order is stable-to-volatile**: `identity → user → memory → loops → recent journal`. The system prompt is assembled once per session.
+4. **Graded write thresholds**: journal and loops are automatic; memory requires confirmation; identity is human-only.
+5. **No daemon.** No web UI, no WeChat, no scheduled push. It exists while the terminal is open and does not pretend to live in the background.
+6. **Companionship rests on three things**: remembering your judgements, tracking its own promises, and speaking up when you are wrong. Not emotional performance, not pet names, not spontaneous sentiment.
+7. **It keeps a right to disagree.** `identity.md` must state its judgement criteria and boundaries; disagreement comes with reasons, about the work rather than the person.
+8. **The journal records change only.** Three to five lines covering decisions, turning points, open questions, and shifts in mood; no activity logs, no duplication of memory.
 
-## 后果
+## Consequences
 
-**变好的：**
+**Better:**
 
-- 身份完全可审计：一次 `git diff` 就能看出它「性格」变了什么。
-- 没有运维负担，不需要服务器、端口、证书、备份策略。
-- 冷启动可以借历史会话完成，前两周不像陌生人。
+- The identity is fully auditable: one `git diff` shows what changed about its character.
+- No operational burden: no servers, ports, certificates, or backup strategy.
+- Cold start can borrow history, so the first two weeks do not feel like meeting a stranger.
 
-**变差的：**
+**Worse:**
 
-- 它只在你打开终端时存在，无法在通勤路上提醒你。
-- 没有主动推送，`loops` 的时效性依赖你主动打开。
-- 身份质量取决于你愿不愿意写那八个问题；不写就退化成通用助手。
+- It only exists while the terminal is open; it cannot remind you on a commute.
+- Without push, the freshness of `loops` depends on you opening the terminal.
+- Identity quality depends on whether you answer the eight questions; skip them and it degrades into a generic assistant.
 
-**接受的取舍：** 先证明「记得住、靠得住、敢反对」有价值，再谈触达渠道。反过来做，会先得到一个到处打扰你的角色扮演机器人。
+**Accepted trade-off:** prove that "remembers, reliable, willing to disagree" is valuable before adding reach. Doing it the other way around produces a role-playing bot that interrupts you everywhere.
 
-## 备选方案
+## Alternatives
 
-| 方案 | 否决理由 |
+| Option | Rejected because |
 |---|---|
-| 常驻 daemon + 推送 | 工程量约为 5 倍，且把个人项目变成运维项目；触达问题可以后置 |
-| 只做 system prompt 里的一段人设 | 不可审计、不可回滚、每次启动都可能漂移 |
-| 身份由模型自省自动更新 | 会缓慢漂移成讨你喜欢的样子，正好破坏「敢反对」 |
-| 复用 pi-durable-assistant | 它是 Node + SQLite 的完整运行时，与「基于 niucode」的定位不兼容 |
-| 每次会话从记忆重建人格 | 没有共同经历，journal 无处沉淀，关系无法累积 |
+| Resident daemon plus push | About five times the work, and it turns a personal project into an operations project; reach can come later |
+| A persona paragraph in the system prompt | Not auditable, not revertible, and it drifts on every startup |
+| Let the model self-update its identity | It slowly drifts toward pleasing you, which destroys the willingness to disagree |
+| Reuse pi-durable-assistant | A complete Node + SQLite runtime, incompatible with "built on niucode" |
+| Rebuild the persona from memory each session | No shared history, nowhere for the journal to accumulate, no relationship to grow |
