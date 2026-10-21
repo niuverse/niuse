@@ -59,4 +59,6 @@ A fourth self-check chose `k` at the conflict prompt: both lessons remained, and
 
 A third self-check used two sessions on a fresh home: the second session's banner showed the memory injected, a contradictory lesson triggered the `[r] 替换 / [k] 并存 / [d] 丢弃` prompt with the old text quoted, and `r` left exactly one entry. `stats` counted 2 proposals / 2 accepted; `/cost` across the resumed thread reported 2 turns.
 
+A fifth, provider-free REPL check exercised `/new`, numbered `/threads`, `/resume 2`, and `/cost`: the archive moved to slot 2, resume switched the active marker, and `/cost` reported the archived thread's 2 turns from its own log.
+
 This is a smoke test of the loop, not evidence about usefulness. The ten real days are still the gate.

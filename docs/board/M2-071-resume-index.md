@@ -26,6 +26,7 @@ docs = ["architecture"]
 - [x] `/resume 1` resolves the same path the listing shows.
 - [x] The old log gets a `session_end` before switching.
 - [x] Invalid or missing indexes do not leave the session.
+- [x] End-to-end: `/new` → `/threads` shows `[1] [2]` → `/resume 2` → `/cost` reports the archived thread's 2 turns.
 
 ## Notes
 
