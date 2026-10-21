@@ -583,6 +583,9 @@ pub fn user_edit(store: &Store) -> Result<()> {
         println!("no change");
         return Ok(());
     };
+    if let Some(reason) = secret_reason(&updated) {
+        bail!("refusing to save user.md: looks like a {reason}");
+    }
     store.write_user(&updated)?;
     if let Err(error) = store.append_metric("user_edit", "") {
         eprintln!("warning: cannot record metric: {error:#}");
@@ -599,6 +602,9 @@ pub fn identity_edit(store: &Store) -> Result<()> {
         println!("no change");
         return Ok(());
     };
+    if let Some(reason) = secret_reason(&updated) {
+        bail!("refusing to save identity.md: looks like a {reason}");
+    }
     store.write_identity(&updated)?;
     if let Err(error) = store.append_metric("identity_edit", "") {
         eprintln!("warning: cannot record metric: {error:#}");
@@ -660,6 +666,9 @@ pub fn identity_init(store: &Store, force: bool) -> Result<()> {
         style = style,
         reminder = answers[6],
     );
+    if let Some(reason) = secret_reason(&text) {
+        bail!("refusing to save identity.md: looks like a {reason}");
+    }
     store.write_identity(&text)?;
     println!("wrote {}", path.display());
     Ok(())

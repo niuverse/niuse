@@ -394,6 +394,10 @@ async fn write_profile(
     } else {
         format!("# 关于我\n\n{text}\n")
     };
+    if let Some(reason) = secret_reason(&body) {
+        println!("profile: 拒绝写入，疑似包含 {reason}。");
+        return Ok(());
+    }
     store.write_user(&body)?;
     if let Err(error) = store.append_metric("profile", "") {
         eprintln!("warning: cannot record metric: {error:#}");
