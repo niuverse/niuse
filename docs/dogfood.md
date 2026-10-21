@@ -55,7 +55,7 @@ A second self-check the same day covered two writes with the second approval den
 
 A crafted offline inbox exercised `niuse review` without a provider: `y` accepted one candidate, `n` discarded the other, the inbox was rewritten empty, and `metrics.jsonl` recorded `review_accept` / `review_discard`.
 
-A fourth self-check chose `k` at the conflict prompt: both lessons remained, and `metrics.jsonl` recorded `keep:<id>`. A real bootstrap over two short niucode sessions extracted zero candidates, which is plausible for 375- and 2.1k-char sessions; the tool correctly left the inbox empty.
+A fourth self-check chose `k` at the conflict prompt: both lessons remained, and `metrics.jsonl` recorded `keep:<id>`. A real bootstrap over two short niucode sessions extracted zero candidates, which is plausible for 375- and 2.1k-char sessions; the tool correctly left the inbox empty. A later `--profile-only` over three sessions wrote a `user.md` draft and explicitly said there was no evidence for red lines instead of inventing them.
 
 A third self-check used two sessions on a fresh home: the second session's banner showed the memory injected, a contradictory lesson triggered the `[r] 替换 / [k] 并存 / [d] 丢弃` prompt with the old text quoted, and `r` left exactly one entry. `stats` counted 2 proposals / 2 accepted; `/cost` across the resumed thread reported 2 turns.
 
