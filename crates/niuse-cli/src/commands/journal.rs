@@ -17,8 +17,16 @@ struct JournalHitJson {
     text: String,
 }
 
+fn window(days: usize) -> usize {
+    if days == 0 {
+        usize::MAX
+    } else {
+        days
+    }
+}
+
 pub fn journal_show(store: &Store, days: usize, json: bool) -> Result<()> {
-    let days = store.recent_journal(days)?;
+    let days = store.recent_journal(window(days))?;
     if json {
         let items: Vec<JournalDayJson> = days
             .iter()
@@ -125,6 +133,12 @@ mod tests {
             .bullets
             .iter()
             .any(|bullet| bullet.contains("config file")));
+    }
+
+    #[test]
+    fn zero_days_means_the_whole_journal() {
+        assert_eq!(window(0), usize::MAX);
+        assert_eq!(window(7), 7);
     }
 
     #[test]
