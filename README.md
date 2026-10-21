@@ -89,10 +89,13 @@ niuse mem list|search|show|edit|add|forget|confirm|review|prune
 niuse loops list|add|done
 niuse journal [--days N] [--search QUERY] [--add TEXT]
 niuse threads                   list the active thread and archived chapters
+niuse sessions [--json]         list one-shot `exec` session logs
 niuse export [--out FILE] [--session PATH]
+niuse completions <shell>       print shell completions (bash, zsh, fish, …)
 niuse bootstrap [--limit N] [--since-days N] [--dry-run] [--profile] [--profile-only]
 niuse review
 niuse doctor [--json]            check home, identity, credentials, sandbox, pin
+niuse config init|show|effective
 niuse stats [--days N] [--trend] [--json] local acceptance counters
 niuse status
 ```
