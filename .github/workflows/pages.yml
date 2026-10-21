@@ -1,0 +1,98 @@
+name: Pages
+
+# Builds docs/index.html and deploys it to GitHub Pages.
+#
+# GitHub Pages must be available for the repository, with "GitHub Actions" as
+# the source. On the GitHub Free plan, Pages is only available for public
+# repositories; a private repository needs GitHub Pro/Team/Enterprise.
+#
+# The preflight step enables Pages when the token is allowed to, and otherwise
+# skips the deployment with a notice instead of failing every push.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    name: Build and deploy dashboard
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out niuse
+        uses: actions/checkout@v4
+        with:
+          path: niuse
+
+      # The dashboard generator is a workspace member, and the workspace has
+      # path dependencies on niucode; check the sibling repository out too.
+      - name: Check out niucode
+        uses: actions/checkout@v4
+        with:
+          repository: niuverse/niucode
+          path: niuverse/niucode
+
+      - name: Check Pages availability
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api "repos/${GITHUB_REPOSITORY}/pages" >/dev/null 2>&1; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          elif gh api -X POST "repos/${GITHUB_REPOSITORY}/pages" \
+              -f build_type=workflow >/dev/null 2>&1; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Pages not enabled::GitHub Pages is unavailable for this repository. Private repositories need GitHub Pro/Team/Enterprise; on the Free plan, make the repository public or enable Pages manually."
+          fi
+
+      - name: Install Rust
+        if: steps.pages.outputs.enabled == 'true'
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        if: steps.pages.outputs.enabled == 'true'
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: niuse -> target
+
+      - name: Build dashboard
+        if: steps.pages.outputs.enabled == 'true'
+        working-directory: niuse
+        run: cargo xtask dashboard
+
+      - name: Stage site
+        if: steps.pages.outputs.enabled == 'true'
+        working-directory: niuse
+        run: |
+          mkdir -p _site
+          cp docs/index.html _site/index.html
+          touch _site/.nojekyll
+
+      - name: Configure Pages
+        if: steps.pages.outputs.enabled == 'true'
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        if: steps.pages.outputs.enabled == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: niuse/_site
+
+      - name: Deploy
+        id: deployment
+        if: steps.pages.outputs.enabled == 'true'
+        uses: actions/deploy-pages@v4

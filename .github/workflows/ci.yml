@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    name: Format, clippy, tests, dashboard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out niuse
+        uses: actions/checkout@v4
+        with:
+          path: niuse
+
+      # niuse declares path dependencies on ../niuverse/niucode, so the
+      # sibling repository must exist at the same relative path in CI.
+      - name: Check out niucode
+        uses: actions/checkout@v4
+        with:
+          repository: niuverse/niucode
+          path: niuverse/niucode
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: niuse -> target
+
+      - name: Format
+        working-directory: niuse
+        run: cargo fmt --all --check
+
+      - name: Clippy
+        working-directory: niuse
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Tests
+        working-directory: niuse
+        run: cargo test --workspace
+
+      - name: Dashboard is fresh
+        working-directory: niuse
+        run: cargo xtask dashboard --check
