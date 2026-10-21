@@ -8,7 +8,7 @@ size = "M"
 priority = "P0"
 updated = "2026-10-21"
 depends_on = ["M0-003", "M0-005"]
-docs = ["plan"]
+docs = ["plan", "dogfood"]
 +++
 
 ## Scope
@@ -28,4 +28,4 @@ docs = ["plan"]
 
 ## Notes
 
-This card writes no code. Its job is to stop new features before the current ones are validated.
+Record one row per day in [the dogfood log](../dogfood.md). This card writes no code. Its job is to stop new features before the current ones are validated.

@@ -297,7 +297,7 @@ impl App {
                     commands::journal_show(&self.store, 7)?;
                 }
             }
-            "/stats" => commands::stats(&self.store, 7, false)?,
+            "/stats" => commands::stats(&self.store, 7, false, false)?,
             "/doctor" => {
                 if let Err(error) = commands::doctor(&self.store, &self.provider_id) {
                     println!("{error}");

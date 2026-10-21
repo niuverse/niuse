@@ -15,6 +15,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use niucode_auth::AuthStore;
 use niucode_provider::Preset;
+use serde::Serialize;
 
 pub fn mem_list(store: &Store, all: bool) -> Result<()> {
     let today = Date::today();
@@ -746,70 +747,135 @@ impl Summary {
     }
 }
 
-pub fn stats(store: &Store, days: u64, trend: bool) -> Result<()> {
+pub fn stats(store: &Store, days: u64, trend: bool, json: bool) -> Result<()> {
     let metrics = parse_metrics(&store.metrics()?);
-    if metrics.is_empty() {
-        println!("还没有指标。下一次对话开始后会自动记录。");
-        return Ok(());
-    }
-
     let since = if days == 0 {
         0
     } else {
         now_ms().saturating_sub(days.saturating_mul(86_400_000))
     };
     let summary = summarize(&metrics, since);
+    let report = StatsReport::from_summary(&summary, days, daily_summary(&metrics, since));
+
+    if json {
+        println!("{}", serde_json::to_string_pretty(&report)?);
+        return Ok(());
+    }
+    if metrics.is_empty() {
+        println!("还没有指标。下一次对话开始后会自动记录。");
+        return Ok(());
+    }
+
     let window = if days == 0 {
         "all time".to_string()
     } else {
         format!("last {days} day(s)")
     };
-
     println!("{window}");
     println!(
         "turns        {} ({} cancelled, {} errors)",
-        summary.turns, summary.cancelled, summary.errors
+        report.turns, report.cancelled, report.errors
     );
     println!(
         "candidates   {} proposed · {} accepted · {} discarded · {} edited · {} suppressed · {} blocked",
-        summary.proposals,
-        summary.accepted,
-        summary.discarded,
-        summary.edited,
-        summary.suppressed,
-        summary.blocked
+        report.proposals,
+        report.accepted,
+        report.discarded,
+        report.edited,
+        report.suppressed,
+        report.blocked
     );
-    match summary.acceptance_percent() {
+    match report.acceptance_percent {
         Some(percent) => println!("acceptance   {percent}% (accepted / proposed)"),
         None => println!("acceptance   n/a (no candidates yet)"),
     }
     println!(
         "activity     {} journal writes · {} loops · {} manual memories · {} review accepted · {} review discarded",
-        summary.journals,
-        summary.loops,
-        summary.remembers,
-        summary.review_accepted,
-        summary.review_discarded
+        report.journals,
+        report.loops,
+        report.remembers,
+        report.review_accepted,
+        report.review_discarded
     );
 
-    if trend {
-        let daily = daily_summary(&metrics, since);
-        if !daily.is_empty() {
-            println!();
-            println!("by day");
-            for (date, day) in daily.iter().rev().take(14).rev() {
-                let acceptance = day
-                    .acceptance_percent()
-                    .map(|percent| format!("{percent}%"))
-                    .unwrap_or_else(|| "-".to_string());
-                println!(
-                    "{date}  {:>3} turns  {:>2}/{:<2} accepted  {acceptance}",
-                    day.turns, day.accepted, day.proposals
-                );
-            }
+    if trend && !report.days.is_empty() {
+        println!();
+        println!("by day");
+        for day in report.days.iter().rev().take(14).rev() {
+            let acceptance = day
+                .acceptance_percent
+                .map(|percent| format!("{percent}%"))
+                .unwrap_or_else(|| "-".to_string());
+            println!(
+                "{}  {:>3} turns  {:>2}/{:<2} accepted  {acceptance}",
+                day.date, day.turns, day.accepted, day.proposals
+            );
         }
     }
     Ok(())
+}
+
+#[derive(Debug, Serialize)]
+struct StatsReport {
+    window_days: u64,
+    turns: usize,
+    cancelled: usize,
+    errors: usize,
+    proposals: usize,
+    accepted: usize,
+    discarded: usize,
+    edited: usize,
+    suppressed: usize,
+    blocked: usize,
+    acceptance_percent: Option<usize>,
+    journals: usize,
+    loops: usize,
+    remembers: usize,
+    review_accepted: usize,
+    review_discarded: usize,
+    days: Vec<DayReport>,
+}
+
+#[derive(Debug, Serialize)]
+struct DayReport {
+    date: String,
+    turns: usize,
+    proposals: usize,
+    accepted: usize,
+    acceptance_percent: Option<usize>,
+}
+
+impl StatsReport {
+    fn from_summary(summary: &Summary, days: u64, daily: BTreeMap<Date, DaySummary>) -> Self {
+        Self {
+            window_days: days,
+            turns: summary.turns,
+            cancelled: summary.cancelled,
+            errors: summary.errors,
+            proposals: summary.proposals,
+            accepted: summary.accepted,
+            discarded: summary.discarded,
+            edited: summary.edited,
+            suppressed: summary.suppressed,
+            blocked: summary.blocked,
+            acceptance_percent: summary.acceptance_percent(),
+            journals: summary.journals,
+            loops: summary.loops,
+            remembers: summary.remembers,
+            review_accepted: summary.review_accepted,
+            review_discarded: summary.review_discarded,
+            days: daily
+                .into_iter()
+                .map(|(date, day)| DayReport {
+                    date: date.to_string(),
+                    turns: day.turns,
+                    proposals: day.proposals,
+                    accepted: day.accepted,
+                    acceptance_percent: day.acceptance_percent(),
+                })
+                .collect(),
+        }
+    }
 }
 
 #[derive(Debug, Default)]
@@ -1271,6 +1337,17 @@ mod tests {
         assert_eq!(entries.len(), 2);
         assert_eq!(entries.iter().filter(|entry| entry.active).count(), 1);
         assert!(entries.iter().all(|entry| entry.events == 1));
+    }
+
+    #[test]
+    fn stats_report_serializes_for_dogfood() {
+        let metrics = parse_metrics("0\tturn\tok\n1000\tpropose\trust\n2000\taccept\tm-1\n");
+        let summary = summarize(&metrics, 0);
+        let report = StatsReport::from_summary(&summary, 0, daily_summary(&metrics, 0));
+        let json = serde_json::to_string(&report).unwrap();
+        assert!(json.contains("\"acceptance_percent\":100"));
+        assert!(json.contains("\"date\":\"1970-01-01\""));
+        assert!(json.contains("\"window_days\":0"));
     }
 
     #[test]

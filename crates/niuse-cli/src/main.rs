@@ -124,6 +124,9 @@ enum Command {
         /// Add a per-day breakdown
         #[arg(long)]
         trend: bool,
+        /// Emit JSON (summary plus per-day rows)
+        #[arg(long)]
+        json: bool,
     },
     /// Show store and prompt status
     Status,
@@ -342,7 +345,7 @@ async fn main() -> Result<()> {
             }
             ConfigCommand::Show => settings::show(&store),
         },
-        Some(Command::Stats { days, trend }) => commands::stats(&store, days, trend),
+        Some(Command::Stats { days, trend, json }) => commands::stats(&store, days, trend, json),
         Some(Command::Status) => {
             let thread = cli.thread.clone().unwrap_or_else(|| store.session_path());
             commands::status(&store, &thread)

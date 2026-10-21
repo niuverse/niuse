@@ -91,7 +91,7 @@ niuse export [--out FILE] [--session PATH]
 niuse bootstrap [--limit N] [--since-days N] [--dry-run]
 niuse review
 niuse doctor                    check home, identity, credentials, sandbox, pin
-niuse stats [--days N] [--trend] local acceptance counters
+niuse stats [--days N] [--trend] [--json] local acceptance counters
 niuse status
 ```
 
@@ -170,3 +170,4 @@ A daemon, a web UI, WeChat / Feishu bridges, scheduled push notifications, vecto
 - [ADR-0002: identity layer](docs/adr/0002-identity-layer.md)
 - [ADR-0003: kernel and product boundary](docs/adr/0003-kernel-product-boundary.md)
 - [niucode compatibility](docs/compat.md)
+- [Dogfood log](docs/dogfood.md): the ten-day acceptance ritual
