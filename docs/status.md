@@ -24,12 +24,12 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 
 ## Works
 
-- `niuse` REPL: streaming, slash commands, line editing and history, Tab completion for commands/ids/paths, backslash continuation, `/new` chapters, `/cd`, `/model`, `/cost`, `/export`, candidate confirm/edit/skip, conflict replace/keep.
+- `niuse` REPL: streaming, slash commands, line editing and history, Tab completion for commands/ids/paths, backslash continuation, `/new` chapters, `/cd`, `/model`, `/cost`, `/threads`, `/sessions`, `/resume`, `/export`, candidate confirm/edit/skip, conflict replace/keep.
 - Memory: search including expired entries, kind filter, kind counts, show/edit, review with metrics, prune with backup and freed-byte report, duplicate guard, secret scan, soft expiry.
 - Journal and loops: model-written blocks plus manual entry and manual promises.
 - Bootstrap: dry-run preview, candidate merge into the inbox, optional `user.md` draft.
 - Sessions: derived thread titles, `threads` and `sessions` listings, Markdown export with a title, JSON output.
-- Machine output: JSON for memory, journal, threads, loops, status, doctor, stats.
+- Machine output: JSON for memory, journal, threads, loops, status, doctor, stats; `stats` totals and trends include token usage.
 - Operations: pinned niucode revision, contract tests, nightly main check, doctor, acceptance metrics.
 
 ## Waiting on you
