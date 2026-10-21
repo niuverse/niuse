@@ -19,6 +19,7 @@ cargo xtask dashboard           # regenerate docs/index.html
 cargo xtask dashboard --check   # fail when the generated board is stale
 ./scripts/sync-niucode.sh <rev> # bump the pin, run tests, remind about compat
 ./scripts/check-niucode-drift.sh
+cargo +1.88.0 check --workspace --all-targets   # MSRV; weekly workflow
 ```
 
 `cargo xtask` is a workspace alias defined in `.cargo/config.toml`.
@@ -37,6 +38,9 @@ cargo xtask dashboard --check   # fail when the generated board is stale
   repo's `AGENTS.md`.
 - **Secrets are refused at the write.** Identity and user text is injected on
   every turn, so it gets the same scan as memory.
+- **Create private, do not repair.** Store files, thread/session logs, exports,
+  metrics, and `$EDITOR` scratch files are created at `0600` with a unique
+  name. A chmod is only for pre-existing loose files. Directories are `0700`.
 - **Docs and README stay in English.** Runtime strings and the persona prompt
   may be Chinese; that is product behaviour, not documentation.
 - **Commit and push after a verified increment.** Do not leave a green change
@@ -55,6 +59,11 @@ scripts/             check, niucode sync, drift check
 `commands/` is split by domain: memory, loops, journal, profile, session,
 doctor, editor, with `mod.rs` keeping status/stats/metrics and shared helpers.
 
+Runtime state: `thread.jsonl` (active line), `threads/` (archived chapters),
+`sessions/` (one-shot `exec` logs), `backups/` (prune snapshots), `history`
+(prompt history), `metrics.jsonl` (counters). `niuse threads` / `sessions`
+list them; `/threads`, `/sessions`, and `/resume <n>` do it inside the REPL.
+
 ## Testing expectations
 
 - All tests are offline; no API key is needed. Use `ScriptedProvider` for
@@ -64,3 +73,6 @@ doctor, editor, with `mod.rs` keeping status/stats/metrics and shared helpers.
   per-turn cwd, and approval denial.
 - Prefer a new focused test over a broad fixture. Edge cases in protocol
   parsing and secret scanning deserve a test each.
+- Session logs must stay forward-compatible: unknown event types warn while
+  readable lines survive; unknown fields on known events are ignored. niucode
+  pins both behaviors; niuse relies on them for the pinned revision.
