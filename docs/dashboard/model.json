@@ -2210,6 +2210,26 @@
       "path": "docs/board/M2-079-editor-temp-perms.md"
     },
     {
+      "id": "M2-080",
+      "title": "Atomic store writes create private temp files",
+      "status": "done",
+      "milestone": "M2",
+      "module": "stores",
+      "size": "S",
+      "priority": "P1",
+      "updated": "2026-10-22",
+      "completed": "2026-10-22",
+      "depends_on": [
+        "M0-001"
+      ],
+      "docs": [
+        "architecture"
+      ],
+      "blocked_reason": null,
+      "body_html": "<h2>Problem</h2>\n<p>Every store write used <code>path.with_extension(\"tmp\")</code>: a predictable name, created with default <code>0644</code>, then chmodded to <code>0600</code> and renamed. The file was briefly world-readable, and a local attacker could pre-create that path as a symlink to a victim file.</p>\n<h2>Fix</h2>\n<ul>\n<li>The temp name is <code>.&lt;file&gt;.tmp-&lt;pid&gt;-&lt;nanos&gt;</code>, created with <code>create_new</code> and mode <code>0600</code> on Unix.</li>\n<li>The final rename preserves those permissions; no chmod window.</li>\n<li>A failed write or rename removes the temp file.</li>\n<li>A Unix test pre-creates the old predictable path as a symlink and verifies the victim is untouched.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nTemp mode is <code>0600</code> at creation.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nThe predictable <code>identity.tmp</code> symlink is not followed.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nThe destination still receives the new content.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nNo leftover temp file on the success path.</li>\n</ul>\n<h2>Notes</h2>\n<p>Atomicity and privacy are different properties; the old code had the first and only eventually the second.</p>\n",
+      "path": "docs/board/M2-080-store-temp-private.md"
+    },
+    {
       "id": "M3-001",
       "title": "Release and dependency strategy",
       "status": "backlog",
@@ -2449,7 +2469,7 @@
   ],
   "meta": {
     "schema_version": 1,
-    "cards": 88,
+    "cards": 89,
     "modules": 10,
     "docs": 10,
     "generator": "cargo xtask dashboard"

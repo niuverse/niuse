@@ -507,10 +507,36 @@ fn write_private(path: &Path, text: &str) -> Result<()> {
         fs::create_dir_all(parent)
             .with_context(|| format!("create directory {}", parent.display()))?;
     }
-    let temporary = path.with_extension("tmp");
-    fs::write(&temporary, text).with_context(|| format!("write {}", temporary.display()))?;
-    set_mode(&temporary, 0o600)?;
-    fs::rename(&temporary, path).with_context(|| format!("replace {}", path.display()))?;
+    let name = path
+        .file_name()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .to_string();
+    let stamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|elapsed| elapsed.as_nanos())
+        .unwrap_or(0);
+    let temporary = path.with_file_name(format!(".{name}.tmp-{}-{stamp}", std::process::id()));
+
+    let mut options = fs::OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    let mut file = options
+        .open(&temporary)
+        .with_context(|| format!("create {}", temporary.display()))?;
+    if let Err(error) = file.write_all(text.as_bytes()) {
+        let _ = fs::remove_file(&temporary);
+        return Err(error).with_context(|| format!("write {}", temporary.display()));
+    }
+    drop(file);
+    if let Err(error) = fs::rename(&temporary, path) {
+        let _ = fs::remove_file(&temporary);
+        return Err(error).with_context(|| format!("replace {}", path.display()));
+    }
     Ok(())
 }
 
