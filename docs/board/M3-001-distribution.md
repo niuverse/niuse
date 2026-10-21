@@ -13,7 +13,7 @@ docs = ["plan", "distribution"]
 
 ## Scope
 
-- Decide the niucode dependency: publish niucode crates first, pin a git revision, or support `cargo install --git` only.
+- Decide the niucode dependency: publish niucode crates first, convert to pinned git revisions, or keep the two-checkout build.
 - Add `license`, `repository`, `description`, and other release metadata.
 - Make `cargo package` / `cargo publish --dry-run` reproducible.
 - Confirm crate-name availability; rename the crate if needed while keeping the `niuse` binary.
