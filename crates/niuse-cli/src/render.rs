@@ -159,6 +159,21 @@ impl Default for Renderer {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ApprovalDecision {
+    Allow,
+    Deny,
+    ShowFull,
+}
+
+fn parse_approval(input: &str, has_full: bool) -> ApprovalDecision {
+    match input.trim().to_lowercase().as_str() {
+        "y" | "yes" => ApprovalDecision::Allow,
+        "d" | "diff" if has_full => ApprovalDecision::ShowFull,
+        _ => ApprovalDecision::Deny,
+    }
+}
+
 /// Per-action approval for mutating tools. Reads one line from the terminal.
 pub fn approve(request: &ApprovalRequest) -> bool {
     println!();
@@ -169,22 +184,45 @@ pub fn approve(request: &ApprovalRequest) -> bool {
             &format!("[approval] {}: {}", request.tool, request.summary)
         )
     );
+    let mut full = None;
+    let mut truncated = false;
     if let Some(preview) = &request.preview {
-        for line in preview_lines(preview, 80) {
-            println!("{}", paint_diff(&line));
+        let shown = preview_lines(preview, 80);
+        let all = preview_lines(preview, usize::MAX);
+        truncated = all.len() > shown.len();
+        full = Some(all);
+        for line in &shown {
+            println!("{}", paint_diff(line));
         }
         if let Some(warning) = &preview.warning {
             println!("{}", styled("33", &format!("  warning: {warning}")));
         }
     }
-    print!("allow? [y/N] ");
-    let _ = io::stdout().flush();
 
-    let mut line = String::new();
-    if io::stdin().read_line(&mut line).is_err() {
-        return false;
+    loop {
+        if truncated {
+            print!("allow? [y/N] (d = full diff) ");
+        } else {
+            print!("allow? [y/N] ");
+        }
+        let _ = io::stdout().flush();
+
+        let mut line = String::new();
+        if io::stdin().read_line(&mut line).is_err() {
+            return false;
+        }
+        match parse_approval(&line, truncated) {
+            ApprovalDecision::Allow => return true,
+            ApprovalDecision::Deny => return false,
+            ApprovalDecision::ShowFull => {
+                if let Some(lines) = &full {
+                    for line in lines {
+                        println!("{}", paint_diff(line));
+                    }
+                }
+            }
+        }
     }
-    matches!(line.trim().to_lowercase().as_str(), "y" | "yes")
 }
 
 /// Read one line from stdin; `None` on EOF.
