@@ -13,6 +13,21 @@ use niuse_core::{Date, MemoryEntry, MemoryKind, Store};
 
 use super::{edit_text, normalize_id};
 
+fn kind_summary(memories: &[MemoryEntry]) -> String {
+    if memories.is_empty() {
+        return String::new();
+    }
+    let preferences = memories
+        .iter()
+        .filter(|entry| entry.kind == MemoryKind::Preference)
+        .count();
+    let lessons = memories
+        .iter()
+        .filter(|entry| entry.kind == MemoryKind::Lesson)
+        .count();
+    format!("（preference {preferences} · lesson {lessons}）")
+}
+
 pub fn mem_list(store: &Store, all: bool, json: bool, kind: Option<&str>) -> Result<()> {
     let kind = parse_kind(kind)?;
     let today = Date::today();
@@ -38,8 +53,9 @@ pub fn mem_list(store: &Store, all: bool, json: bool, kind: Option<&str>) -> Res
         .filter(|entry| entry.is_expired(today))
         .count();
     println!(
-        "{} 条记忆 · {} 条待验证 · {} 条已过期（不再自动注入）",
+        "{} 条记忆{} · {} 条待验证 · {} 条已过期（不再自动注入）",
         memories.len(),
+        kind_summary(&memories),
         stale,
         expired
     );
@@ -419,6 +435,29 @@ mod tests {
         let remaining = store.memories().unwrap();
         assert_eq!(remaining.len(), 1);
         assert_eq!(remaining[0].text, "fresh");
+    }
+
+    #[test]
+    fn kind_summary_counts_preferences_and_lessons() {
+        let preference = MemoryEntry::new(
+            MemoryKind::Preference,
+            "short paragraphs",
+            vec![],
+            Date::today(),
+            None,
+        );
+        let lesson = MemoryEntry::new(
+            MemoryKind::Lesson,
+            "use nextest",
+            vec![],
+            Date::today(),
+            None,
+        );
+        assert_eq!(
+            kind_summary(&[preference, lesson]),
+            "（preference 1 · lesson 1）"
+        );
+        assert_eq!(kind_summary(&[]), "");
     }
 
     #[test]
