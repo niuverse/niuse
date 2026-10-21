@@ -11,7 +11,7 @@ niuse is a personal engineering companion built on top of [niucode](https://gith
 
 ## Quick start
 
-Requires Rust 1.85+ and a local checkout of `../niuverse/niucode` (the current build uses path dependencies; a pinned git dependency is planned).
+Requires Rust 1.88+ and a local checkout of `../niuverse/niucode` (the current build uses path dependencies; a pinned git dependency is planned).
 
 ```sh
 cargo build --release

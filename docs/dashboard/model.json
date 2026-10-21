@@ -1829,6 +1829,26 @@
       "path": "docs/board/M2-060-export-title.md"
     },
     {
+      "id": "M2-061",
+      "title": "Declare the real MSRV: 1.88",
+      "status": "done",
+      "milestone": "M2",
+      "module": "cli",
+      "size": "S",
+      "priority": "P1",
+      "updated": "2026-10-22",
+      "completed": "2026-10-22",
+      "depends_on": [
+        "M2-031"
+      ],
+      "docs": [
+        "distribution"
+      ],
+      "blocked_reason": null,
+      "body_html": "<h2>Problem</h2>\n<p>The workspace declared <code>rust-version = \"1.85\"</code>, but <code>cargo +1.85.0 check</code> failed: several transitive dependencies require 1.88. Worse, <code>rustyline 19</code> uses the <code>cfg_select!</code> macro, which is still unstable on 1.92, so the interactive REPL had silently raised the effective MSRV beyond the declared one.</p>\n<h2>Fix</h2>\n<ul>\n<li>Pin <code>rustyline = \"15\"</code>: the API used here (<code>Editor</code>, <code>FileHistory</code>, <code>Completer</code>, <code>Validator</code>, history) is unchanged, and it builds on stable 1.88.</li>\n<li>Set <code>rust-version = \"1.88\"</code> and README to match.</li>\n<li>Verified with <code>cargo +1.88.0 check --workspace --all-targets</code>.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n<code>cargo +1.88.0 check</code> passes for the whole workspace.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nThe stable toolchain still passes the full check script.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nREADME and Cargo agree.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nInteractive editing behavior is unchanged.</li>\n</ul>\n<h2>Notes</h2>\n<p>A false MSRV is worse than a higher one: contributors on the declared version get a wall of dependency errors. The dependency tree, not our own syntax, sets the floor.</p>\n",
+      "path": "docs/board/M2-061-msrv-188.md"
+    },
+    {
       "id": "M3-001",
       "title": "Release and dependency strategy",
       "status": "backlog",
@@ -2048,7 +2068,7 @@
   ],
   "meta": {
     "schema_version": 1,
-    "cards": 68,
+    "cards": 69,
     "modules": 10,
     "docs": 10,
     "generator": "cargo xtask dashboard"
