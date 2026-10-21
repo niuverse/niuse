@@ -3,241 +3,30 @@
 
 mod doctor;
 mod editor;
+mod journal;
 mod loops;
 mod memory;
+mod profile;
 mod session;
 pub use doctor::doctor;
 pub(crate) use editor::{edit_markdown, edit_text};
+pub use journal::{journal_add, journal_search, journal_show};
 pub use loops::{loops_add, loops_done, loops_list};
 pub use memory::{
     mem_add, mem_confirm, mem_edit, mem_forget, mem_list, mem_prune, mem_review, mem_search,
     mem_show,
 };
+pub use profile::{identity_edit, identity_init, identity_show, user_edit, user_show};
 pub use session::{export, threads};
 
-use anyhow::{bail, Result};
-use niuse_core::model::one_line;
-use niuse_core::policy::{search_score, secret_reason};
+use anyhow::Result;
 use niuse_core::prompt::compose;
-use niuse_core::{Date, JournalDay, Store};
+use niuse_core::{Date, Store};
 use std::collections::BTreeMap;
-use std::io::{self, Write};
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::Serialize;
-
-#[derive(Debug, serde::Serialize)]
-struct JournalDayJson {
-    date: String,
-    bullets: Vec<String>,
-}
-
-#[derive(Debug, serde::Serialize)]
-struct JournalHitJson {
-    date: String,
-    text: String,
-}
-
-pub fn journal_show(store: &Store, days: usize, json: bool) -> Result<()> {
-    let days = store.recent_journal(days)?;
-    if json {
-        let items: Vec<JournalDayJson> = days
-            .iter()
-            .map(|day| JournalDayJson {
-                date: day.date.to_string(),
-                bullets: day.bullets.clone(),
-            })
-            .collect();
-        println!("{}", serde_json::to_string_pretty(&items)?);
-        return Ok(());
-    }
-    if days.is_empty() {
-        println!("（还没有 journal。）");
-        return Ok(());
-    }
-    for day in days {
-        println!("## {}", day.date);
-        for bullet in &day.bullets {
-            println!("- {bullet}");
-        }
-        println!();
-    }
-    Ok(())
-}
-
-pub fn journal_add(store: &Store, text: &str) -> Result<()> {
-    let text = one_line(text.trim().to_string());
-    if text.is_empty() {
-        bail!("journal text is empty");
-    }
-    if let Some(reason) = secret_reason(&text) {
-        bail!("refusing to store: looks like a {reason}");
-    }
-    if store.append_journal(Date::today(), std::slice::from_ref(&text))? {
-        if let Err(error) = store.append_metric("journal", "1") {
-            eprintln!("warning: cannot record metric: {error:#}");
-        }
-        println!("journal +1");
-    }
-    Ok(())
-}
-
-pub fn journal_search(store: &Store, query: &str, json: bool) -> Result<()> {
-    let query = query.trim();
-    if query.is_empty() {
-        bail!("usage: niuse journal --search <query>");
-    }
-    let days = store.recent_journal(usize::MAX)?;
-    let hits = rank_journal(query, &days);
-    if json {
-        let items: Vec<JournalHitJson> = hits
-            .iter()
-            .map(|(_, day, text)| JournalHitJson {
-                date: day.date.to_string(),
-                text: (*text).to_string(),
-            })
-            .collect();
-        println!("{}", serde_json::to_string_pretty(&items)?);
-        return Ok(());
-    }
-    if hits.is_empty() {
-        println!("没有匹配「{query}」的日记。");
-        return Ok(());
-    }
-    println!("{} 条匹配「{query}」", hits.len());
-    for (_, day, bullet) in hits.iter().take(10) {
-        println!("{}  {bullet}", day.date);
-    }
-    Ok(())
-}
-
-fn rank_journal<'a>(query: &str, days: &'a [JournalDay]) -> Vec<(f64, &'a JournalDay, &'a str)> {
-    let mut hits = Vec::new();
-    for day in days {
-        for bullet in &day.bullets {
-            let score = search_score(query, bullet, &[]);
-            if score >= 0.2 {
-                hits.push((score, day, bullet.as_str()));
-            }
-        }
-    }
-    hits.sort_by(|left, right| {
-        right
-            .0
-            .partial_cmp(&left.0)
-            .unwrap_or(std::cmp::Ordering::Equal)
-    });
-    hits
-}
-
-pub fn user_show(store: &Store) -> Result<()> {
-    println!("{}", store.user_path().display());
-    match store.user()? {
-        Some(text) => print!("{text}"),
-        None => println!("(missing; run `niuse bootstrap --profile` or `niuse user edit`)"),
-    }
-    Ok(())
-}
-
-pub fn user_edit(store: &Store) -> Result<()> {
-    let current = store.user()?.unwrap_or_else(|| {
-        "# 关于我\n\n- 我在做什么：\n- 我的工作方式：\n- 我的雷区：\n".to_string()
-    });
-    let Some(updated) = edit_markdown(&current) else {
-        println!("no change");
-        return Ok(());
-    };
-    if let Some(reason) = secret_reason(&updated) {
-        bail!("refusing to save user.md: looks like a {reason}");
-    }
-    store.write_user(&updated)?;
-    if let Err(error) = store.append_metric("user_edit", "") {
-        eprintln!("warning: cannot record metric: {error:#}");
-    }
-    println!("updated {}", store.user_path().display());
-    Ok(())
-}
-
-pub fn identity_edit(store: &Store) -> Result<()> {
-    let current = store
-        .identity()?
-        .unwrap_or_else(|| "# 你是 niuse\n\n描述它是谁、它的边界和说话方式。\n".to_string());
-    let Some(updated) = edit_markdown(&current) else {
-        println!("no change");
-        return Ok(());
-    };
-    if let Some(reason) = secret_reason(&updated) {
-        bail!("refusing to save identity.md: looks like a {reason}");
-    }
-    store.write_identity(&updated)?;
-    if let Err(error) = store.append_metric("identity_edit", "") {
-        eprintln!("warning: cannot record metric: {error:#}");
-    }
-    println!("updated {}", store.identity_path().display());
-    Ok(())
-}
-
-pub fn identity_show(store: &Store) -> Result<()> {
-    match store.identity()? {
-        Some(text) => {
-            println!("{}", store.identity_path().display());
-            println!();
-            print!("{text}");
-        }
-        None => println!(
-            "还没有 identity.md。运行 `niuse identity init` 创建：{}",
-            store.identity_path().display()
-        ),
-    }
-    Ok(())
-}
-
-pub fn identity_init(store: &Store, force: bool) -> Result<()> {
-    let path = store.identity_path();
-    if path.exists() && !force {
-        bail!(
-            "{} already exists; pass --force to overwrite",
-            path.display()
-        );
-    }
-
-    let answers = [
-        ask("你叫它什么名字", "niuse")?,
-        ask("它是你的什么（搭档 / 同事 / 朋友）", "工程搭档")?,
-        ask("用三个词描述它的性格", "直接、克制、有判断")?,
-        ask("它应该坚持的一条原则", "不知道就说不知道")?,
-        ask("它绝对不能做的一件事", "奉承我、替我做决定")?,
-        ask("它说话的方式", "先给结论，再给理由；不说客套话")?,
-        ask("它应该主动提醒你什么", "未完成的承诺和明显的风险")?,
-        ask("它怎么称呼你", "你")?,
-    ];
-
-    let name = &answers[0];
-    let relationship = &answers[1];
-    let style = &answers[5];
-    let text = format!(
-        "# 你是 {name}\n\n\
-         你是一个{relationship}，不是一个通用助手。你称呼对方为「{user}」。\n\n\
-         ## 性格\n{persona}\n\n\
-         ## 坚持\n- {principle}\n\n\
-         ## 边界\n- {boundary}\n\n\
-         ## 说话方式\n{style}\n\n\
-         ## 主动提醒\n{reminder}\n",
-        user = answers[7],
-        persona = answers[2],
-        principle = answers[3],
-        boundary = answers[4],
-        style = style,
-        reminder = answers[6],
-    );
-    if let Some(reason) = secret_reason(&text) {
-        bail!("refusing to save identity.md: looks like a {reason}");
-    }
-    store.write_identity(&text)?;
-    println!("wrote {}", path.display());
-    Ok(())
-}
 
 pub fn status(store: &Store, thread: &Path, json: bool) -> Result<()> {
     let today = Date::today();
@@ -312,21 +101,6 @@ pub fn status(store: &Store, thread: &Path, json: bool) -> Result<()> {
         composition.tokens, composition.memory_injected, composition.memory_dropped
     );
     Ok(())
-}
-
-fn ask(prompt: &str, default: &str) -> Result<String> {
-    print!("{prompt} [{default}]: ");
-    let _ = io::stdout().flush();
-    let mut line = String::new();
-    if io::stdin().read_line(&mut line)? == 0 {
-        return Ok(default.to_string());
-    }
-    let answer = line.trim();
-    Ok(if answer.is_empty() {
-        default.to_string()
-    } else {
-        answer.to_string()
-    })
 }
 
 fn normalize_id(id: &str) -> String {
@@ -602,20 +376,6 @@ mod tests {
     }
 
     #[test]
-    fn manual_journal_entry_persists() {
-        let directory = tempfile::tempdir().unwrap();
-        let store = Store::at(directory.path().join(".niuse"));
-        store.init().unwrap();
-        journal_add(&store, "decided to ship the config file").unwrap();
-        let days = store.recent_journal(1).unwrap();
-        assert_eq!(days.len(), 1);
-        assert!(days[0]
-            .bullets
-            .iter()
-            .any(|bullet| bullet.contains("config file")));
-    }
-
-    #[test]
     fn stats_report_serializes_for_dogfood() {
         let metrics = parse_metrics("0\tturn\tok\n1000\tpropose\trust\n2000\taccept\tm-1\n");
         let summary = summarize(&metrics, 0);
@@ -641,30 +401,6 @@ mod tests {
         let second = days.get(&Date::from_days(1)).unwrap();
         assert_eq!(second.turns, 1);
         assert_eq!(second.acceptance_percent(), None);
-    }
-
-    #[test]
-    fn journal_search_ranks_substring_hits() {
-        let day = JournalDay {
-            date: Date::parse("2026-10-21").unwrap(),
-            bullets: vec![
-                "decided to use cargo nextest".into(),
-                "unrelated thought about lunch".into(),
-            ],
-        };
-        let days = vec![day];
-        let hits = rank_journal("nextest", &days);
-        assert_eq!(hits.len(), 1);
-        assert_eq!(hits[0].2, "decided to use cargo nextest");
-    }
-
-    #[test]
-    fn journal_search_returns_nothing_for_unrelated_queries() {
-        let day = JournalDay {
-            date: Date::parse("2026-10-21").unwrap(),
-            bullets: vec!["decided to use cargo nextest".into()],
-        };
-        assert!(rank_journal("kubernetes", &[day]).is_empty());
     }
 
     #[test]
