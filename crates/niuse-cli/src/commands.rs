@@ -383,7 +383,7 @@ fn collect_threads(store: &Store, active: &Path) -> Result<Vec<ThreadInfo>> {
             }
         }
     }
-    entries.sort_by(|left, right| right.modified.cmp(&left.modified));
+    entries.sort_by_key(|entry| std::cmp::Reverse(entry.modified));
     Ok(entries)
 }
 
