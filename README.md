@@ -100,7 +100,7 @@ niuse stats [--days N] [--trend] [--json] local acceptance counters
 niuse status
 ```
 
-`mem list` and `mem search` accept `--kind preference|lesson` and `--tag <tag>`. `mem`, `threads`, `journal`, `loops`, `status`, `doctor`, and `stats` accept `--json` for scripts; `stats` also sums recorded token usage per window.
+`mem list` and `mem search` accept `--kind preference|lesson` and `--tag <tag>`. `mem`, `threads`, `journal`, `loops`, `status`, `doctor`, `stats`, and `config effective` accept `--json` for scripts; `stats` also sums recorded token usage per window.
 
 Inside the REPL: `/help`, `/mem`, `/mem recall`, `/mem review`, `/stats`, `/doctor`, `/remember`, `/forget`, `/loops`, `/loop`, `/done`, `/journal search`, `/journal add`, `/identity edit`, `/user`, `/model`, `/cost`, `/threads`, `/sessions`, `/resume`, `/export`, `/new`, `/journal`, `/identity`, `/cd`, `/status`, `/prompt`, `/quit`.
 
