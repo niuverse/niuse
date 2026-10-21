@@ -327,24 +327,37 @@ pub fn mem_prune(store: &Store, apply: bool) -> Result<()> {
 
 pub fn mem_review(store: &Store) -> Result<()> {
     let today = Date::today();
-    let stale: Vec<MemoryEntry> = store
+    let mut stale: Vec<MemoryEntry> = store
         .memories()?
         .into_iter()
         .filter(|entry| entry.is_stale(today))
         .collect();
+    stale.sort_by_key(|entry| entry.confirmed);
     if stale.is_empty() {
         println!("没有需要复核的记忆。");
         return Ok(());
     }
+    let expired = stale.iter().filter(|entry| entry.is_expired(today)).count();
+    println!(
+        "{} 条待复核（{} 条已过期，已过期不再注入）",
+        stale.len(),
+        expired
+    );
 
     for entry in stale {
         println!();
+        let expired = if entry.is_expired(today) {
+            " · 已过期"
+        } else {
+            ""
+        };
         println!(
-            "m-{} · {} · 最后确认 {}（{} 天前）",
+            "m-{} · {} · 最后确认 {}（{} 天前）{}",
             entry.id,
             entry.kind.as_str(),
             entry.confirmed,
-            entry.age_days(today)
+            entry.age_days(today),
+            expired
         );
         println!("  {}", entry.text);
         print!("[y] 仍然成立  [d] 删除  [s] 跳过  [q] 退出 > ");
@@ -357,10 +370,16 @@ pub fn mem_review(store: &Store) -> Result<()> {
         match line.trim().to_lowercase().as_str() {
             "y" | "yes" => {
                 store.update_memory(&entry.id, |entry| entry.confirmed = today)?;
+                if let Err(error) = store.append_metric("mem_review_accept", &entry.id) {
+                    eprintln!("warning: cannot record metric: {error:#}");
+                }
                 println!("  已确认");
             }
             "d" | "delete" => {
                 store.remove_memory(&entry.id)?;
+                if let Err(error) = store.append_metric("mem_review_delete", &entry.id) {
+                    eprintln!("warning: cannot record metric: {error:#}");
+                }
                 println!("  已删除");
             }
             "q" | "quit" => break,
