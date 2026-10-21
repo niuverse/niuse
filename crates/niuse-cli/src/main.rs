@@ -247,6 +247,8 @@ enum ConfigCommand {
     },
     /// Print the config file
     Show,
+    /// Print the merged effective values
+    Effective,
 }
 
 #[derive(Subcommand, Debug, Clone)]
@@ -409,6 +411,26 @@ async fn main() -> Result<()> {
                 Ok(())
             }
             ConfigCommand::Show => settings::show(&store),
+            ConfigCommand::Effective => {
+                let settings = settings::resolve(&cli, &store)?;
+                println!("provider    {}", settings.provider);
+                println!(
+                    "model       {}",
+                    settings.model.as_deref().unwrap_or("(provider default)")
+                );
+                println!("sandbox     {}", settings.sandbox);
+                println!("approval    {}", settings.approval);
+                println!("network     {}", settings.network);
+                println!(
+                    "max_steps   {}",
+                    if settings.max_steps == 0 {
+                        "unlimited".to_string()
+                    } else {
+                        settings.max_steps.to_string()
+                    }
+                );
+                Ok(())
+            }
         },
         Some(Command::Stats { days, trend, json }) => commands::stats(&store, days, trend, json),
         Some(Command::Status) => {

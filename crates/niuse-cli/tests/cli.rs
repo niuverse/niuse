@@ -55,3 +55,24 @@ fn threads_json_is_an_empty_array_before_the_first_run() {
     let entries: serde_json::Value = serde_json::from_slice(&output.stdout).expect("valid JSON");
     assert_eq!(entries, serde_json::json!([]));
 }
+
+#[test]
+fn effective_config_reflects_cli_overrides() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    let output = run(
+        &home,
+        &[
+            "--sandbox",
+            "read-only",
+            "--max-steps",
+            "3",
+            "config",
+            "effective",
+        ],
+    );
+    assert!(output.status.success(), "{output:?}");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("sandbox     read-only"));
+    assert!(stdout.contains("max_steps   3"));
+}

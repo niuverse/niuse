@@ -1193,7 +1193,7 @@ pub fn doctor(store: &Store, preset: &str) -> Result<()> {
         _ => report.record(
             Level::Warn,
             "user",
-            "missing; run `niuse bootstrap` or write user.md",
+            "missing; run `niuse bootstrap --profile` or `niuse user edit`",
         ),
     }
 

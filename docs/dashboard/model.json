@@ -1113,6 +1113,26 @@
       "path": "docs/board/M2-027-threads-journal-json.md"
     },
     {
+      "id": "M2-028",
+      "title": "Effective config view",
+      "status": "done",
+      "milestone": "M2",
+      "module": "cli",
+      "size": "S",
+      "priority": "P2",
+      "updated": "2026-10-22",
+      "completed": "2026-10-22",
+      "depends_on": [
+        "M2-010"
+      ],
+      "docs": [
+        "architecture"
+      ],
+      "blocked_reason": null,
+      "body_html": "<h2>Scope</h2>\n<ul>\n<li><code>niuse config effective</code> prints the merged values: provider, model, sandbox, approval, network, max_steps.</li>\n<li>Precedence is the same as runtime: CLI flag, then config file, then built-in.</li>\n<li><code>max_steps = 0</code> is shown as <code>unlimited</code>; a missing model is shown as the provider default.</li>\n<li>No provider or credential is constructed.</li>\n<li>The doctor hint now points at <code>bootstrap --profile</code> and <code>user edit</code>.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nDefaults print on a clean home.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nCLI flags override the file in the printed view.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nAn end-to-end CLI test asserts the override.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nThe command works without network or credentials.</li>\n</ul>\n<h2>Notes</h2>\n<p>The raw file answers \"what did I configure\"; this answers \"what will actually run\".</p>\n",
+      "path": "docs/board/M2-028-effective-config.md"
+    },
+    {
       "id": "M3-001",
       "title": "Release and dependency strategy",
       "status": "backlog",
@@ -1309,7 +1329,7 @@
   ],
   "meta": {
     "schema_version": 1,
-    "cards": 35,
+    "cards": 36,
     "modules": 10,
     "docs": 8,
     "generator": "cargo xtask dashboard"

@@ -49,7 +49,7 @@ network = "off"
 max_steps = 0
 ```
 
-`niuse config init` writes a commented template; `niuse config show` prints it. Offline commands never read the file, so a broken config cannot block memory inspection.
+`niuse config init` writes a commented template; `config show` prints the file; `config effective` prints the merged values after flags and built-ins. Offline commands never read the file, so a broken config cannot block memory inspection.
 
 ## What it remembers
 
