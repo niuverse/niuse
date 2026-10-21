@@ -54,6 +54,13 @@ pub(crate) fn compact_tokens(tokens: u64) -> String {
     }
 }
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct UsageTotals {
+    pub input: u64,
+    pub output: u64,
+    pub cached: u64,
+}
+
 pub struct Renderer {
     filter: StreamFilter,
     at_line_start: bool,
@@ -127,6 +134,14 @@ impl Renderer {
                 self.usage_cached += usage.cached_tokens;
             }
             AgentEvent::Phase(_) => {}
+        }
+    }
+
+    pub fn usage(&self) -> UsageTotals {
+        UsageTotals {
+            input: self.usage_input,
+            output: self.usage_output,
+            cached: self.usage_cached,
         }
     }
 

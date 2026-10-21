@@ -457,6 +457,13 @@ impl App {
             )
             .await;
             let parsed = renderer.finish();
+            let usage = renderer.usage();
+            if usage.input + usage.output + usage.cached > 0 {
+                self.metric(
+                    "tokens",
+                    &format!("{},{},{}", usage.input, usage.output, usage.cached),
+                );
+            }
             match result {
                 Ok(Some(_)) => {
                     self.metric("turn", "ok");
@@ -916,6 +923,13 @@ pub async fn run_exec(app: App, prompt: String) -> Result<()> {
     )
     .await;
     let parsed = renderer.finish();
+    let usage = renderer.usage();
+    if usage.input + usage.output + usage.cached > 0 {
+        app.metric(
+            "tokens",
+            &format!("{},{},{}", usage.input, usage.output, usage.cached),
+        );
+    }
 
     for block in parsed.blocks {
         match block {

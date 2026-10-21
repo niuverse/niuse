@@ -151,6 +151,9 @@ struct Summary {
     mem_reviews_kept: usize,
     mem_reviews_edited: usize,
     mem_reviews_deleted: usize,
+    input_tokens: u64,
+    output_tokens: u64,
+    cached_tokens: u64,
 }
 
 impl Summary {
@@ -189,6 +192,12 @@ pub fn stats(store: &Store, days: u64, trend: bool, json: bool) -> Result<()> {
     println!(
         "turns        {} ({} cancelled, {} errors)",
         report.turns, report.cancelled, report.errors
+    );
+    println!(
+        "tokens       {} in · {} out · {} cached",
+        crate::render::compact_tokens(report.input_tokens),
+        crate::render::compact_tokens(report.output_tokens),
+        crate::render::compact_tokens(report.cached_tokens)
     );
     println!(
         "candidates   {} proposed · {} accepted · {} discarded · {} edited · {} suppressed · {} blocked",
@@ -254,6 +263,9 @@ struct StatsReport {
     mem_reviews_kept: usize,
     mem_reviews_edited: usize,
     mem_reviews_deleted: usize,
+    input_tokens: u64,
+    output_tokens: u64,
+    cached_tokens: u64,
     days: Vec<DayReport>,
 }
 
@@ -288,6 +300,9 @@ impl StatsReport {
             mem_reviews_kept: summary.mem_reviews_kept,
             mem_reviews_edited: summary.mem_reviews_edited,
             mem_reviews_deleted: summary.mem_reviews_deleted,
+            input_tokens: summary.input_tokens,
+            output_tokens: summary.output_tokens,
+            cached_tokens: summary.cached_tokens,
             days: daily
                 .into_iter()
                 .map(|(date, day)| DayReport {
@@ -372,6 +387,22 @@ fn summarize(metrics: &[Metric], since_ms: u64) -> Summary {
             "mem_review_accept" => summary.mem_reviews_kept += 1,
             "mem_review_edit" => summary.mem_reviews_edited += 1,
             "mem_review_delete" => summary.mem_reviews_deleted += 1,
+            "tokens" => {
+                let mut parts = metric.detail.split(',');
+                if let (Some(input), Some(output), Some(cached)) =
+                    (parts.next(), parts.next(), parts.next())
+                {
+                    if let (Ok(input), Ok(output), Ok(cached)) = (
+                        input.parse::<u64>(),
+                        output.parse::<u64>(),
+                        cached.parse::<u64>(),
+                    ) {
+                        summary.input_tokens += input;
+                        summary.output_tokens += output;
+                        summary.cached_tokens += cached;
+                    }
+                }
+            }
             _ => {}
         }
     }
@@ -391,9 +422,9 @@ mod tests {
 
     #[test]
     fn metrics_parse_and_summarize() {
-        let text = "1000\tturn\tok\n1100\tpropose\trust\n1200\taccept\tm-1\n1300\tpropose\tgit\n1400\tdiscard\t\n1500\tblocked\tAPI key\n1600\tturn\tcancelled\n1700\tmem_review_accept\tm-1\n1800\tmem_review_delete\tm-2\n1900\tmem_review_edit\tm-3\n";
+        let text = "1000\tturn\tok\n1100\tpropose\trust\n1200\taccept\tm-1\n1300\tpropose\tgit\n1400\tdiscard\t\n1500\tblocked\tAPI key\n1600\tturn\tcancelled\n1700\tmem_review_accept\tm-1\n1800\tmem_review_delete\tm-2\n1900\tmem_review_edit\tm-3\n2000\ttokens\t100,20,5\n2100\ttokens\t50,5,0\n";
         let metrics = parse_metrics(text);
-        assert_eq!(metrics.len(), 10);
+        assert_eq!(metrics.len(), 12);
         let summary = summarize(&metrics, 0);
         assert_eq!(summary.turns, 2);
         assert_eq!(summary.cancelled, 1);
@@ -403,6 +434,9 @@ mod tests {
         assert_eq!(summary.mem_reviews_kept, 1);
         assert_eq!(summary.mem_reviews_edited, 1);
         assert_eq!(summary.mem_reviews_deleted, 1);
+        assert_eq!(summary.input_tokens, 150);
+        assert_eq!(summary.output_tokens, 25);
+        assert_eq!(summary.cached_tokens, 5);
         assert_eq!(summary.acceptance_percent(), Some(50));
     }
 
