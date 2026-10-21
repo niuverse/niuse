@@ -12,6 +12,10 @@ name: Pages
 on:
   push:
     branches: [main]
+    paths:
+      - "docs/**"
+      - "crates/xtask/**"
+      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 concurrency:
