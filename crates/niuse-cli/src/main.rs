@@ -126,7 +126,11 @@ enum Command {
     /// Review bootstrapped candidates
     Review,
     /// Check local setup without calling a model
-    Doctor,
+    Doctor {
+        /// Emit JSON
+        #[arg(long)]
+        json: bool,
+    },
     /// Inspect or edit user.md
     User {
         #[command(subcommand)]
@@ -390,9 +394,9 @@ async fn main() -> Result<()> {
             .await
         }
         Some(Command::Review) => bootstrap::review(&store),
-        Some(Command::Doctor) => {
+        Some(Command::Doctor { json }) => {
             let settings = settings::resolve(&cli, &store)?;
-            commands::doctor(&store, &settings.provider)
+            commands::doctor(&store, &settings.provider, json)
         }
         Some(Command::User { command }) => match command {
             UserCommand::Show => commands::user_show(&store),

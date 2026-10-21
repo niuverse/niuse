@@ -1121,36 +1121,55 @@ fn now_ms() -> u64 {
         .unwrap_or(0)
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
 enum Level {
     Ok,
     Warn,
     Fail,
 }
 
+#[derive(Debug, Clone, Serialize)]
+struct Check {
+    level: Level,
+    label: String,
+    detail: String,
+}
+
 #[derive(Debug, Default)]
 struct Report {
+    checks: Vec<Check>,
     failures: usize,
     warnings: usize,
 }
 
 impl Report {
     fn record(&mut self, level: Level, label: &str, detail: impl Into<String>) {
-        let tag = match level {
-            Level::Ok => "ok  ",
-            Level::Warn => "warn",
-            Level::Fail => "FAIL",
-        };
-        println!("[{tag}] {label:<11} {}", detail.into());
+        self.checks.push(Check {
+            level,
+            label: label.to_string(),
+            detail: detail.into(),
+        });
         match level {
             Level::Ok => {}
             Level::Warn => self.warnings += 1,
             Level::Fail => self.failures += 1,
         }
     }
+
+    fn print(&self) {
+        for check in &self.checks {
+            let tag = match check.level {
+                Level::Ok => "ok  ",
+                Level::Warn => "warn",
+                Level::Fail => "FAIL",
+            };
+            println!("[{tag}] {:<11} {}", check.label, check.detail);
+        }
+    }
 }
 
-pub fn doctor(store: &Store, preset: &str) -> Result<()> {
+pub fn doctor(store: &Store, preset: &str, json: bool) -> Result<()> {
     let mut report = Report::default();
 
     match fs::metadata(store.root()) {
@@ -1300,10 +1319,20 @@ pub fn doctor(store: &Store, preset: &str) -> Result<()> {
         None => report.record(Level::Ok, "pin", "no niucode.rev (installed binary)"),
     }
 
-    println!(
-        "\ndoctor: {} failure(s), {} warning(s)",
-        report.failures, report.warnings
-    );
+    if json {
+        let payload = serde_json::json!({
+            "checks": report.checks,
+            "failures": report.failures,
+            "warnings": report.warnings,
+        });
+        println!("{}", serde_json::to_string_pretty(&payload)?);
+    } else {
+        report.print();
+        println!(
+            "\ndoctor: {} failure(s), {} warning(s)",
+            report.failures, report.warnings
+        );
+    }
     if report.failures > 0 {
         bail!("doctor found {} failure(s)", report.failures);
     }
@@ -1638,13 +1667,17 @@ mod tests {
     }
 
     #[test]
-    fn report_counts_levels() {
+    fn report_counts_and_serializes_levels() {
         let mut report = Report::default();
         report.record(Level::Ok, "a", "b");
         report.record(Level::Warn, "c", "d");
         report.record(Level::Fail, "e", "f");
         assert_eq!(report.failures, 1);
         assert_eq!(report.warnings, 1);
+        let json = serde_json::to_value(&report.checks).unwrap();
+        assert_eq!(json[0]["level"], "ok");
+        assert_eq!(json[1]["level"], "warn");
+        assert_eq!(json[2]["level"], "fail");
     }
 
     #[test]

@@ -299,7 +299,7 @@ impl App {
             }
             "/stats" => commands::stats(&self.store, 7, false, false)?,
             "/doctor" => {
-                if let Err(error) = commands::doctor(&self.store, &self.provider_id) {
+                if let Err(error) = commands::doctor(&self.store, &self.provider_id, false) {
                     println!("{error}");
                 }
             }
