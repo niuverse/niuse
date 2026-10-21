@@ -77,7 +77,7 @@ Injection order is stable-to-volatile: `identity → user → memory → protoco
 
 ## Commands
 
-Global flags: `--preset`, `--model`, `--no-thinking`, `--cwd`, `--sandbox`, `--approval`, `--network`, `--home`, `--max-steps`.
+Global flags: `--preset`, `--model`, `--no-thinking`, `--cwd`, `--sandbox`, `--approval`, `--network`, `--home`, `--thread`, `--max-steps`.
 
 ```text
 niuse                         interactive REPL (resumes the same thread)
@@ -94,7 +94,7 @@ niuse stats [--days N]          local acceptance counters
 niuse status
 ```
 
-Inside the REPL: `/help`, `/mem`, `/mem recall`, `/mem review`, `/stats`, `/doctor`, `/remember`, `/forget`, `/loops`, `/loop`, `/done`, `/journal search`, `/journal add`, `/identity edit`, `/journal`, `/identity`, `/cd`, `/status`, `/prompt`, `/quit`.
+Inside the REPL: `/help`, `/mem`, `/mem recall`, `/mem review`, `/stats`, `/doctor`, `/remember`, `/forget`, `/loops`, `/loop`, `/done`, `/journal search`, `/journal add`, `/identity edit`, `/new`, `/journal`, `/identity`, `/cd`, `/status`, `/prompt`, `/quit`.
 
 Set `NIUSE_MEMORY=off` to disable both memory injection and new candidates, for A/B runs and for recovering trust.
 

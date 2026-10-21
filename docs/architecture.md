@@ -74,6 +74,7 @@ There is no second copy of the conversation. `niuse export` renders the event lo
   journal/         experience: one file per month, merged per day (automatic)
   loops.md         promises (automatic, optional due date)
   thread.jsonl     the relationship thread
+  threads/         archived chapters from `/new`
   inbox.md         bootstrap review queue
 ```
 

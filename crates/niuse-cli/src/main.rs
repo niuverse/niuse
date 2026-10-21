@@ -44,6 +44,9 @@ struct Cli {
     /// Override the niuse home (defaults to $NIUSE_HOME or ~/.niuse)
     #[arg(long, global = true)]
     home: Option<PathBuf>,
+    /// Thread JSONL to resume (defaults to ~/.niuse/thread.jsonl)
+    #[arg(long, global = true)]
+    thread: Option<PathBuf>,
     /// Maximum model turns per user request (0 = no hard cap); defaults from config
     #[arg(long, global = true)]
     max_steps: Option<usize>,
@@ -292,6 +295,6 @@ async fn main() -> Result<()> {
             ConfigCommand::Show => settings::show(&store),
         },
         Some(Command::Stats { days }) => commands::stats(&store, days),
-        Some(Command::Status) => commands::status(&store),
+        Some(Command::Status) => commands::status(&store, &store.session_path()),
     }
 }

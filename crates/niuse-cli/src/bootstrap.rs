@@ -119,9 +119,13 @@ pub async fn run(
     let existing = store.memories()?;
     let inbox = store.read_inbox()?;
     let merged = merge_candidates(&existing, inbox.as_deref(), raw);
-    let added = merged
-        .len()
-        .saturating_sub(inbox.as_deref().map(parse_inbox).map(|items| items.len()).unwrap_or(0));
+    let added = merged.len().saturating_sub(
+        inbox
+            .as_deref()
+            .map(parse_inbox)
+            .map(|items| items.len())
+            .unwrap_or(0),
+    );
 
     write_inbox(store, &merged)?;
     println!(
@@ -140,7 +144,11 @@ pub async fn run(
 ///
 /// Accepted memories and secret-bearing entries are dropped from both sides;
 /// duplicates are compared with the same similarity rule as memory writes.
-fn merge_candidates(memories: &[MemoryEntry], inbox: Option<&str>, incoming: Vec<Pending>) -> Vec<Pending> {
+fn merge_candidates(
+    memories: &[MemoryEntry],
+    inbox: Option<&str>,
+    incoming: Vec<Pending>,
+) -> Vec<Pending> {
     let mut merged: Vec<Pending> = inbox
         .map(parse_inbox)
         .unwrap_or_default()

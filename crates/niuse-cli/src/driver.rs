@@ -82,6 +82,24 @@ pub fn history(path: &Path) -> Result<Vec<ChatMessage>> {
     project_history(&loaded.events)
 }
 
+/// Move the current thread into the archive directory. Returns `None` when
+/// there is nothing to archive.
+pub fn archive_thread(path: &Path, directory: &Path) -> Result<Option<PathBuf>> {
+    if !path.exists() {
+        return Ok(None);
+    }
+    fs::create_dir_all(directory)
+        .with_context(|| format!("create directory {}", directory.display()))?;
+    let stamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|elapsed| elapsed.as_millis())
+        .unwrap_or(0);
+    let destination = directory.join(format!("thread-{stamp}.jsonl"));
+    fs::rename(path, &destination)
+        .with_context(|| format!("archive {} to {}", path.display(), destination.display()))?;
+    Ok(Some(destination))
+}
+
 pub fn new_session(directory: &Path) -> Result<SessionLog> {
     fs::create_dir_all(directory)
         .with_context(|| format!("create directory {}", directory.display()))?;
@@ -156,4 +174,32 @@ fn set_private(path: &Path) -> Result<()> {
 #[cfg(not(unix))]
 fn set_private(_path: &Path) -> Result<()> {
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn archive_moves_the_thread() {
+        let directory = tempfile::tempdir().unwrap();
+        let source = directory.path().join("thread.jsonl");
+        fs::write(&source, "{}\n").unwrap();
+        let archive = directory.path().join("threads");
+        let destination = archive_thread(&source, &archive).unwrap().unwrap();
+        assert!(!source.exists());
+        assert!(destination.exists());
+        assert_eq!(fs::read_to_string(&destination).unwrap(), "{}\n");
+    }
+
+    #[test]
+    fn archiving_a_missing_thread_is_a_noop() {
+        let directory = tempfile::tempdir().unwrap();
+        assert!(archive_thread(
+            &directory.path().join("missing.jsonl"),
+            &directory.path().join("threads")
+        )
+        .unwrap()
+        .is_none());
+    }
 }

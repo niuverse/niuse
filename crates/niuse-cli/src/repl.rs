@@ -32,6 +32,7 @@ pub struct App {
     pub max_steps: usize,
     pub prompt: String,
     pub prompt_tokens: usize,
+    pub thread_path: PathBuf,
     memory_enabled: bool,
     suppress_candidates: bool,
 }
@@ -50,6 +51,8 @@ impl App {
             .map(|value| value.trim().to_lowercase() != "off")
             .unwrap_or(true);
 
+        let thread_path = cli.thread.clone().unwrap_or_else(|| store.session_path());
+
         let mut app = Self {
             store,
             provider: bundle.provider,
@@ -62,6 +65,7 @@ impl App {
             max_steps: settings.max_steps,
             prompt: String::new(),
             prompt_tokens: 0,
+            thread_path,
             memory_enabled,
             suppress_candidates: false,
         };
@@ -94,7 +98,7 @@ impl App {
     }
 
     pub async fn run(mut self) -> Result<()> {
-        let path = self.store.session_path();
+        let path = self.thread_path.clone();
         let meta = SessionMeta {
             cwd: &self.cwd,
             model: &self.model,
@@ -115,6 +119,28 @@ impl App {
             };
             let input = line.trim();
             if input.is_empty() {
+                continue;
+            }
+            if input == "/new" {
+                driver::append_end(&thread.log)?;
+                if let Some(archived) =
+                    driver::archive_thread(&thread.path, &self.store.threads_dir())?
+                {
+                    println!("archived {}", archived.display());
+                }
+                thread = {
+                    let meta = SessionMeta {
+                        cwd: &self.cwd,
+                        model: &self.model,
+                        provider: &self.provider_id,
+                        policy: self.policy,
+                        approval: self.approval,
+                    };
+                    driver::open_thread(&self.store.session_path(), &meta)?
+                };
+                history.clear();
+                self.rebuild_prompt()?;
+                println!("new thread {}", thread.path.display());
                 continue;
             }
             if input.starts_with('/') {
@@ -317,7 +343,7 @@ impl App {
                 }
             }
             "/status" => {
-                commands::status(&self.store)?;
+                commands::status(&self.store, &thread.path)?;
                 let events = load(&thread.path)
                     .map(|loaded| loaded.events.len())
                     .unwrap_or(0);
@@ -592,6 +618,7 @@ fn print_help() {
          /stats          最近 7 天的候选接受率与活动计数\n\
          /doctor         检查本地设置，不调用模型\n\
          /identity       查看 identity.md（/identity edit 编辑）\n\
+         /new            归档当前主线并开始一条新的\n\
          /cd <path>      切换工作目录（下一个 turn 生效）\n\
          /status         当前配置与存储状态\n\
          /prompt         打印完整 system prompt（调试用）\n\

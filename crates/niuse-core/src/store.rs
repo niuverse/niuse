@@ -66,6 +66,10 @@ impl Store {
         self.root.join("thread.jsonl")
     }
 
+    pub fn threads_dir(&self) -> PathBuf {
+        self.root.join("threads")
+    }
+
     pub fn config_path(&self) -> PathBuf {
         self.root.join("config.toml")
     }

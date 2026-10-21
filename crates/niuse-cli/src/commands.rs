@@ -504,7 +504,7 @@ pub fn identity_init(store: &Store, force: bool) -> Result<()> {
     Ok(())
 }
 
-pub fn status(store: &Store) -> Result<()> {
+pub fn status(store: &Store, thread: &Path) -> Result<()> {
     let today = Date::today();
     let memories = store.memories()?;
     let loops = store.loops()?;
@@ -521,7 +521,7 @@ pub fn status(store: &Store) -> Result<()> {
     );
 
     println!("home      {}", store.root().display());
-    println!("thread    {}", store.session_path().display());
+    println!("thread    {}", thread.display());
     println!(
         "identity  {}",
         if identity.is_some() {
