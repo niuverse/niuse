@@ -1015,38 +1015,49 @@ fn secure_history(path: &Path) {
 #[cfg(not(unix))]
 fn secure_history(_path: &Path) {}
 
+const HELP: &str = r#"对话
+  直接输入一条消息；空行会被忽略。终端里行尾加 \ 可续行。
+
+记忆
+  /mem                    列出现行记忆
+  /mem recall <query>     检索记忆，包含已过期条目
+  /mem show <id>          查看单条记忆的全部字段
+  /mem review             复核过期条目（y 保留 / d 删除 / s 跳过）
+  /remember <一句话>      直接记住一条偏好
+  /forget <id>            删除一条记忆
+
+承诺与日记
+  /loops                  列出承诺
+  /loop <text>            记下一条承诺
+  /done <l-id>            关闭一条承诺
+  /journal                最近 7 天
+  /journal search <query> 检索日记条目
+  /journal add <text>     追加一条今天的日记
+
+会话
+  /export [path]          导出当前主线为 Markdown
+  /new                    归档当前主线并开始一条新的
+  /cd <path>              切换工作目录（下一个 turn 生效）
+  /status                 当前配置与存储状态
+
+模型与成本
+  /model [name]           查看或切换模型（default 回退）
+  /cost                   本次会话累计 token
+  /stats                  最近 7 天的候选接受率与活动计数
+
+身份与设置
+  /identity               查看 identity.md（/identity edit 编辑）
+  /user                   查看 user.md（/user edit 编辑）
+  /doctor                 检查本地设置，不调用模型
+
+调试
+  /prompt                 打印完整 system prompt
+  /help                   本帮助
+  /quit                   退出
+"#;
+
 fn print_help() {
-    println!(
-        "对话：直接输入；空行忽略。\n\
-         /mem            列出现行记忆\n\
-         /mem recall <query>  检索记忆，包含已过期条目\n\
-         /mem show <id>  查看单条记忆的全部字段\n\
-         /mem review     复核过期条目（y 仍然成立 / d 删除 / s 跳过）\n\
-         /remember <一句话>  直接记住一条偏好\n\
-         /forget <id>    删除一条记忆\n\
-         /loops          列出承诺\n\
-         /loop <text>    记下一条承诺\n\
-         /done <l-id>    关闭一条承诺\n\
-         /journal        最近 7 天\n\
-         /journal search <query>  检索日记条目\n\
-         /journal add <text>      追加一条今天的日记\n\
-        /export [path]  导出当前主线为 Markdown\n\
-        （终端里行尾加 \\ 可续行）\n\
-         /stats          最近 7 天的候选接受率与活动计数\n\
-         /doctor         检查本地设置，不调用模型\n\
-         /identity       查看 identity.md（/identity edit 编辑）\n\
-         /user           查看 user.md（/user edit 编辑）\n\
-         /export [path]  导出当前主线为 Markdown\n\
-        （终端里行尾加 \\ 可续行）\n\
-        /new            归档当前主线并开始一条新的\n\
-         /cd <path>      切换工作目录（下一个 turn 生效）\n\
-         /model [name]   查看或切换模型（default 回退）\n\
-        /cost           本次会话累计 token\n\
-        /status         当前配置与存储状态\n\
-         /prompt         打印完整 system prompt（调试用）\n\
-         /help           本帮助\n\
-         /quit           退出"
-    );
+    print!("{HELP}");
 }
 
 #[cfg(all(test, unix))]
