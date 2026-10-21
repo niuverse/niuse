@@ -249,7 +249,7 @@ niucode-core         SessionLog / Event
 niucode-provider / auth / tools
 ```
 
-- Two crates: `niuse-core` depends only on `anyhow` and `regex`, and its 38 tests need no API key; `niuse-cli` owns the terminal, provider wiring, and driver.
+- Two crates: `niuse-core` depends only on `anyhow` and `regex`, and its tests need no API key; `niuse-cli` owns the terminal, provider wiring, and driver.
 - The dependency currently points at a sibling checkout via a path. Publishing or moving machines requires a pinned git revision instead.
 - A `NiucodeDriver`-style seam (about 200 lines) isolates API churn: config assembly, history projection, event forwarding.
 - `niucode-cli` is a binary with no library target, so the MVP does not reuse its TUI or renderer. It writes a minimal renderer and can swap later once upstream exposes a library or a hook.

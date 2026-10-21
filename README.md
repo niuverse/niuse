@@ -140,7 +140,7 @@ crates/
   xtask/        offline dashboard generator
 ```
 
-`niuse-core` has no IO side effects outside the store layer; its 38 tests need no API key. `niuse-cli` keeps niucode behind a single ~200-line driver.
+`niuse-core` has no IO side effects outside the store layer; its tests need no API key. `niuse-cli` keeps niucode behind a single ~200-line driver.
 
 ## Dashboard
 
