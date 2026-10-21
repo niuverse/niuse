@@ -151,10 +151,11 @@ fn path_query(line: &str) -> Option<(usize, &str, PathScope)> {
 }
 
 fn path_candidates(fragment: &str, cwd: &Path, scope: PathScope) -> Vec<Pair> {
-    if fragment == "~" {
+    if fragment == "~" || fragment == "." || fragment == ".." {
+        let completed = format!("{fragment}/");
         return vec![Pair {
-            display: "~/".to_string(),
-            replacement: "~/".to_string(),
+            display: completed.clone(),
+            replacement: completed,
         }];
     }
     let (dir_prefix, name_prefix) = match fragment.rfind('/') {
@@ -1290,6 +1291,13 @@ mod tests {
         let home = path_candidates("~", directory.path(), PathScope::Any);
         assert_eq!(home.len(), 1);
         assert_eq!(home[0].replacement, "~/");
+        let up = path_candidates("..", directory.path(), PathScope::Any);
+        assert_eq!(up.len(), 1);
+        assert_eq!(up[0].replacement, "../");
+        assert_eq!(
+            path_candidates(".", directory.path(), PathScope::Any)[0].replacement,
+            "./"
+        );
 
         assert_eq!(path_query("/cd sr"), Some((4, "sr", PathScope::Directory)));
         assert_eq!(path_query("/export out"), Some((8, "out", PathScope::Any)));
