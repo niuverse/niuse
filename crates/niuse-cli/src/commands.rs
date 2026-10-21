@@ -129,6 +129,72 @@ pub fn mem_add(
     Ok(())
 }
 
+pub fn mem_show(store: &Store, id: &str) -> Result<()> {
+    let id = normalize_id(id);
+    let memories = store.memories()?;
+    let Some(entry) = memories.iter().find(|entry| entry.id == id) else {
+        bail!("no memory m-{id}");
+    };
+    println!("m-{}", entry.id);
+    println!("kind        {}", entry.kind.as_str());
+    println!(
+        "tags        {}",
+        if entry.tags.is_empty() {
+            "-".into()
+        } else {
+            entry.tags.join(", ")
+        }
+    );
+    println!("created     {}", entry.created);
+    println!("confirmed   {}", entry.confirmed);
+    println!("source      {}", entry.source.as_deref().unwrap_or("-"));
+    println!("text        {}", entry.text);
+    Ok(())
+}
+
+pub fn mem_edit(store: &Store, id: &str) -> Result<()> {
+    let id = normalize_id(id);
+    let memories = store.memories()?;
+    let Some(entry) = memories.iter().find(|entry| entry.id == id) else {
+        bail!("no memory m-{id}");
+    };
+    let Some(text) = edit_text(&entry.text) else {
+        println!("no change");
+        return Ok(());
+    };
+    if text == entry.text {
+        println!("no change");
+        return Ok(());
+    }
+    if let Some(reason) = secret_reason(&text) {
+        bail!("refusing to store: looks like a {reason}");
+    }
+    let updated = store
+        .update_memory(&id, |entry| {
+            entry.text = text;
+            entry.confirmed = Date::today();
+        })?
+        .expect("entry existed when editing started");
+    if let Err(error) = store.append_metric("edit", &updated.id) {
+        eprintln!("warning: cannot record metric: {error:#}");
+    }
+    println!("updated m-{}", updated.id);
+    Ok(())
+}
+
+/// Open `$EDITOR` on the current text. Returns `None` when the editor fails or
+/// leaves the file empty.
+pub(crate) fn edit_text(initial: &str) -> Option<String> {
+    let path = std::env::temp_dir().join(format!("niuse-memory-{}.md", std::process::id()));
+    fs::write(&path, initial).ok()?;
+    let editor = std::env::var("EDITOR").unwrap_or_else(|_| "vi".to_string());
+    let status = std::process::Command::new(&editor).arg(&path).status();
+    let text = fs::read_to_string(&path).ok();
+    let _ = fs::remove_file(&path);
+    status.ok()?.success().then_some(())?;
+    text.map(one_line).filter(|text| !text.is_empty())
+}
+
 pub fn mem_forget(store: &Store, id: &str) -> Result<()> {
     let id = normalize_id(id);
     if store.remove_memory(&id)? {
@@ -800,6 +866,13 @@ mod tests {
         assert_eq!(summary.accepted, 1);
         assert_eq!(summary.blocked, 1);
         assert_eq!(summary.acceptance_percent(), Some(50));
+    }
+
+    #[test]
+    fn memory_ids_accept_common_prefixes() {
+        assert_eq!(normalize_id("m-7f3a"), "7f3a");
+        assert_eq!(normalize_id("l-7f3a"), "7f3a");
+        assert_eq!(normalize_id("7f3a"), "7f3a");
     }
 
     #[test]

@@ -123,6 +123,10 @@ enum MemCommand {
         #[arg(long)]
         fresh: bool,
     },
+    /// Show one memory in full
+    Show { id: String },
+    /// Edit a memory in $EDITOR
+    Edit { id: String },
     /// Delete a memory
     Forget { id: String },
     /// Refresh the confirmation date
@@ -190,6 +194,8 @@ async fn main() -> Result<()> {
                 force,
             } => commands::mem_add(&store, &text, &kind, tags, force),
             MemCommand::Search { query, fresh } => commands::mem_search(&store, &query, fresh),
+            MemCommand::Show { id } => commands::mem_show(&store, &id),
+            MemCommand::Edit { id } => commands::mem_edit(&store, &id),
             MemCommand::Forget { id } => commands::mem_forget(&store, &id),
             MemCommand::Confirm { id } => commands::mem_confirm(&store, &id),
             MemCommand::Review => commands::mem_review(&store),

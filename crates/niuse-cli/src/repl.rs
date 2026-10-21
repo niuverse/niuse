@@ -1,6 +1,5 @@
 //! Interactive REPL and one-shot execution.
 
-use std::fs;
 use std::io::{self, Write};
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -10,7 +9,6 @@ use niucode_agent::ApprovalMode;
 use niucode_core::load;
 use niucode_provider::Provider;
 use niucode_tools::SandboxPolicy;
-use niuse_core::model::one_line;
 use niuse_core::policy::{conflicts, secret_reason};
 use niuse_core::prompt::compose;
 use niuse_core::{Block, Date, LoopItem, MemoryEntry, MemoryKind, Store};
@@ -228,6 +226,8 @@ impl App {
                     commands::mem_review(&self.store)?;
                 } else if let Some(query) = argument.strip_prefix("recall ") {
                     commands::mem_search(&self.store, query.trim(), false)?;
+                } else if let Some(id) = argument.strip_prefix("show ") {
+                    commands::mem_show(&self.store, id.trim())?;
                 } else {
                     commands::mem_list(&self.store, false)?;
                 }
@@ -416,7 +416,7 @@ impl App {
                     println!("已记住 m-{}", entry.id);
                 }
                 "e" | "edit" => {
-                    if let Some(edited) = edit_text(&text) {
+                    if let Some(edited) = commands::edit_text(&text) {
                         if let Some(reason) = secret_reason(&edited) {
                             println!("拒绝：疑似包含 {reason}。");
                         } else {
@@ -555,22 +555,12 @@ pub async fn run_exec(app: App, prompt: String) -> Result<()> {
     result.map(|_| ())
 }
 
-fn edit_text(initial: &str) -> Option<String> {
-    let path = std::env::temp_dir().join(format!("niuse-memory-{}.md", std::process::id()));
-    fs::write(&path, initial).ok()?;
-    let editor = std::env::var("EDITOR").unwrap_or_else(|_| "vi".to_string());
-    let status = std::process::Command::new(&editor).arg(&path).status();
-    let text = fs::read_to_string(&path).ok();
-    let _ = fs::remove_file(&path);
-    status.ok()?.success().then_some(())?;
-    text.map(one_line).filter(|text| !text.is_empty())
-}
-
 fn print_help() {
     println!(
         "对话：直接输入；空行忽略。\n\
          /mem            列出现行记忆\n\
          /mem recall <query>  检索记忆，包含已过期条目\n\
+         /mem show <id>  查看单条记忆的全部字段\n\
          /mem review     复核过期条目（y 仍然成立 / d 删除 / s 跳过）\n\
          /remember <一句话>  直接记住一条偏好\n\
          /forget <id>    删除一条记忆\n\
