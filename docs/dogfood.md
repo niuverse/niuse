@@ -51,4 +51,6 @@ Ten rows, acceptance at or above 60%, at least three cited judgements, at least 
 - Found: `--approval ask` also prompts for read-only tools such as `bash cat`; the model recovered by using `read`. Not a bug, but the transcript makes the extra approval visible.
 - `/export` wrote a `0600` Markdown file from the live REPL; `/stats` matched the one run.
 
+A second self-check the same day covered two writes with the second approval denied: `a.txt` changed, `b.txt` stayed untouched, and the model reported the partial result. A scripted `$EDITOR` also exercised `mem review` → `e`: the text changed, the confirmation date refreshed, and `mem_review_edit` landed in `metrics.jsonl`.
+
 This is a smoke test of the loop, not evidence about usefulness. The ten real days are still the gate.
