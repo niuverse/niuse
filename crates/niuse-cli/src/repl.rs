@@ -602,6 +602,13 @@ pub async fn run_exec(app: App, prompt: String) -> Result<()> {
         }
     }
 
+    let status = match &result {
+        Ok(Some(_)) => "ok",
+        Ok(None) => "cancelled",
+        Err(_) => "error",
+    };
+    app.metric("turn", status);
+
     driver::append_end(&log)?;
     println!("\nsession: {}", log.path().display());
     result.map(|_| ())

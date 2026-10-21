@@ -28,4 +28,6 @@ docs = ["architecture", "plan"]
 
 ## Notes
 
+`exec` turns are counted in the same `turn` series. Candidates printed by `exec` are not counted as proposals, because no decision is collected.
+
 This is the measurement M2-001 needs: without it, "acceptance rate ≥ 60%" is a feeling. The file is local-only and excluded from injection.
