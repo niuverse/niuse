@@ -21,7 +21,7 @@ pub use session::{export, threads};
 
 use anyhow::Result;
 use niuse_core::prompt::compose;
-use niuse_core::{Date, Store};
+use niuse_core::{Date, MemoryKind, Store};
 use std::collections::BTreeMap;
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -52,6 +52,14 @@ pub fn status(store: &Store, thread: &Path, json: bool) -> Result<()> {
         .iter()
         .filter(|entry| entry.is_expired(today))
         .count();
+    let preferences = memories
+        .iter()
+        .filter(|entry| entry.kind == MemoryKind::Preference)
+        .count();
+    let lessons = memories
+        .iter()
+        .filter(|entry| entry.kind == MemoryKind::Lesson)
+        .count();
     let open_loops = loops.iter().filter(|item| !item.done).count();
 
     if json {
@@ -62,6 +70,8 @@ pub fn status(store: &Store, thread: &Path, json: bool) -> Result<()> {
             "user": user.is_some(),
             "memory": {
                 "total": memories.len(),
+                "preferences": preferences,
+                "lessons": lessons,
                 "stale": stale,
                 "expired": expired,
             },
@@ -90,8 +100,10 @@ pub fn status(store: &Store, thread: &Path, json: bool) -> Result<()> {
         }
     );
     println!(
-        "memory    {} 条（{} 条待验证，{} 条已过期）",
+        "memory    {} 条（preference {} · lesson {}；{} 条待验证，{} 条已过期）",
         memories.len(),
+        preferences,
+        lessons,
         stale,
         expired
     );

@@ -85,6 +85,8 @@ fn status_json_has_nested_sections() {
     assert!(output.status.success(), "{output:?}");
     let status: serde_json::Value = serde_json::from_slice(&output.stdout).expect("valid JSON");
     assert_eq!(status["memory"]["total"], 0);
+    assert_eq!(status["memory"]["preferences"], 0);
+    assert_eq!(status["memory"]["lessons"], 0);
     assert_eq!(status["loops"]["open"], 0);
     assert!(status["prompt"]["tokens"].as_u64().unwrap() > 0);
 }
