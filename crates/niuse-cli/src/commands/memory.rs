@@ -31,7 +31,13 @@ fn kind_summary(memories: &[MemoryEntry]) -> String {
     format!("（preference {preferences} · lesson {lessons}）")
 }
 
-pub fn mem_list(store: &Store, all: bool, json: bool, kind: Option<&str>) -> Result<()> {
+pub fn mem_list(
+    store: &Store,
+    all: bool,
+    json: bool,
+    kind: Option<&str>,
+    tag: Option<&str>,
+) -> Result<()> {
     let kind = parse_kind(kind)?;
     let today = Date::today();
     let memories = store.memories()?;
@@ -39,6 +45,14 @@ pub fn mem_list(store: &Store, all: bool, json: bool, kind: Option<&str>) -> Res
         .iter()
         .filter(|entry| all || !entry.is_expired(today))
         .filter(|entry| kind.is_none_or(|kind| entry.kind == kind))
+        .filter(|entry| {
+            tag.is_none_or(|tag| {
+                entry
+                    .tags
+                    .iter()
+                    .any(|value| value.eq_ignore_ascii_case(tag))
+            })
+        })
         .collect();
 
     if json {
@@ -141,6 +155,7 @@ pub fn mem_search(
     fresh_only: bool,
     json: bool,
     kind: Option<&str>,
+    tag: Option<&str>,
 ) -> Result<()> {
     let kind = parse_kind(kind)?;
     let today = Date::today();
@@ -154,6 +169,14 @@ pub fn mem_search(
         .iter()
         .filter(|entry| !fresh_only || !entry.is_expired(today))
         .filter(|entry| kind.is_none_or(|kind| entry.kind == kind))
+        .filter(|entry| {
+            tag.is_none_or(|tag| {
+                entry
+                    .tags
+                    .iter()
+                    .any(|value| value.eq_ignore_ascii_case(tag))
+            })
+        })
         .map(|entry| (search_score(query, &entry.text, &entry.tags), entry))
         .filter(|(score, _)| *score >= 0.2)
         .collect();

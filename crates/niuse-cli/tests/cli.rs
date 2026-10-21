@@ -107,3 +107,30 @@ fn loops_json_round_trip() {
     assert_eq!(loops[0]["text"], "check the pin");
     assert_eq!(loops[0]["due"], "2026-10-30");
 }
+
+#[test]
+fn memory_tag_filter_selects_matching_entries() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    let first = run(
+        &home,
+        &["mem", "add", "prefer short paragraphs", "--tags", "style"],
+    );
+    assert!(first.status.success(), "{first:?}");
+    let second = run(&home, &["mem", "add", "use nextest", "--tags", "rust"]);
+    assert!(second.status.success(), "{second:?}");
+
+    let list = run(&home, &["mem", "list", "--tag", "rust", "--json"]);
+    assert!(list.status.success(), "{list:?}");
+    let entries: serde_json::Value = serde_json::from_slice(&list.stdout).expect("valid JSON");
+    assert_eq!(entries.as_array().unwrap().len(), 1);
+    assert_eq!(entries[0]["tags"][0], "rust");
+
+    let search = run(
+        &home,
+        &["mem", "search", "nextest", "--tag", "style", "--json"],
+    );
+    assert!(search.status.success(), "{search:?}");
+    let hits: serde_json::Value = serde_json::from_slice(&search.stdout).expect("valid JSON");
+    assert_eq!(hits, serde_json::json!([]));
+}

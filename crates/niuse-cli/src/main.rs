@@ -176,6 +176,9 @@ enum MemCommand {
         /// Only preference or lesson
         #[arg(long)]
         kind: Option<String>,
+        /// Only entries carrying this tag
+        #[arg(long)]
+        tag: Option<String>,
     },
     /// Add a memory directly
     Add {
@@ -201,6 +204,9 @@ enum MemCommand {
         /// Only preference or lesson
         #[arg(long)]
         kind: Option<String>,
+        /// Only entries carrying this tag
+        #[arg(long)]
+        tag: Option<String>,
     },
     /// Show one memory in full
     Show { id: String },
@@ -324,9 +330,12 @@ async fn main() -> Result<()> {
             repl::run_exec(app, prompt).await
         }
         Some(Command::Mem { command }) => match command {
-            MemCommand::List { all, json, kind } => {
-                commands::mem_list(&store, all, json, kind.as_deref())
-            }
+            MemCommand::List {
+                all,
+                json,
+                kind,
+                tag,
+            } => commands::mem_list(&store, all, json, kind.as_deref(), tag.as_deref()),
             MemCommand::Add {
                 text,
                 kind,
@@ -338,7 +347,8 @@ async fn main() -> Result<()> {
                 fresh,
                 json,
                 kind,
-            } => commands::mem_search(&store, &query, fresh, json, kind.as_deref()),
+                tag,
+            } => commands::mem_search(&store, &query, fresh, json, kind.as_deref(), tag.as_deref()),
             MemCommand::Show { id } => commands::mem_show(&store, &id),
             MemCommand::Edit { id } => commands::mem_edit(&store, &id),
             MemCommand::Forget { id } => commands::mem_forget(&store, &id),
