@@ -1990,6 +1990,26 @@
       "path": "docs/board/M2-068-rejected-tags.md"
     },
     {
+      "id": "M2-069",
+      "title": "Daily token trend",
+      "status": "done",
+      "milestone": "M2",
+      "module": "cli",
+      "size": "S",
+      "priority": "P2",
+      "updated": "2026-10-22",
+      "completed": "2026-10-22",
+      "depends_on": [
+        "M2-066"
+      ],
+      "docs": [
+        "architecture"
+      ],
+      "blocked_reason": null,
+      "body_html": "<h2>Scope</h2>\n<ul>\n<li>Per-day summaries now accumulate input/output/cached tokens.</li>\n<li><code>stats --trend</code> prints <code>12k in · 400 out</code> beside turns and acceptance.</li>\n<li><code>stats --json</code> day records carry the three token fields.</li>\n<li>Token detail parsing is one helper shared by the total and daily paths.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nA day with a token record reports its counts.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nThe trend line includes compact input/output numbers.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nJSON day entries gain the fields without breaking existing keys.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nThe daily-summary test covers tokens.</li>\n</ul>\n<h2>Notes</h2>\n<p>Totals answer \"what did this week cost\"; the trend answers \"is it getting cheaper or noisier\".</p>\n",
+      "path": "docs/board/M2-069-daily-tokens.md"
+    },
+    {
       "id": "M3-001",
       "title": "Release and dependency strategy",
       "status": "backlog",
@@ -2229,7 +2249,7 @@
   ],
   "meta": {
     "schema_version": 1,
-    "cards": 77,
+    "cards": 78,
     "modules": 10,
     "docs": 10,
     "generator": "cargo xtask dashboard"
