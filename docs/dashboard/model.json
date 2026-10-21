@@ -145,7 +145,7 @@
         {
           "path": "crates/niuse-cli/src/commands/editor.rs",
           "language": "rust",
-          "text": "//! Shared `$EDITOR` helpers.\n//!\n//! Memory text is normalised to one line; identity, user, and other Markdown\n//! bodies keep their shape.\n\nuse std::fs;\n\nuse niuse_core::model::one_line;\n\npub(crate) fn edit_markdown(initial: &str) -> Option<String> {\n    let path = std::env::temp_dir().join(format!(\"niuse-edit-{}.md\", std::process::id()));\n    fs::write(&path, initial).ok()?;\n    let editor = std::env::var(\"EDITOR\").unwrap_or_else(|_| \"vi\".to_string());\n    let status = std::process::Command::new(&editor).arg(&path).status();\n    let text = fs::read_to_string(&path).ok();\n    let _ = fs::remove_file(&path);\n    status.ok()?.success().then_some(())?;\n    text.map(|text| text.trim().to_string())\n        .filter(|text| !text.is_empty())\n}\n\n/// One-line variant used by candidate and memory editing.\npub(crate) fn edit_text(initial: &str) -> Option<String> {\n    edit_markdown(initial)\n        .map(one_line)\n        .filter(|text| !text.is_empty())\n}\n",
+          "text": "//! Shared `$EDITOR` helpers.\n//!\n//! Memory text is normalised to one line; identity, user, and other Markdown\n//! bodies keep their shape.\n\nuse std::fs;\nuse std::io::Write;\nuse std::path::PathBuf;\nuse std::time::{SystemTime, UNIX_EPOCH};\n\nuse niuse_core::model::one_line;\n\nfn private_temp_file(initial: &str) -> Option<PathBuf> {\n    let stamp = SystemTime::now()\n        .duration_since(UNIX_EPOCH)\n        .map(|elapsed| elapsed.as_nanos())\n        .unwrap_or(0);\n    let path = std::env::temp_dir().join(format!(\"niuse-edit-{}-{stamp}.md\", std::process::id()));\n    let mut options = fs::OpenOptions::new();\n    options.write(true).create_new(true);\n    #[cfg(unix)]\n    {\n        use std::os::unix::fs::OpenOptionsExt;\n        options.mode(0o600);\n    }\n    let mut file = options.open(&path).ok()?;\n    if file.write_all(initial.as_bytes()).is_err() {\n        let _ = fs::remove_file(&path);\n        return None;\n    }\n    Some(path)\n}\n\npub(crate) fn edit_markdown(initial: &str) -> Option<String> {\n    let path = private_temp_file(initial)?;\n    let editor = std::env::var(\"EDITOR\").unwrap_or_else(|_| \"vi\".to_string());\n    let status = std::process::Command::new(&editor).arg(&path).status();\n    let text = fs::read_to_string(&path).ok();\n    let _ = fs::remove_file(&path);\n    status.ok()?.success().then_some(())?;\n    text.map(|text| text.trim().to_string())\n        .filter(|text| !text.is_empty())\n}\n\n/// One-line variant used by candidate and memory editing.\npub(crate) fn edit_text(initial: &str) -> Option<String> {\n    edit_markdown(initial)\n        .map(one_line)\n        .filter(|text| !text.is_empty())\n}\n\n#[cfg(test)]\nmod tests {\n    use super::*;\n\n    #[test]\n    fn editor_temp_files_are_private_and_unique() {\n        let first = private_temp_file(\"secret\").unwrap();\n        let second = private_temp_file(\"secret\").unwrap();\n        assert_ne!(first, second);\n        assert_eq!(fs::read_to_string(&first).unwrap(), \"secret\");\n        #[cfg(unix)]\n        {\n            use std::os::unix::fs::PermissionsExt;\n            let mode = fs::metadata(&first).unwrap().permissions().mode() & 0o777;\n            assert_eq!(mode, 0o600);\n        }\n        let _ = fs::remove_file(&first);\n        let _ = fs::remove_file(&second);\n    }\n}\n",
           "truncated": false
         },
         {
@@ -2190,6 +2190,26 @@
       "path": "docs/board/M2-078-status-version.md"
     },
     {
+      "id": "M2-079",
+      "title": "Editor temp files are private",
+      "status": "done",
+      "milestone": "M2",
+      "module": "cli",
+      "size": "S",
+      "priority": "P1",
+      "updated": "2026-10-22",
+      "completed": "2026-10-22",
+      "depends_on": [
+        "M2-003"
+      ],
+      "docs": [
+        "architecture"
+      ],
+      "blocked_reason": null,
+      "body_html": "<h2>Problem</h2>\n<p><code>$EDITOR</code> helpers wrote identity, user, memory, and candidate text to <code>/tmp/niuse-edit-&lt;pid&gt;.md</code> with default permissions — typically <code>0644</code>, readable by other local users, and containing secrets before the post-edit scan runs.</p>\n<h2>Fix</h2>\n<ul>\n<li>The temp file is opened with <code>create_new</code> and mode <code>0600</code> on Unix, so it is private from creation, not after a chmod race.</li>\n<li>The name includes the pid and nanosecond stamp; concurrent edits cannot share a path.</li>\n<li>Cleanup still removes the file after the editor exits; a failed write removes it too.</li>\n<li>A unit test checks content, uniqueness, and <code>0600</code>.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nMode is <code>0600</code> at creation.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nTwo calls produce distinct paths.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nThe original text is written intact.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nThe file is removed on the normal path.</li>\n</ul>\n<h2>Notes</h2>\n<p>The secret scan protects the store; it does not protect a world-readable scratch file that existed before the scan.</p>\n",
+      "path": "docs/board/M2-079-editor-temp-perms.md"
+    },
+    {
       "id": "M3-001",
       "title": "Release and dependency strategy",
       "status": "backlog",
@@ -2429,7 +2449,7 @@
   ],
   "meta": {
     "schema_version": 1,
-    "cards": 87,
+    "cards": 88,
     "modules": 10,
     "docs": 10,
     "generator": "cargo xtask dashboard"

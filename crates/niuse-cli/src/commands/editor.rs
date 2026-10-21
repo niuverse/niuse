@@ -4,12 +4,35 @@
 //! bodies keep their shape.
 
 use std::fs;
+use std::io::Write;
+use std::path::PathBuf;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use niuse_core::model::one_line;
 
+fn private_temp_file(initial: &str) -> Option<PathBuf> {
+    let stamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|elapsed| elapsed.as_nanos())
+        .unwrap_or(0);
+    let path = std::env::temp_dir().join(format!("niuse-edit-{}-{stamp}.md", std::process::id()));
+    let mut options = fs::OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    let mut file = options.open(&path).ok()?;
+    if file.write_all(initial.as_bytes()).is_err() {
+        let _ = fs::remove_file(&path);
+        return None;
+    }
+    Some(path)
+}
+
 pub(crate) fn edit_markdown(initial: &str) -> Option<String> {
-    let path = std::env::temp_dir().join(format!("niuse-edit-{}.md", std::process::id()));
-    fs::write(&path, initial).ok()?;
+    let path = private_temp_file(initial)?;
     let editor = std::env::var("EDITOR").unwrap_or_else(|_| "vi".to_string());
     let status = std::process::Command::new(&editor).arg(&path).status();
     let text = fs::read_to_string(&path).ok();
@@ -24,4 +47,25 @@ pub(crate) fn edit_text(initial: &str) -> Option<String> {
     edit_markdown(initial)
         .map(one_line)
         .filter(|text| !text.is_empty())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn editor_temp_files_are_private_and_unique() {
+        let first = private_temp_file("secret").unwrap();
+        let second = private_temp_file("secret").unwrap();
+        assert_ne!(first, second);
+        assert_eq!(fs::read_to_string(&first).unwrap(), "secret");
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mode = fs::metadata(&first).unwrap().permissions().mode() & 0o777;
+            assert_eq!(mode, 0o600);
+        }
+        let _ = fs::remove_file(&first);
+        let _ = fs::remove_file(&second);
+    }
 }
