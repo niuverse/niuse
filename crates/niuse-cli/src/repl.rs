@@ -257,7 +257,13 @@ impl App {
                     self.metric("forget", argument);
                 }
             }
-            "/journal" => commands::journal_show(&self.store, 7)?,
+            "/journal" => {
+                if let Some(query) = argument.strip_prefix("search ") {
+                    commands::journal_search(&self.store, query.trim())?;
+                } else {
+                    commands::journal_show(&self.store, 7)?;
+                }
+            }
             "/stats" => commands::stats(&self.store, 7)?,
             "/doctor" => {
                 if let Err(error) = commands::doctor(&self.store, &self.provider_id) {
@@ -568,6 +574,7 @@ fn print_help() {
          /loop <text>    记下一条承诺\n\
          /done <l-id>    关闭一条承诺\n\
          /journal        最近 7 天\n\
+         /journal search <query>  检索日记条目\n\
          /stats          最近 7 天的候选接受率与活动计数\n\
          /doctor         检查本地设置，不调用模型\n\
          /identity       查看 identity.md\n\

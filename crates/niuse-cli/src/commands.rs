@@ -5,7 +5,7 @@ use anyhow::{bail, Context, Result};
 use niuse_core::model::one_line;
 use niuse_core::policy::{search_score, secret_reason};
 use niuse_core::prompt::compose;
-use niuse_core::{Date, LoopItem, MemoryEntry, MemoryKind, Store};
+use niuse_core::{Date, JournalDay, LoopItem, MemoryEntry, MemoryKind, Store};
 use std::fs;
 use std::io::{self, Write};
 use std::path::PathBuf;
@@ -329,6 +329,43 @@ pub fn journal_show(store: &Store, days: usize) -> Result<()> {
         println!();
     }
     Ok(())
+}
+
+pub fn journal_search(store: &Store, query: &str) -> Result<()> {
+    let query = query.trim();
+    if query.is_empty() {
+        bail!("usage: niuse journal --search <query>");
+    }
+    let days = store.recent_journal(usize::MAX)?;
+    let hits = rank_journal(query, &days);
+    if hits.is_empty() {
+        println!("没有匹配「{query}」的日记。");
+        return Ok(());
+    }
+    println!("{} 条匹配「{query}」", hits.len());
+    for (_, day, bullet) in hits.iter().take(10) {
+        println!("{}  {bullet}", day.date);
+    }
+    Ok(())
+}
+
+fn rank_journal<'a>(query: &str, days: &'a [JournalDay]) -> Vec<(f64, &'a JournalDay, &'a str)> {
+    let mut hits = Vec::new();
+    for day in days {
+        for bullet in &day.bullets {
+            let score = search_score(query, bullet, &[]);
+            if score >= 0.2 {
+                hits.push((score, day, bullet.as_str()));
+            }
+        }
+    }
+    hits.sort_by(|left, right| {
+        right
+            .0
+            .partial_cmp(&left.0)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
+    hits
 }
 
 pub fn identity_show(store: &Store) -> Result<()> {
@@ -866,6 +903,30 @@ mod tests {
         assert_eq!(summary.accepted, 1);
         assert_eq!(summary.blocked, 1);
         assert_eq!(summary.acceptance_percent(), Some(50));
+    }
+
+    #[test]
+    fn journal_search_ranks_substring_hits() {
+        let day = JournalDay {
+            date: Date::parse("2026-10-21").unwrap(),
+            bullets: vec![
+                "decided to use cargo nextest".into(),
+                "unrelated thought about lunch".into(),
+            ],
+        };
+        let days = vec![day];
+        let hits = rank_journal("nextest", &days);
+        assert_eq!(hits.len(), 1);
+        assert_eq!(hits[0].2, "decided to use cargo nextest");
+    }
+
+    #[test]
+    fn journal_search_returns_nothing_for_unrelated_queries() {
+        let day = JournalDay {
+            date: Date::parse("2026-10-21").unwrap(),
+            bullets: vec!["decided to use cargo nextest".into()],
+        };
+        assert!(rank_journal("kubernetes", &[day]).is_empty());
     }
 
     #[test]

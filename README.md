@@ -69,7 +69,7 @@ niuse exec "<task>"           run one turn; candidates are printed, never writte
 niuse identity init|show
 niuse mem list|search|show|edit|add|forget|confirm|review
 niuse loops list|add|done
-niuse journal [--days N]
+niuse journal [--days N] [--search QUERY]
 niuse bootstrap [--limit N] [--since-days N]
 niuse review
 niuse doctor                    check home, identity, credentials, sandbox, pin
@@ -77,7 +77,7 @@ niuse stats [--days N]          local acceptance counters
 niuse status
 ```
 
-Inside the REPL: `/help`, `/mem`, `/mem recall`, `/mem review`, `/stats`, `/doctor`, `/remember`, `/forget`, `/loops`, `/loop`, `/done`, `/journal`, `/identity`, `/cd`, `/status`, `/prompt`, `/quit`.
+Inside the REPL: `/help`, `/mem`, `/mem recall`, `/mem review`, `/stats`, `/doctor`, `/remember`, `/forget`, `/loops`, `/loop`, `/done`, `/journal search`, `/journal`, `/identity`, `/cd`, `/status`, `/prompt`, `/quit`.
 
 Set `NIUSE_MEMORY=off` to disable both memory injection and new candidates, for A/B runs and for recovering trust.
 

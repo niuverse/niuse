@@ -63,10 +63,13 @@ enum Command {
         #[command(subcommand)]
         command: LoopsCommand,
     },
-    /// Show the journal
+    /// Show or search the journal
     Journal {
         #[arg(long, default_value_t = 7)]
         days: usize,
+        /// Search entries instead of listing recent days
+        #[arg(long)]
+        search: Option<String>,
     },
     /// Create or show identity.md
     Identity {
@@ -205,7 +208,10 @@ async fn main() -> Result<()> {
             LoopsCommand::Add { text, due } => commands::loops_add(&store, &text, due.as_deref()),
             LoopsCommand::Done { id } => commands::loops_done(&store, &id),
         },
-        Some(Command::Journal { days }) => commands::journal_show(&store, days),
+        Some(Command::Journal { days, search }) => match search {
+            Some(query) => commands::journal_search(&store, &query),
+            None => commands::journal_show(&store, days),
+        },
         Some(Command::Identity { command }) => match command {
             IdentityCommand::Init { force } => commands::identity_init(&store, force),
             IdentityCommand::Show => commands::identity_show(&store),
