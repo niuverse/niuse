@@ -2330,6 +2330,26 @@
       "path": "docs/board/M2-085-shell-completions.md"
     },
     {
+      "id": "M2-086",
+      "title": "Slash-command errors do not end the session",
+      "status": "done",
+      "milestone": "M2",
+      "module": "repl",
+      "size": "S",
+      "priority": "P1",
+      "updated": "2026-10-22",
+      "completed": "2026-10-22",
+      "depends_on": [
+        "M0-003"
+      ],
+      "docs": [
+        "architecture"
+      ],
+      "blocked_reason": null,
+      "body_html": "<h2>Problem</h2>\n<p>The run loop used <code>self.command(...)?</code>. A typo such as <code>/mem show nope</code>, an invalid <code>/cd</code>, or a failed <code>/export</code> propagated out of the loop, printed <code>Error:</code> and exited the whole REPL.</p>\n<h2>Fix</h2>\n<ul>\n<li>Command errors are printed in place and the loop continues.</li>\n<li><code>Ok(Flow::Quit)</code> still exits; <code>Ok(Flow::Continue)</code> continues.</li>\n<li>Manual check: <code>/mem show nope</code> printed the error, <code>/status</code> still ran, <code>/quit</code> exited zero.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nA failed command prints an error and keeps the prompt.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nThe next command still executes.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n<code>/quit</code> returns zero.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nTurn errors are unchanged.</li>\n</ul>\n<h2>Notes</h2>\n<p>Interactive tools should treat a bad command like a shell does: report and keep the prompt. Only explicit quit or a broken terminal should end the session.</p>\n",
+      "path": "docs/board/M2-086-repl-error-recovery.md"
+    },
+    {
       "id": "M3-001",
       "title": "Release and dependency strategy",
       "status": "backlog",
@@ -2569,7 +2589,7 @@
   ],
   "meta": {
     "schema_version": 1,
-    "cards": 94,
+    "cards": 95,
     "modules": 10,
     "docs": 10,
     "generator": "cargo xtask dashboard"

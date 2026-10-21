@@ -492,8 +492,10 @@ impl App {
                 continue;
             }
             if input.starts_with('/') {
-                if matches!(self.command(input, &thread)?, Flow::Quit) {
-                    break;
+                match self.command(input, &thread) {
+                    Ok(Flow::Quit) => break,
+                    Ok(Flow::Continue) => {}
+                    Err(error) => eprintln!("error: {error:#}"),
                 }
                 continue;
             }
