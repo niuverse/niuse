@@ -7,7 +7,16 @@
 use std::process::Command;
 
 fn run(home: &std::path::Path, args: &[&str]) -> std::process::Output {
+    run_in(std::path::Path::new("."), home, args)
+}
+
+fn run_in(
+    directory: &std::path::Path,
+    home: &std::path::Path,
+    args: &[&str],
+) -> std::process::Output {
     Command::new(env!("CARGO_BIN_EXE_niuse"))
+        .current_dir(directory)
         .arg("--home")
         .arg(home)
         .args(args)
@@ -133,4 +142,26 @@ fn memory_tag_filter_selects_matching_entries() {
     assert!(search.status.success(), "{search:?}");
     let hits: serde_json::Value = serde_json::from_slice(&search.stdout).expect("valid JSON");
     assert_eq!(hits, serde_json::json!([]));
+}
+
+#[test]
+fn relative_thread_path_is_marked_active() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    std::fs::create_dir_all(&home).unwrap();
+    std::fs::write(
+        home.join("thread.jsonl"),
+        "{\"type\":\"session_start\",\"id\":\"thread\",\"cwd\":\"/tmp\",\"model\":\"m\",\"provider\":\"p\",\"ts\":1}\n",
+    )
+    .unwrap();
+
+    let output = run_in(
+        &home,
+        &home,
+        &["--thread", "thread.jsonl", "threads", "--json"],
+    );
+    assert!(output.status.success(), "{output:?}");
+    let threads: serde_json::Value = serde_json::from_slice(&output.stdout).expect("valid JSON");
+    assert_eq!(threads[0]["path"], "thread.jsonl");
+    assert_eq!(threads[0]["active"], true);
 }

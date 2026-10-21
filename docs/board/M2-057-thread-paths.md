@@ -25,6 +25,7 @@ docs = ["architecture"]
 - [x] `--thread` with an absolute path is unchanged.
 - [x] The default path is unchanged.
 - [x] One resolution point instead of three inline copies.
+- [x] End-to-end: from the home directory, `--thread thread.jsonl` reports `active: true`.
 
 ## Notes
 
