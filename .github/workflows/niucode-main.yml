@@ -1,0 +1,49 @@
+name: niucode main
+
+# Runs the same contract tests against the moving niucode main branch.
+# This job does not gate pull requests; it exists so drift is discovered
+# before the weekly bump, not after it.
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  compat:
+    name: Contract tests against main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out niuse
+        uses: actions/checkout@v5
+        with:
+          path: niuse
+
+      - name: Check out niucode main
+        uses: actions/checkout@v5
+        with:
+          repository: niuverse/niucode
+          path: niuverse/niucode
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libdbus-1-dev pkg-config
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: niuse -> target
+
+      - name: Contract tests
+        working-directory: niuse
+        run: cargo test --workspace

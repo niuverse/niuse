@@ -53,6 +53,17 @@
         "cargo package and installation are reproducible",
         "name, license, and release channels are settled"
       ]
+    },
+    {
+      "id": "M4",
+      "title": "Shared front end",
+      "status": "planned",
+      "goal": "Stop maintaining a second front end: reuse niucode's TUI and loop behind a library and a small hook surface.",
+      "exit": [
+        "niucode-cli exports a library plus turn hooks",
+        "niuse deletes its renderer and runs the shared TUI",
+        "the product-only layer stays below roughly 1k lines"
+      ]
     }
   ],
   "layers": [
@@ -117,6 +128,19 @@
         "At most one candidate per turn; after a rejection the session stops proposing.",
         "Ctrl-C cancels the current turn; Ctrl-D exits.",
         "The system prompt is assembled once per session."
+      ]
+    },
+    {
+      "id": "frontend",
+      "title": "Shared front end",
+      "layer": "interface",
+      "status": "planned",
+      "summary": "Reuse niucode's TUI and runtime through a library target plus turn hooks; retire niuse's renderer.",
+      "contract": "niucode-cli exposes a library and hooks for prompt augmentation, turn-end observation, and session lifecycle; niuse implements them.",
+      "paths": [],
+      "notes": [
+        "Blocked on niucode M6 terminal ownership.",
+        "The hook surface must stay generic; memory policy remains in niuse."
       ]
     },
     {
@@ -292,35 +316,61 @@
       "kind": "decision",
       "title": "Position niuse as cross-project engineering memory",
       "detail": "Not a general agent, not a second brain. Only preferences, decisions, and pitfalls; project knowledge stays in AGENTS.md.",
-      "refs": ["adr-0001", "plan"]
+      "refs": [
+        "adr-0001",
+        "plan"
+      ]
     },
     {
       "date": "2026-10-21",
       "kind": "decision",
       "title": "Keep the identity layer separate from memory",
       "detail": "identity is human-written and the agent may only propose; journal and loops are automatic; memory requires confirmation. What persists is the identity, not a process.",
-      "refs": ["adr-0002"]
+      "refs": [
+        "adr-0002"
+      ]
     },
     {
       "date": "2026-10-21",
       "kind": "decision",
       "title": "Emit protocol blocks in-band from the main model",
       "detail": "No extra model call. Missing a memory is acceptable; recording a wrong one is not. Streaming needs a tail buffer.",
-      "refs": ["plan", "M0-002"]
+      "refs": [
+        "plan",
+        "M0-002"
+      ]
     },
     {
       "date": "2026-10-21",
       "kind": "milestone",
       "title": "MVP implemented",
       "detail": "Five stores, prompt, protocol, REPL, driver, and bootstrap landed; 35 core tests and 2 bootstrap tests pass.",
-      "refs": ["M0-001", "M0-002", "M0-003", "M0-004", "M0-005"]
+      "refs": [
+        "M0-001",
+        "M0-002",
+        "M0-003",
+        "M0-004",
+        "M0-005"
+      ]
     },
     {
       "date": "2026-10-21",
       "kind": "decision",
       "title": "Reuse niucode's architecture-first board",
       "detail": "Same xtask generator and three-column shell, with a niuse project model. The board records architecture and implementation, not runtime monitoring.",
-      "refs": ["M0-006"]
+      "refs": [
+        "M0-006"
+      ]
+    },
+    {
+      "date": "2026-10-21",
+      "kind": "decision",
+      "title": "Keep two repos and move the front end upstream",
+      "detail": "niucode owns the kernel, TUI, and hooks; niuse owns identity, memory, policy, and defaults. Merge only if the product layer becomes thin enough that separate releases stop mattering.",
+      "refs": [
+        "adr-0003",
+        "M4-001"
+      ]
     }
   ]
 }

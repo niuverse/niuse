@@ -36,12 +36,18 @@ jobs:
         with:
           path: niuse
 
+      - name: Read pinned niucode revision
+        id: niucode
+        working-directory: niuse
+        run: echo "rev=$(cat niucode.rev)" >> "$GITHUB_OUTPUT"
+
       # The dashboard generator is a workspace member, and the workspace has
       # path dependencies on niucode; check the sibling repository out too.
       - name: Check out niucode
         uses: actions/checkout@v5
         with:
           repository: niuverse/niucode
+          ref: ${{ steps.niucode.outputs.rev }}
           path: niuverse/niucode
 
       - name: Check Pages availability

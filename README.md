@@ -29,6 +29,12 @@ Model credentials are shared with niucode:
 niucode auth set deepseek
 ```
 
+## Syncing with niucode
+
+niuse pins niucode in `niucode.rev`; required CI and Pages build against that commit. Move the pin with `./scripts/sync-niucode.sh <rev>`, which runs the contract tests, and see [compat](docs/compat.md) for the matrix. A nightly workflow runs the same tests against niucode `main` so drift surfaces early.
+
+The relationship: **niucode is the kernel and reference UI; niuse is the product and identity.** The front end is moving upstream behind a library target and turn hooks ([ADR-0003](docs/adr/0003-kernel-product-boundary.md)); after that niuse keeps only identity, memory, policy, and product defaults.
+
 ## What it remembers
 
 ```text
@@ -142,3 +148,5 @@ A daemon, a web UI, WeChat / Feishu bridges, scheduled push notifications, vecto
 - [Architecture](docs/architecture.md): boundaries, data flow, write thresholds.
 - [ADR-0001: memory layer](docs/adr/0001-memory-layer.md)
 - [ADR-0002: identity layer](docs/adr/0002-identity-layer.md)
+- [ADR-0003: kernel and product boundary](docs/adr/0003-kernel-product-boundary.md)
+- [niucode compatibility](docs/compat.md)

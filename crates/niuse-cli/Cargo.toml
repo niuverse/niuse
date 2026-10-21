@@ -22,3 +22,6 @@ niucode-core.workspace = true
 niucode-provider.workspace = true
 niucode-tools.workspace = true
 tokio.workspace = true
+
+[dev-dependencies]
+tempfile = "3"

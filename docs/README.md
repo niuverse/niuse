@@ -42,7 +42,9 @@ docs/
   adr/
     0001-memory-layer.md
     0002-identity-layer.md
+    0003-kernel-product-boundary.md
   architecture.md
+  compat.md
   plan.md
 ```
 
