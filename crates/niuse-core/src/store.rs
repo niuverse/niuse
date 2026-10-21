@@ -405,9 +405,14 @@ impl Store {
             fs::create_dir_all(parent)
                 .with_context(|| format!("create directory {}", parent.display()))?;
         }
-        let mut file = fs::OpenOptions::new()
-            .create(true)
-            .append(true)
+        let mut options = fs::OpenOptions::new();
+        options.create(true).append(true);
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::OpenOptionsExt;
+            options.mode(0o600);
+        }
+        let mut file = options
             .open(&path)
             .with_context(|| format!("open {}", path.display()))?;
         set_mode(&path, 0o600)?;

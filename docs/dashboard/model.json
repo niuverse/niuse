@@ -2290,6 +2290,26 @@
       "path": "docs/board/M2-083-thread-file-private.md"
     },
     {
+      "id": "M2-084",
+      "title": "Metrics file is private at creation",
+      "status": "done",
+      "milestone": "M2",
+      "module": "stores",
+      "size": "S",
+      "priority": "P1",
+      "updated": "2026-10-22",
+      "completed": "2026-10-22",
+      "depends_on": [
+        "M2-004"
+      ],
+      "docs": [
+        "architecture"
+      ],
+      "blocked_reason": null,
+      "body_html": "<h2>Problem</h2>\n<p><code>append_metric</code> opened <code>metrics.jsonl</code> without a creation mode and chmodded to <code>0600</code> afterwards. It was the last writer using the create-then-repair pattern.</p>\n<h2>Fix</h2>\n<ul>\n<li>The open options set mode <code>0600</code> on Unix; the existing chmod remains as a repair for old files.</li>\n<li>The existing metrics test continues to assert the final mode and content order.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nNew metric files are <code>0600</code> at creation.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nExisting loose files are repaired.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nAppend order and sanitization are unchanged.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nAll store writers now use create-private-then-write.</li>\n</ul>\n<h2>Notes</h2>\n<p>With store, editor, export, thread, and metrics fixed, no production writer creates a readable file before setting permissions.</p>\n",
+      "path": "docs/board/M2-084-metrics-private.md"
+    },
+    {
       "id": "M3-001",
       "title": "Release and dependency strategy",
       "status": "backlog",
@@ -2529,7 +2549,7 @@
   ],
   "meta": {
     "schema_version": 1,
-    "cards": 92,
+    "cards": 93,
     "modules": 10,
     "docs": 10,
     "generator": "cargo xtask dashboard"
