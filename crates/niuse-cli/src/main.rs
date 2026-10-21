@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 mod bootstrap;
 mod commands;
 mod config;

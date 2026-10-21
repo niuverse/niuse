@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 mod load;
 mod model;
 mod render;

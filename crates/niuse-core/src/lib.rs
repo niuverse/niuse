@@ -4,6 +4,8 @@
 //! No runtime, no provider, no terminal. `niuse-core` is pure enough to test
 //! without an API key or a filesystem sandbox.
 
+#![forbid(unsafe_code)]
+
 pub mod candidate;
 pub mod date;
 pub mod model;
