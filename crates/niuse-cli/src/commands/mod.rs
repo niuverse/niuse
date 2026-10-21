@@ -241,8 +241,16 @@ pub fn stats(store: &Store, days: u64, trend: bool, json: bool) -> Result<()> {
                 .acceptance_percent
                 .map(|percent| format!("{percent}%"))
                 .unwrap_or_else(|| "-".to_string());
+            let cached = if day.cached_tokens > 0 {
+                format!(
+                    " · {} cached",
+                    crate::render::compact_tokens(day.cached_tokens)
+                )
+            } else {
+                String::new()
+            };
             println!(
-                "{}  {:>3} turns  {:>2}/{:<2} accepted  {acceptance}  {:>5} in · {:>4} out",
+                "{}  {:>3} turns  {:>2}/{:<2} accepted  {acceptance}  {:>5} in · {:>4} out{cached}",
                 day.date,
                 day.turns,
                 day.accepted,

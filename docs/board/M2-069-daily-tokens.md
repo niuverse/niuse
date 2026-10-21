@@ -15,14 +15,14 @@ docs = ["architecture"]
 ## Scope
 
 - Per-day summaries now accumulate input/output/cached tokens.
-- `stats --trend` prints `12k in · 400 out` beside turns and acceptance.
+- `stats --trend` prints `12k in · 400 out` beside turns and acceptance, plus `· N cached` when the day had cache hits.
 - `stats --json` day records carry the three token fields.
 - Token detail parsing is one helper shared by the total and daily paths.
 
 ## Acceptance
 
 - [x] A day with a token record reports its counts.
-- [x] The trend line includes compact input/output numbers.
+- [x] The trend line includes compact input/output numbers and cached when non-zero.
 - [x] JSON day entries gain the fields without breaking existing keys.
 - [x] The daily-summary test covers tokens.
 

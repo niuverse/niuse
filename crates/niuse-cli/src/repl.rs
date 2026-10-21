@@ -1327,6 +1327,11 @@ mod tests {
         let prefixed = id_candidates(&store, IdScope::Memory, &format!("m-{}", &first.id[..2]));
         assert_eq!(prefixed.len(), 1);
         assert_eq!(prefixed[0].replacement, format!("m-{}", first.id));
+
+        let loop_item = store.add_loop(LoopItem::new("open loop", None)).unwrap();
+        let loops = id_candidates(&store, IdScope::Loop, "l-");
+        assert_eq!(loops.len(), 1);
+        assert_eq!(loops[0].replacement, format!("l-{}", loop_item.id));
     }
 
     #[test]
