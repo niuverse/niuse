@@ -17,12 +17,14 @@ use niucode_auth::AuthStore;
 use niucode_provider::Preset;
 use serde::Serialize;
 
-pub fn mem_list(store: &Store, all: bool, json: bool) -> Result<()> {
+pub fn mem_list(store: &Store, all: bool, json: bool, kind: Option<&str>) -> Result<()> {
+    let kind = parse_kind(kind)?;
     let today = Date::today();
     let memories = store.memories()?;
     let shown: Vec<&MemoryEntry> = memories
         .iter()
         .filter(|entry| all || !entry.is_expired(today))
+        .filter(|entry| kind.map_or(true, |kind| entry.kind == kind))
         .collect();
 
     if json {
@@ -85,6 +87,14 @@ impl<'a> From<&'a MemoryEntry> for MemoryJson<'a> {
     }
 }
 
+fn parse_kind(kind: Option<&str>) -> Result<Option<MemoryKind>> {
+    kind.map(|value| {
+        MemoryKind::parse(value)
+            .with_context(|| format!("unknown kind {value:?}; use preference or lesson"))
+    })
+    .transpose()
+}
+
 fn entry_line(entry: &MemoryEntry, today: Date) -> String {
     let age = entry.age_days(today);
     let age_label = match age {
@@ -110,7 +120,14 @@ fn entry_line(entry: &MemoryEntry, today: Date) -> String {
 
 /// Search every memory, including expired ones: recall is exactly where old
 /// entries are still useful, even though they are no longer auto-injected.
-pub fn mem_search(store: &Store, query: &str, fresh_only: bool, json: bool) -> Result<()> {
+pub fn mem_search(
+    store: &Store,
+    query: &str,
+    fresh_only: bool,
+    json: bool,
+    kind: Option<&str>,
+) -> Result<()> {
+    let kind = parse_kind(kind)?;
     let today = Date::today();
     let query = query.trim();
     if query.is_empty() {
@@ -121,6 +138,7 @@ pub fn mem_search(store: &Store, query: &str, fresh_only: bool, json: bool) -> R
     let mut scored: Vec<(f64, &MemoryEntry)> = memories
         .iter()
         .filter(|entry| !fresh_only || !entry.is_expired(today))
+        .filter(|entry| kind.map_or(true, |kind| entry.kind == kind))
         .map(|entry| (search_score(query, &entry.text, &entry.tags), entry))
         .filter(|(score, _)| *score >= 0.2)
         .collect();
@@ -1479,6 +1497,16 @@ mod tests {
             bullets: vec!["decided to use cargo nextest".into()],
         };
         assert!(rank_journal("kubernetes", &[day]).is_empty());
+    }
+
+    #[test]
+    fn kind_filter_parses_and_rejects() {
+        assert_eq!(
+            parse_kind(Some("lesson")).unwrap(),
+            Some(MemoryKind::Lesson)
+        );
+        assert_eq!(parse_kind(None).unwrap(), None);
+        assert!(parse_kind(Some("other")).is_err());
     }
 
     #[test]

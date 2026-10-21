@@ -96,7 +96,7 @@ niuse stats [--days N] [--trend] [--json] local acceptance counters
 niuse status
 ```
 
-`mem list`, `mem search`, and `stats` accept `--json` for scripts.
+`mem list` and `mem search` accept `--kind preference|lesson`; both, plus `stats`, accept `--json` for scripts.
 
 Inside the REPL: `/help`, `/mem`, `/mem recall`, `/mem review`, `/stats`, `/doctor`, `/remember`, `/forget`, `/loops`, `/loop`, `/done`, `/journal search`, `/journal add`, `/identity edit`, `/user`, `/new`, `/journal`, `/identity`, `/cd`, `/status`, `/prompt`, `/quit`.
 
