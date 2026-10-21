@@ -145,7 +145,7 @@
         {
           "path": "crates/niuse-cli/src/commands/editor.rs",
           "language": "rust",
-          "text": "//! Shared `$EDITOR` helpers.\n//!\n//! Memory text is normalised to one line; identity, user, and other Markdown\n//! bodies keep their shape.\n\nuse std::fs;\nuse std::io::Write;\nuse std::path::PathBuf;\nuse std::time::{SystemTime, UNIX_EPOCH};\n\nuse niuse_core::model::one_line;\n\nfn private_temp_file(initial: &str) -> Option<PathBuf> {\n    let stamp = SystemTime::now()\n        .duration_since(UNIX_EPOCH)\n        .map(|elapsed| elapsed.as_nanos())\n        .unwrap_or(0);\n    let path = std::env::temp_dir().join(format!(\"niuse-edit-{}-{stamp}.md\", std::process::id()));\n    let mut options = fs::OpenOptions::new();\n    options.write(true).create_new(true);\n    #[cfg(unix)]\n    {\n        use std::os::unix::fs::OpenOptionsExt;\n        options.mode(0o600);\n    }\n    let mut file = options.open(&path).ok()?;\n    if file.write_all(initial.as_bytes()).is_err() {\n        let _ = fs::remove_file(&path);\n        return None;\n    }\n    Some(path)\n}\n\npub(crate) fn edit_markdown(initial: &str) -> Option<String> {\n    let path = private_temp_file(initial)?;\n    let editor = std::env::var(\"EDITOR\").unwrap_or_else(|_| \"vi\".to_string());\n    let status = std::process::Command::new(&editor).arg(&path).status();\n    let text = fs::read_to_string(&path).ok();\n    let _ = fs::remove_file(&path);\n    status.ok()?.success().then_some(())?;\n    text.map(|text| text.trim().to_string())\n        .filter(|text| !text.is_empty())\n}\n\n/// One-line variant used by candidate and memory editing.\npub(crate) fn edit_text(initial: &str) -> Option<String> {\n    edit_markdown(initial)\n        .map(one_line)\n        .filter(|text| !text.is_empty())\n}\n\n#[cfg(test)]\nmod tests {\n    use super::*;\n\n    #[test]\n    fn editor_temp_files_are_private_and_unique() {\n        let first = private_temp_file(\"secret\").unwrap();\n        let second = private_temp_file(\"secret\").unwrap();\n        assert_ne!(first, second);\n        assert_eq!(fs::read_to_string(&first).unwrap(), \"secret\");\n        #[cfg(unix)]\n        {\n            use std::os::unix::fs::PermissionsExt;\n            let mode = fs::metadata(&first).unwrap().permissions().mode() & 0o777;\n            assert_eq!(mode, 0o600);\n        }\n        let _ = fs::remove_file(&first);\n        let _ = fs::remove_file(&second);\n    }\n}\n",
+          "text": "//! Shared `$EDITOR` helpers.\n//!\n//! Memory text is normalised to one line; identity, user, and other Markdown\n//! bodies keep their shape.\n\nuse std::fs;\nuse std::io::Write;\nuse std::path::PathBuf;\nuse std::time::{SystemTime, UNIX_EPOCH};\n\nuse niuse_core::model::one_line;\n\nfn private_temp_file(initial: &str) -> Option<PathBuf> {\n    let stamp = SystemTime::now()\n        .duration_since(UNIX_EPOCH)\n        .map(|elapsed| elapsed.as_nanos())\n        .unwrap_or(0);\n    let path = std::env::temp_dir().join(format!(\"niuse-edit-{}-{stamp}.md\", std::process::id()));\n    let mut options = fs::OpenOptions::new();\n    options.write(true).create_new(true);\n    #[cfg(unix)]\n    {\n        use std::os::unix::fs::OpenOptionsExt;\n        options.mode(0o600);\n    }\n    let mut file = options.open(&path).ok()?;\n    if file.write_all(initial.as_bytes()).is_err() {\n        let _ = fs::remove_file(&path);\n        return None;\n    }\n    Some(path)\n}\n\nfn editor_parts(editor: &str) -> (String, Vec<String>) {\n    let mut parts = editor.split_whitespace();\n    let program = parts.next().unwrap_or(\"vi\").to_string();\n    (program, parts.map(str::to_string).collect())\n}\n\npub(crate) fn edit_markdown(initial: &str) -> Option<String> {\n    let path = private_temp_file(initial)?;\n    let editor = std::env::var(\"VISUAL\")\n        .or_else(|_| std::env::var(\"EDITOR\"))\n        .unwrap_or_else(|_| \"vi\".to_string());\n    let (program, arguments) = editor_parts(&editor);\n    let status = std::process::Command::new(&program)\n        .args(&arguments)\n        .arg(&path)\n        .status();\n    let text = fs::read_to_string(&path).ok();\n    let _ = fs::remove_file(&path);\n    status.ok()?.success().then_some(())?;\n    text.map(|text| text.trim().to_string())\n        .filter(|text| !text.is_empty())\n}\n\n/// One-line variant used by candidate and memory editing.\npub(crate) fn edit_text(initial: &str) -> Option<String> {\n    edit_markdown(initial)\n        .map(one_line)\n        .filter(|text| !text.is_empty())\n}\n\n#[cfg(test)]\nmod tests {\n    use super::*;\n\n    #[test]\n    fn editor_strings_split_into_program_and_arguments() {\n        assert_eq!(\n            editor_parts(\"code --wait\"),\n            (\"code\".to_string(), vec![\"--wait\".to_string()])\n        );\n        assert_eq!(editor_parts(\"\"), (\"vi\".to_string(), Vec::<String>::new()));\n        assert_eq!(\n            editor_parts(\"vim\"),\n            (\"vim\".to_string(), Vec::<String>::new())\n        );\n    }\n\n    #[test]\n    fn editor_temp_files_are_private_and_unique() {\n        let first = private_temp_file(\"secret\").unwrap();\n        let second = private_temp_file(\"secret\").unwrap();\n        assert_ne!(first, second);\n        assert_eq!(fs::read_to_string(&first).unwrap(), \"secret\");\n        #[cfg(unix)]\n        {\n            use std::os::unix::fs::PermissionsExt;\n            let mode = fs::metadata(&first).unwrap().permissions().mode() & 0o777;\n            assert_eq!(mode, 0o600);\n        }\n        let _ = fs::remove_file(&first);\n        let _ = fs::remove_file(&second);\n    }\n}\n",
           "truncated": false
         },
         {
@@ -2250,6 +2250,26 @@
       "path": "docs/board/M2-081-export-private.md"
     },
     {
+      "id": "M2-082",
+      "title": "Editor command respects arguments and VISUAL",
+      "status": "done",
+      "milestone": "M2",
+      "module": "cli",
+      "size": "S",
+      "priority": "P2",
+      "updated": "2026-10-22",
+      "completed": "2026-10-22",
+      "depends_on": [
+        "M2-003"
+      ],
+      "docs": [
+        "architecture"
+      ],
+      "blocked_reason": null,
+      "body_html": "<h2>Problem</h2>\n<p><code>$EDITOR</code> was passed whole to <code>Command::new</code>, so a common value like <code>code --wait</code> was treated as one executable name and failed. An empty <code>$EDITOR</code> failed the same way, and <code>$VISUAL</code> was ignored.</p>\n<h2>Fix</h2>\n<ul>\n<li><code>$VISUAL</code> wins, then <code>$EDITOR</code>, then <code>vi</code>.</li>\n<li>The value is split into program plus arguments; the temp path is appended as the final argument.</li>\n<li>Empty values fall back to <code>vi</code>.</li>\n<li>A pure <code>editor_parts</code> test covers <code>code --wait</code>, empty, and a bare program.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n<code>code --wait</code> becomes program plus one argument.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nEmpty input yields <code>vi</code>.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nThe edited file path is still the last argument.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nTemporary files stay private.</li>\n</ul>\n<h2>Notes</h2>\n<p>This does not attempt shell quoting; editors with quoted paths should be wrapped in a small script. Ordinary flags are the common case.</p>\n",
+      "path": "docs/board/M2-082-editor-args.md"
+    },
+    {
       "id": "M3-001",
       "title": "Release and dependency strategy",
       "status": "backlog",
@@ -2489,7 +2509,7 @@
   ],
   "meta": {
     "schema_version": 1,
-    "cards": 90,
+    "cards": 91,
     "modules": 10,
     "docs": 10,
     "generator": "cargo xtask dashboard"

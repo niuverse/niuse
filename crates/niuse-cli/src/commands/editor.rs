@@ -31,10 +31,22 @@ fn private_temp_file(initial: &str) -> Option<PathBuf> {
     Some(path)
 }
 
+fn editor_parts(editor: &str) -> (String, Vec<String>) {
+    let mut parts = editor.split_whitespace();
+    let program = parts.next().unwrap_or("vi").to_string();
+    (program, parts.map(str::to_string).collect())
+}
+
 pub(crate) fn edit_markdown(initial: &str) -> Option<String> {
     let path = private_temp_file(initial)?;
-    let editor = std::env::var("EDITOR").unwrap_or_else(|_| "vi".to_string());
-    let status = std::process::Command::new(&editor).arg(&path).status();
+    let editor = std::env::var("VISUAL")
+        .or_else(|_| std::env::var("EDITOR"))
+        .unwrap_or_else(|_| "vi".to_string());
+    let (program, arguments) = editor_parts(&editor);
+    let status = std::process::Command::new(&program)
+        .args(&arguments)
+        .arg(&path)
+        .status();
     let text = fs::read_to_string(&path).ok();
     let _ = fs::remove_file(&path);
     status.ok()?.success().then_some(())?;
@@ -52,6 +64,19 @@ pub(crate) fn edit_text(initial: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn editor_strings_split_into_program_and_arguments() {
+        assert_eq!(
+            editor_parts("code --wait"),
+            ("code".to_string(), vec!["--wait".to_string()])
+        );
+        assert_eq!(editor_parts(""), ("vi".to_string(), Vec::<String>::new()));
+        assert_eq!(
+            editor_parts("vim"),
+            ("vim".to_string(), Vec::<String>::new())
+        );
+    }
 
     #[test]
     fn editor_temp_files_are_private_and_unique() {
