@@ -7,7 +7,7 @@ use std::sync::{Arc, Mutex};
 
 use anyhow::{bail, Context, Result};
 use niucode_agent::ApprovalMode;
-use niucode_core::load;
+use niucode_core::{load, Event};
 use niucode_provider::Provider;
 use niucode_tools::SandboxPolicy;
 use niuse_core::policy::{conflicts, secret_reason};
@@ -50,6 +50,7 @@ const SLASH_COMMANDS: &[&str] = &[
     "/status",
     "/prompt",
     "/model",
+    "/cost",
 ];
 
 fn slash_candidates(prefix: &str) -> Vec<&'static str> {
@@ -640,6 +641,22 @@ impl App {
                     println!("cwd: {}", self.cwd.display());
                 }
             }
+            "/cost" => {
+                let totals = usage_totals(&load(&thread.path)?.events);
+                let mut line = format!(
+                    "session: {} turns · {} in · {} out",
+                    totals.turns,
+                    render::compact_tokens(totals.input),
+                    render::compact_tokens(totals.output)
+                );
+                if totals.cached > 0 {
+                    line.push_str(&format!(
+                        " · {} cached",
+                        render::compact_tokens(totals.cached)
+                    ));
+                }
+                println!("{line}");
+            }
             "/model" => {
                 if argument.is_empty() {
                     println!("model: {} · provider {}", self.model, self.provider_id);
@@ -930,6 +947,27 @@ pub async fn run_exec(app: App, prompt: String) -> Result<()> {
     result.map(|_| ())
 }
 
+#[derive(Debug, Default, PartialEq, Eq)]
+struct UsageTotals {
+    turns: usize,
+    input: u64,
+    output: u64,
+    cached: u64,
+}
+
+fn usage_totals(events: &[Event]) -> UsageTotals {
+    let mut totals = UsageTotals::default();
+    for event in events {
+        if let Event::TurnEnd { usage, .. } = event {
+            totals.turns += 1;
+            totals.input += usage.input_tokens;
+            totals.output += usage.output_tokens;
+            totals.cached += usage.cached_tokens;
+        }
+    }
+    totals
+}
+
 fn model_override(argument: &str) -> Option<&str> {
     if argument.eq_ignore_ascii_case("default") {
         None
@@ -1003,6 +1041,7 @@ fn print_help() {
         /new            归档当前主线并开始一条新的\n\
          /cd <path>      切换工作目录（下一个 turn 生效）\n\
          /model [name]   查看或切换模型（default 回退）\n\
+        /cost           本次会话累计 token\n\
         /status         当前配置与存储状态\n\
          /prompt         打印完整 system prompt（调试用）\n\
          /help           本帮助\n\
@@ -1023,6 +1062,25 @@ mod tests {
         assert_eq!(slash_candidates("/zzz"), Vec::<&str>::new());
         assert_eq!(slash_candidates("hello"), Vec::<&str>::new());
         assert_eq!(slash_candidates("/mem "), Vec::<&str>::new());
+    }
+
+    #[test]
+    fn usage_totals_counts_turns() {
+        let events: Vec<Event> = vec![
+            serde_json::from_str(
+                r#"{"type":"turn_end","usage":{"input_tokens":100,"output_tokens":10,"cached_tokens":40},"ts":1}"#,
+            )
+            .unwrap(),
+            serde_json::from_str(
+                r#"{"type":"turn_end","usage":{"input_tokens":50,"output_tokens":5,"cached_tokens":0},"ts":2}"#,
+            )
+            .unwrap(),
+        ];
+        let totals = usage_totals(&events);
+        assert_eq!(totals.turns, 2);
+        assert_eq!(totals.input, 150);
+        assert_eq!(totals.output, 15);
+        assert_eq!(totals.cached, 40);
     }
 
     #[test]

@@ -19,7 +19,7 @@ fn styled(code: &str, text: &str) -> String {
 }
 
 /// Short token counts: `999`, `1.5k`, `12k`.
-fn compact_tokens(tokens: u64) -> String {
+pub(crate) fn compact_tokens(tokens: u64) -> String {
     if tokens < 1_000 {
         return tokens.to_string();
     }

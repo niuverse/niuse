@@ -98,7 +98,7 @@ niuse status
 
 `mem list` and `mem search` accept `--kind preference|lesson`. `mem`, `threads`, `journal`, `loops`, `status`, `doctor`, and `stats` accept `--json` for scripts.
 
-Inside the REPL: `/help`, `/mem`, `/mem recall`, `/mem review`, `/stats`, `/doctor`, `/remember`, `/forget`, `/loops`, `/loop`, `/done`, `/journal search`, `/journal add`, `/identity edit`, `/user`, `/model`, `/export`, `/new`, `/journal`, `/identity`, `/cd`, `/status`, `/prompt`, `/quit`.
+Inside the REPL: `/help`, `/mem`, `/mem recall`, `/mem review`, `/stats`, `/doctor`, `/remember`, `/forget`, `/loops`, `/loop`, `/done`, `/journal search`, `/journal add`, `/identity edit`, `/user`, `/model`, `/cost`, `/export`, `/new`, `/journal`, `/identity`, `/cd`, `/status`, `/prompt`, `/quit`.
 
 On a terminal the prompt has line editing, persistent history (`~/.niuse/history`, `0600`), Tab completion for slash commands, memory/loop ids, and paths after `/cd` / `/export`; a trailing `\` continues the prompt; piped input keeps the plain reader. Each turn ends with a compact usage line, and tool lines are dimmed unless `NO_COLOR` is set.
 
