@@ -25,6 +25,7 @@ docs = ["architecture"]
 - [x] Text uses compact counts; JSON uses raw numbers.
 - [x] A run with zero usage writes no metric.
 - [x] The summariser test covers the new kind.
+- [x] A real `exec` wrote `1660,61,1408` and `stats --json` summed it.
 
 ## Notes
 
