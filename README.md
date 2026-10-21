@@ -104,13 +104,24 @@ crates/
   niuse-cli/    REPL、命令、provider 装配、session 驱动、bootstrap
 ```
 
-`niuse-core` 没有 IO 副作用（存储层除外），35 个单测不需要 API key。`niuse-cli` 用一层约 200 行的 driver 把 niucode 的 API 挡在外面。
+`niuse-core` 没有 IO 副作用（存储层除外），测试不需要 API key。当前共 41 个单测（core 35、bootstrap 2、看板 4）。`niuse-cli` 用一层约 200 行的 driver 把 niucode 的 API 挡在外面。
+
+## 架构看板
+
+```sh
+cargo xtask dashboard          # 生成 docs/index.html
+cargo xtask dashboard --check  # 生成物过期或引用断开时失败
+```
+
+四个视图：Architecture（默认）、Work、Docs、Decisions。源文件是 `docs/dashboard/project.json`、`docs/board/*.md` 和 `docs/**/*.md`；维护方式见 [docs/README.md](docs/README.md)。
 
 ## 明确不做
 
 常驻进程、Web UI、微信 / 飞书通道、定时推送、向量检索、session 全量索引、自动改 repo、多人协作、TUI（MVP 阶段）、通用 agent 框架。
 
 ## 已知限制
+
+- `NIUSE_MEMORY=off` 关闭记忆注入与候选，用于 A/B 验证。
 
 - 单线程：一条 `thread.jsonl`，没有 `/new`。
 - 审批只打印摘要和增删行数，还没有结构化 diff 预览。

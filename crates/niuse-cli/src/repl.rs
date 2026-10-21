@@ -33,6 +33,7 @@ pub struct App {
     pub max_steps: usize,
     pub prompt: String,
     pub prompt_tokens: usize,
+    memory_enabled: bool,
     suppress_candidates: bool,
 }
 
@@ -42,6 +43,9 @@ impl App {
         let (policy, approval, allow_unsandboxed) =
             resolve_policy(&cli.sandbox, &cli.approval, &cli.network)?;
         let cwd = resolve_cwd(cli.cwd.clone())?;
+        let memory_enabled = std::env::var("NIUSE_MEMORY")
+            .map(|value| value.trim().to_lowercase() != "off")
+            .unwrap_or(true);
 
         let mut app = Self {
             store,
@@ -55,6 +59,7 @@ impl App {
             max_steps: cli.max_steps,
             prompt: String::new(),
             prompt_tokens: 0,
+            memory_enabled,
             suppress_candidates: false,
         };
         app.rebuild_prompt()?;
@@ -65,7 +70,11 @@ impl App {
         let today = Date::today();
         let identity = self.store.identity()?;
         let user = self.store.user()?;
-        let memories = self.store.memories()?;
+        let memories = if self.memory_enabled {
+            self.store.memories()?
+        } else {
+            Vec::new()
+        };
         let loops = self.store.loops()?;
         let journal = self.store.recent_journal(3)?;
         let composition = compose(
@@ -183,6 +192,9 @@ impl App {
             self.prompt_tokens
         );
         println!("/help 查看命令 · Ctrl-C 取消当前 turn · Ctrl-D 退出");
+        if !self.memory_enabled {
+            println!("NIUSE_MEMORY=off：本次 session 不注入记忆，也不提议新记忆。");
+        }
         if self.store.identity().unwrap_or(None).is_none() {
             println!("提示：还没有 identity.md，运行 `niuse identity init` 定义它是谁。");
         }
@@ -287,6 +299,22 @@ impl App {
 
     fn handle_blocks(&mut self, blocks: Vec<Block>, source: &str) -> Result<()> {
         let today = Date::today();
+        if !self.memory_enabled {
+            // Journal and loops still record the session; memory candidates are
+            // suppressed so an A/B run cannot change the store.
+            for block in blocks {
+                match block {
+                    Block::Journal { bullets } => {
+                        self.store.append_journal(today, &bullets)?;
+                    }
+                    Block::Loop { due, text } => {
+                        self.store.add_loop(LoopItem::new(text, due))?;
+                    }
+                    Block::Memory { .. } => {}
+                }
+            }
+            return Ok(());
+        }
         let mut offered_memory = false;
 
         for block in blocks {

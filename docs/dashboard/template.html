@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#080a0f">
+<meta name="description" content="niuse project dashboard: architecture, work, documents, decisions.">
+<link rel="icon" type="image/png" href="{{FAVICON}}">
+<link rel="apple-touch-icon" href="{{FAVICON}}">
+<title>niuse · project dashboard</title>
+<style>
+{{STYLE}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="#/arch" data-view="arch" aria-label="niuse dashboard">
+    <span class="brand-badge"><img src="{{LOGO}}" alt="niuverse" width="36" height="36"></span>
+    <span class="brand-text">
+      <span class="brand-name">niuse</span>
+      <span class="brand-sub">by niuverse</span>
+    </span>
+    <span class="brand-divider" aria-hidden="true"></span>
+    <span class="brand-tag">personal engineering companion</span>
+  </a>
+
+  <nav class="tabs" aria-label="Views">
+    <button class="tab" type="button" data-view="arch">Architecture</button>
+    <button class="tab" type="button" data-view="work">Work</button>
+    <button class="tab" type="button" data-view="docs">Docs</button>
+    <button class="tab" type="button" data-view="decisions">Decisions</button>
+  </nav>
+
+  <div class="top-actions">
+    <label class="search" aria-label="Filter current view">
+      <span class="search-key">/</span>
+      <input id="search" type="search" autocomplete="off" spellcheck="false" placeholder="Filter">
+    </label>
+    <span class="status-chip" id="project-status"></span>
+    <button class="icon-button theme-toggle" id="theme-toggle" type="button" title="Toggle theme" aria-label="Toggle theme">
+      <span class="theme-icon theme-sun" aria-hidden="true">☀</span>
+      <span class="theme-icon theme-moon" aria-hidden="true">☾</span>
+    </button>
+  </div>
+</header>
+
+<main class="shell">
+  <aside class="rail" aria-label="Project navigation">
+    <section class="rail-section rail-map">
+      <div class="rail-head"><h2>Architecture</h2><span id="module-count"></span></div>
+      <div id="map-nav" class="map-nav"></div>
+    </section>
+
+    <section class="rail-section rail-docs">
+      <div class="rail-head"><h2>Documents</h2><span id="doc-count"></span></div>
+      <div id="rail-docs" class="rail-doc-list"></div>
+    </section>
+
+    <div class="rail-foot" id="rail-foot"></div>
+  </aside>
+
+  <section class="canvas" id="canvas" aria-label="Project view" tabindex="-1"></section>
+  <aside class="details" id="details" aria-label="Details"></aside>
+</main>
+
+<noscript>
+  <p style="padding:24px;font-family:monospace">This dashboard needs JavaScript. Source files live in docs/dashboard/.</p>
+</noscript>
+
+<script id="niuse-data" type="application/json">{{DATA}}</script>
+<script>
+{{APP}}
+</script>
+</body>
+</html>

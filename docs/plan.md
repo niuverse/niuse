@@ -280,7 +280,7 @@ niucode-provider / auth / tools
 
 ## 11. 验收
 
-技术项已通过（2026-10-21）：五件套读写与 0600、候选协议、流式剥离、软过期、密钥扫描、`bootstrap → review → memory` 全链路、同 session 换 cwd。
+技术项已通过（2026-10-21）：五件套读写与 0600、候选协议、流式剥离、软过期、密钥扫描、`bootstrap → review → memory` 全链路、同 session 换 cwd、`cargo xtask dashboard --check`。
 
 剩下的是产品验收，必须靠真实使用：
 
@@ -327,6 +327,8 @@ niucode-provider / auth / tools
 | REPL、确认、`/mem` 等 | `repl.rs`、`commands.rs` |
 | 会话恢复与 per-turn cwd | `driver.rs` |
 | 冷启动 | `bootstrap.rs`（bootstrap + review） |
+| 架构看板 | `crates/xtask` + `docs/dashboard/project.json` |
+| 记忆降级开关 | `NIUSE_MEMORY=off`（repl.rs） |
 
 与计划的三处偏差：
 
