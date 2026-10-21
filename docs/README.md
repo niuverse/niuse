@@ -60,4 +60,6 @@ docs/
 
 ## Discipline
 
+Run `./scripts/check.sh` before committing; it covers fmt, clippy, tests, and dashboard freshness.
+
 The board is read-only; the browser cannot write back. State changes go through the repository, so the board never becomes a second source of truth. Run `--check` before committing.

@@ -153,6 +153,14 @@ Four views: Architecture (default), Work, Docs, Decisions. Sources are `docs/das
 
 `.github/workflows/pages.yml` deploys the generated board to GitHub Pages. A private repository needs GitHub Pro/Team/Enterprise; on the Free plan the workflow skips with a notice until Pages is available.
 
+## Development
+
+```sh
+./scripts/check.sh   # fmt, clippy, tests, dashboard freshness
+```
+
+Repository rules and commands for future sessions live in [AGENTS.md](AGENTS.md).
+
 ## Not building
 
 A daemon, a web UI, WeChat / Feishu bridges, scheduled push notifications, vector search, full session indexing, automatic repo edits, multi-user support, a TUI (for now), or a general agent framework.
@@ -175,3 +183,4 @@ A daemon, a web UI, WeChat / Feishu bridges, scheduled push notifications, vecto
 - [niucode compatibility](docs/compat.md)
 - [Dogfood log](docs/dogfood.md): the ten-day acceptance ritual
 - [Distribution notes](docs/distribution.md): install paths, crates.io blockers, license decision
+- [Agent guide](AGENTS.md): repo rules for future sessions
