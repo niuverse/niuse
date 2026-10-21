@@ -180,7 +180,7 @@ The journal is not a log; it is compressed shared experience. The test: read it 
 ### 5.4 Loops
 
 - When it says "I'll check next time" or "I'll follow up", that goes into `loops.md`; otherwise trust erodes.
-- Each entry may carry a due date; entries without one surface after two weeks.
+- Each entry may carry a due date; every open entry is injected, with the earliest due date first.
 - Closing a loop needs evidence (a verification, a conclusion), not a feeling of completion.
 
 ## 6. Expiry, conflicts, privacy
@@ -226,10 +226,10 @@ Scanning is a backstop, not a guarantee. Private projects, client names, and int
 
 `niuse bootstrap` turns history into `user.md` and memory candidates once:
 
-1. Enumerate `~/.niucode/sessions/*.jsonl`, last 90 days, at most 40; prefer sessions with multiple turns and tool calls.
-2. Send only user / assistant text, **dropping tool output**, through one tool-free extraction that returns `{type, text, evidence}`.
-3. Deduplicate, group by type, and write `~/.niuse/inbox.md` with the source session id on every line.
-4. `niuse review` walks the queue: `y` accept, `n` discard, `e` edit.
+1. Enumerate `~/.niucode/sessions/*.jsonl`, last 90 days, at most 40, most recently modified first.
+2. Send only user / assistant text, **dropping tool output**, through one tool-free extraction that returns `{kind, text, tags}`.
+3. Deduplicate, group by kind, and write `~/.niuse/inbox.md` with the source session id on every line.
+4. `niuse review` walks the queue: `y` accept, `e` edit, `n` discard, `s` skip for the next run, `q` quit.
 5. With `--profile`, one extra call drafts `user.md` from the same sessions when the file is missing; `--force-profile` overwrites.
 6. `identity.md` is not mined: `niuse identity init` asks eight questions, records your answers, and lets you edit them.
 
