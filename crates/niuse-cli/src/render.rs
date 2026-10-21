@@ -5,6 +5,7 @@
 use std::io::{self, Write};
 
 use niucode_agent::{AgentEvent, ApprovalRequest};
+use niucode_tools::{ChangePreview, LineKind, PreviewBody};
 use niuse_core::{parse, Parsed, StreamFilter};
 
 pub struct Renderer {
@@ -94,8 +95,8 @@ pub fn approve(request: &ApprovalRequest) -> bool {
     println!();
     println!("[approval] {}: {}", request.tool, request.summary);
     if let Some(preview) = &request.preview {
-        if preview.added + preview.removed > 0 {
-            println!("  +{} −{}", preview.added, preview.removed);
+        for line in preview_lines(preview, 80) {
+            println!("{line}");
         }
         if let Some(warning) = &preview.warning {
             println!("  warning: {warning}");
@@ -121,6 +122,46 @@ pub fn read_line() -> Option<String> {
     }
 }
 
+/// Render the same structured preview niucode's TUI shows, capped so a large
+/// edit cannot swallow the terminal. The prompt stays after the diff.
+fn preview_lines(preview: &ChangePreview, max_lines: usize) -> Vec<String> {
+    let mut lines = Vec::new();
+    match &preview.body {
+        PreviewBody::Diff { files } => {
+            for (index, file) in files.iter().enumerate() {
+                if index > 0 {
+                    lines.push(String::new());
+                }
+                let marker = if file.is_new { " (new)" } else { "" };
+                lines.push(format!("--- {} {}", file.path, marker));
+                for hunk in &file.hunks {
+                    lines.push(format!(
+                        "@@ -{},{} +{},{} @@",
+                        hunk.old_start, hunk.old_len, hunk.new_start, hunk.new_len
+                    ));
+                    for line in &hunk.lines {
+                        let prefix = match line.kind {
+                            LineKind::Context => ' ',
+                            LineKind::Add => '+',
+                            LineKind::Remove => '-',
+                        };
+                        lines.push(format!("{prefix}{}", line.text.trim_end_matches('\n')));
+                    }
+                }
+            }
+        }
+        PreviewBody::Command { command } => lines.push(format!("$ {command}")),
+        PreviewBody::Note { message } => lines.push(message.clone()),
+    }
+
+    if lines.len() > max_lines {
+        let omitted = lines.len() - max_lines;
+        lines.truncate(max_lines);
+        lines.push(format!("… {omitted} more line(s)"));
+    }
+    lines
+}
+
 fn truncate(text: &str, max_chars: usize) -> String {
     let mut out = String::new();
     for (count, character) in text.chars().enumerate() {
@@ -135,4 +176,47 @@ fn truncate(text: &str, max_chars: usize) -> String {
         }
     }
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use niucode_tools::{ChangePreview, FilePreview, PreviewBody};
+
+    #[test]
+    fn diff_preview_shows_hunks_and_marks_additions() {
+        let file = FilePreview::from_text("a.txt", "alpha\nbeta\n", "alpha\ngamma\n", false);
+        let preview = ChangePreview {
+            added: file.added,
+            removed: file.removed,
+            warning: None,
+            body: PreviewBody::Diff { files: vec![file] },
+        };
+        let lines = preview_lines(&preview, 80);
+        assert!(lines.iter().any(|line| line == "-beta"));
+        assert!(lines.iter().any(|line| line == "+gamma"));
+        assert!(lines.iter().any(|line| line.starts_with("@@ ")));
+    }
+
+    #[test]
+    fn long_previews_are_capped() {
+        let old = (0..200)
+            .map(|i| format!("old {i}"))
+            .collect::<Vec<_>>()
+            .join("\n");
+        let new = (0..200)
+            .map(|i| format!("new {i}"))
+            .collect::<Vec<_>>()
+            .join("\n");
+        let file = FilePreview::from_text("big.txt", &old, &new, false);
+        let preview = ChangePreview {
+            added: file.added,
+            removed: file.removed,
+            warning: None,
+            body: PreviewBody::Diff { files: vec![file] },
+        };
+        let lines = preview_lines(&preview, 10);
+        assert_eq!(lines.len(), 11);
+        assert!(lines.last().unwrap().contains("more line"));
+    }
 }

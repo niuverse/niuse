@@ -139,7 +139,6 @@ A daemon, a web UI, WeChat / Feishu bridges, scheduled push notifications, vecto
 ## Known limits
 
 - One thread: a single `thread.jsonl`, no `/new`.
-- Approval shows a summary and +/- line counts, not a structured diff yet.
 - Memory is capped around 200 entries; overflow is handled by budget trimming and manual review.
 - Dates are computed in UTC, so near midnight the journal may be one day off.
 - `bootstrap` sends old user/assistant text to the provider (tool output is dropped).

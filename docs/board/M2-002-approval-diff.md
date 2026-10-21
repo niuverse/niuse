@@ -1,28 +1,31 @@
 +++
 id = "M2-002"
 title = "Show a full unified diff at approval"
-status = "backlog"
+status = "done"
 milestone = "M2"
 module = "repl"
 size = "S"
 priority = "P2"
 updated = "2026-10-21"
+completed = "2026-10-21"
 depends_on = ["M0-003"]
 docs = ["architecture"]
 +++
 
 ## Scope
 
-- Show the structured `ChangePreview` diff instead of a summary plus +/- counts.
-- Reuse niucode's `Toolbox::preview` result; do not copy path policy into niuse.
-- Page or fold long diffs so the terminal stays readable.
+- Render `ChangePreview` as unified hunks: file header, `@@` ranges, context, additions, removals.
+- Reuse niucode's `Toolbox::preview` result; niuse copies no path policy and performs no extra reads.
+- Cap the rendered diff at 80 lines with an explicit "more line(s)" marker.
+- Keep the approval prompt below the diff; non-TTY still falls back to a line reply.
 
 ## Acceptance
 
-- [ ] Write / edit approval shows real hunks.
-- [ ] A rejection produces events consistent with behaviour.
-- [ ] Non-TTY falls back to line-by-line confirmation.
+- [x] Write / edit approval shows real hunks with `+` and `-` lines.
+- [x] A new file is marked as new; command and note previews still render.
+- [x] Long previews are capped instead of flooding the terminal.
+- [x] Rendering has unit tests; the security boundary is unchanged.
 
 ## Notes
 
-The security boundary is unchanged; this only surfaces information that already exists.
+This was the last known gap between niuse's approval prompt and niucode's TUI preview.

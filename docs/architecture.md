@@ -122,6 +122,7 @@ At most one `memory` block per turn; after a rejection, the same tags are not pr
 
 - `~/.niuse` directories are `0700`, files are `0600`; writes go to a temporary file and are renamed.
 - Secret patterns are scanned before every write; a match is refused, and the CLI requires `--force` to override.
+- Approval renders niucode's structured change preview (hunks, capped at 80 lines) before asking.
 - Memory is sent to the provider on every turn, so the leak surface is larger than a normal file.
 - Project knowledge stays in the repo's `AGENTS.md`; niuse never edits your repositories.
 - `NIUSE_MEMORY=off` disables injection and candidates, for A/B runs and for recovering trust.
