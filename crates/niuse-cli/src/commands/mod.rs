@@ -64,6 +64,7 @@ pub fn status(store: &Store, thread: &Path, json: bool) -> Result<()> {
 
     if json {
         let payload = serde_json::json!({
+            "version": env!("CARGO_PKG_VERSION"),
             "home": store.root().display().to_string(),
             "thread": thread.display().to_string(),
             "identity": identity.is_some(),
@@ -89,6 +90,7 @@ pub fn status(store: &Store, thread: &Path, json: bool) -> Result<()> {
         return Ok(());
     }
 
+    println!("version   {}", env!("CARGO_PKG_VERSION"));
     println!("home      {}", store.root().display());
     println!("thread    {}", thread.display());
     println!(
