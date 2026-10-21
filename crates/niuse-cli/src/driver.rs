@@ -94,10 +94,20 @@ pub fn archive_thread(path: &Path, directory: &Path) -> Result<Option<PathBuf>> 
         .duration_since(std::time::UNIX_EPOCH)
         .map(|elapsed| elapsed.as_millis())
         .unwrap_or(0);
-    let destination = directory.join(format!("thread-{stamp}.jsonl"));
+    let destination = unique_archive_path(directory, stamp);
     fs::rename(path, &destination)
         .with_context(|| format!("archive {} to {}", path.display(), destination.display()))?;
     Ok(Some(destination))
+}
+
+fn unique_archive_path(directory: &Path, stamp: u128) -> PathBuf {
+    let mut destination = directory.join(format!("thread-{stamp}.jsonl"));
+    let mut suffix = 1;
+    while destination.exists() {
+        destination = directory.join(format!("thread-{stamp}-{suffix}.jsonl"));
+        suffix += 1;
+    }
+    destination
 }
 
 pub fn new_session(directory: &Path) -> Result<SessionLog> {
@@ -190,6 +200,18 @@ mod tests {
         assert!(!source.exists());
         assert!(destination.exists());
         assert_eq!(fs::read_to_string(&destination).unwrap(), "{}\n");
+    }
+
+    #[test]
+    fn archive_names_do_not_collide_within_one_millisecond() {
+        let directory = tempfile::tempdir().unwrap();
+        let archive = directory.path().join("threads");
+        fs::create_dir_all(&archive).unwrap();
+        let first = unique_archive_path(&archive, 42);
+        fs::write(&first, "{}\n").unwrap();
+        let second = unique_archive_path(&archive, 42);
+        assert_ne!(first, second);
+        assert!(second.to_string_lossy().contains("thread-42-1"));
     }
 
     #[test]

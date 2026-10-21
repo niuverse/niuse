@@ -451,6 +451,14 @@ impl App {
                 {
                     println!("archived {}", archived.display());
                 }
+                let active_path = self.store.session_path();
+                if thread.path != active_path {
+                    if let Some(archived) =
+                        driver::archive_thread(&active_path, &self.store.threads_dir())?
+                    {
+                        println!("archived stale active {}", archived.display());
+                    }
+                }
                 thread = {
                     let meta = SessionMeta {
                         cwd: &self.cwd,
@@ -459,7 +467,7 @@ impl App {
                         policy: self.policy,
                         approval: self.approval,
                     };
-                    driver::open_thread(&self.store.session_path(), &meta)?
+                    driver::open_thread(&active_path, &meta)?
                 };
                 history.clear();
                 self.rebuild_prompt()?;
