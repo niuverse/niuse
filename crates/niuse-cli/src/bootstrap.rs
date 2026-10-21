@@ -10,7 +10,7 @@ use std::io::{self, IsTerminal, Write};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use futures_util::StreamExt;
 use niucode_core::{load, Event};
 use niucode_provider::{ChatMessage, CompletionRequest, Provider, StreamEvent};
@@ -133,6 +133,7 @@ pub async fn run(
     }
 
     let mut raw: Vec<Pending> = Vec::new();
+    let mut skipped = 0usize;
     let progress = io::stderr().is_terminal();
     for (index, (path, transcript)) in sessions.iter().enumerate() {
         if progress {
@@ -162,6 +163,7 @@ pub async fn run(
                 }
             }
             Err(error) => {
+                skipped += 1;
                 eprintln!(
                     "\n  skip {}: {error:#}",
                     path.file_name().unwrap_or_default().to_string_lossy()
@@ -171,6 +173,12 @@ pub async fn run(
     }
     if progress {
         eprintln!();
+    }
+    if !sessions.is_empty() && skipped == sessions.len() {
+        bail!(
+            "all {} session(s) failed; the inbox was left untouched",
+            sessions.len()
+        );
     }
 
     let existing = store.memories()?;
