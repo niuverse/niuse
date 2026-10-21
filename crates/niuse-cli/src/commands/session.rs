@@ -1,6 +1,7 @@
 //! Session-facing commands: list threads and export a log as Markdown.
 
 use std::fs;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -247,7 +248,19 @@ fn write_export(path: &Path, text: &str) -> Result<()> {
         fs::create_dir_all(parent)
             .with_context(|| format!("create directory {}", parent.display()))?;
     }
-    fs::write(path, text).with_context(|| format!("write {}", path.display()))?;
+    let mut options = fs::OpenOptions::new();
+    options.write(true).create(true).truncate(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    let mut file = options
+        .open(path)
+        .with_context(|| format!("create {}", path.display()))?;
+    file.write_all(text.as_bytes())
+        .with_context(|| format!("write {}", path.display()))?;
+    drop(file);
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
