@@ -6,6 +6,7 @@ use niuse_core::model::one_line;
 use niuse_core::policy::{search_score, secret_reason};
 use niuse_core::prompt::compose;
 use niuse_core::{Date, JournalDay, LoopItem, MemoryEntry, MemoryKind, Store};
+use std::collections::BTreeMap;
 use std::fs;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
@@ -733,7 +734,7 @@ impl Summary {
     }
 }
 
-pub fn stats(store: &Store, days: u64) -> Result<()> {
+pub fn stats(store: &Store, days: u64, trend: bool) -> Result<()> {
     let metrics = parse_metrics(&store.metrics()?);
     if metrics.is_empty() {
         println!("还没有指标。下一次对话开始后会自动记录。");
@@ -778,7 +779,53 @@ pub fn stats(store: &Store, days: u64) -> Result<()> {
         summary.review_accepted,
         summary.review_discarded
     );
+
+    if trend {
+        let daily = daily_summary(&metrics, since);
+        if !daily.is_empty() {
+            println!();
+            println!("by day");
+            for (date, day) in daily.iter().rev().take(14).rev() {
+                let acceptance = day
+                    .acceptance_percent()
+                    .map(|percent| format!("{percent}%"))
+                    .unwrap_or_else(|| "-".to_string());
+                println!(
+                    "{date}  {:>3} turns  {:>2}/{:<2} accepted  {acceptance}",
+                    day.turns, day.accepted, day.proposals
+                );
+            }
+        }
+    }
     Ok(())
+}
+
+#[derive(Debug, Default)]
+struct DaySummary {
+    turns: usize,
+    proposals: usize,
+    accepted: usize,
+}
+
+impl DaySummary {
+    fn acceptance_percent(&self) -> Option<usize> {
+        (self.proposals > 0).then(|| self.accepted * 100 / self.proposals)
+    }
+}
+
+fn daily_summary(metrics: &[Metric], since_ms: u64) -> BTreeMap<Date, DaySummary> {
+    let mut days: BTreeMap<Date, DaySummary> = BTreeMap::new();
+    for metric in metrics.iter().filter(|metric| metric.at_ms >= since_ms) {
+        let date = Date::from_days((metric.at_ms / 86_400_000) as i64);
+        let day = days.entry(date).or_default();
+        match metric.kind.as_str() {
+            "turn" => day.turns += 1,
+            "propose" => day.proposals += 1,
+            "accept" => day.accepted += 1,
+            _ => {}
+        }
+    }
+    days
 }
 
 fn parse_metrics(text: &str) -> Vec<Metric> {
@@ -1179,6 +1226,23 @@ mod tests {
         assert_eq!(entries.len(), 2);
         assert_eq!(entries.iter().filter(|entry| entry.active).count(), 1);
         assert!(entries.iter().all(|entry| entry.events == 1));
+    }
+
+    #[test]
+    fn daily_summary_groups_by_utc_day() {
+        let metrics = parse_metrics(
+            "0\tturn\tok\n1000\tpropose\trust\n2000\taccept\tm-1\n86400000\tturn\tok\n",
+        );
+        let days = daily_summary(&metrics, 0);
+        assert_eq!(days.len(), 2);
+        let first = days.get(&Date::from_days(0)).unwrap();
+        assert_eq!(first.turns, 1);
+        assert_eq!(first.proposals, 1);
+        assert_eq!(first.accepted, 1);
+        assert_eq!(first.acceptance_percent(), Some(100));
+        let second = days.get(&Date::from_days(1)).unwrap();
+        assert_eq!(second.turns, 1);
+        assert_eq!(second.acceptance_percent(), None);
     }
 
     #[test]

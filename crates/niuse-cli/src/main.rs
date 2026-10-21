@@ -118,6 +118,9 @@ enum Command {
         /// Window in days; 0 means all time
         #[arg(long, default_value_t = 7)]
         days: u64,
+        /// Add a per-day breakdown
+        #[arg(long)]
+        trend: bool,
     },
     /// Show store and prompt status
     Status,
@@ -331,7 +334,7 @@ async fn main() -> Result<()> {
             }
             ConfigCommand::Show => settings::show(&store),
         },
-        Some(Command::Stats { days }) => commands::stats(&store, days),
+        Some(Command::Stats { days, trend }) => commands::stats(&store, days, trend),
         Some(Command::Status) => {
             let thread = cli.thread.clone().unwrap_or_else(|| store.session_path());
             commands::status(&store, &thread)

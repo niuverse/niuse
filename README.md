@@ -91,7 +91,7 @@ niuse export [--out FILE] [--session PATH]
 niuse bootstrap [--limit N] [--since-days N]
 niuse review
 niuse doctor                    check home, identity, credentials, sandbox, pin
-niuse stats [--days N]          local acceptance counters
+niuse stats [--days N] [--trend] local acceptance counters
 niuse status
 ```
 
