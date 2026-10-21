@@ -121,20 +121,10 @@ impl Renderer {
                 self.at_line_start = true;
             }
             AgentEvent::TurnEnd { usage } => {
-                self.newline();
-                let mut line = format!(
-                    "  {} in · {} out",
-                    compact_tokens(usage.input_tokens),
-                    compact_tokens(usage.output_tokens)
-                );
-                if usage.cached_tokens > 0 {
-                    line.push_str(&format!(
-                        " · {} cached",
-                        compact_tokens(usage.cached_tokens)
-                    ));
-                }
-                println!("{}", styled("2", &line));
-                self.at_line_start = true;
+                self.steps += 1;
+                self.usage_input += usage.input_tokens;
+                self.usage_output += usage.output_tokens;
+                self.usage_cached += usage.cached_tokens;
             }
             AgentEvent::Phase(_) => {}
         }

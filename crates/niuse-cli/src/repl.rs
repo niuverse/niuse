@@ -644,8 +644,9 @@ impl App {
             "/cost" => {
                 let totals = usage_totals(&load(&thread.path)?.events);
                 let mut line = format!(
-                    "session: {} turns · {} in · {} out",
+                    "session: {} turn{} · {} in · {} out",
                     totals.turns,
+                    if totals.turns == 1 { "" } else { "s" },
                     render::compact_tokens(totals.input),
                     render::compact_tokens(totals.output)
                 );
