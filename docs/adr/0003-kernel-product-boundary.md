@@ -11,6 +11,8 @@ summary = "Keep two repositories. Upstream a reusable CLI library and turn hooks
 
 Accepted · 2026-10-21.
 
+Upstream proposal: [niuverse/niucode#1](https://github.com/niuverse/niucode/issues/1).
+
 ## Context
 
 niuse currently drives niucode's turn loop itself and owns a small renderer, because `niucode-cli` is a binary with no library target. Reusing niucode's TUI would remove the duplicate front end, which raises the obvious question: if niuse reuses the TUI, why not merge it into niucode?
