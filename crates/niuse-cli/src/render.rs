@@ -2,11 +2,34 @@
 //! binary-only crate, so niuse owns this small renderer and keeps the turn loop
 //! as the single source of events.
 
-use std::io::{self, Write};
+use std::env;
+use std::io::{self, IsTerminal, Write};
 
 use niucode_agent::{AgentEvent, ApprovalRequest};
 use niucode_tools::{ChangePreview, LineKind, PreviewBody};
 use niuse_core::{parse, Parsed, StreamFilter};
+
+/// Dim, yellow, or red only on a real terminal that has not opted out.
+fn styled(code: &str, text: &str) -> String {
+    if io::stdout().is_terminal() && env::var_os("NO_COLOR").is_none() {
+        format!("\x1b[{code}m{text}\x1b[0m")
+    } else {
+        text.to_string()
+    }
+}
+
+/// Short token counts: `999`, `1.5k`, `12k`.
+fn compact_tokens(tokens: u64) -> String {
+    if tokens < 1_000 {
+        return tokens.to_string();
+    }
+    let value = tokens as f64 / 1_000.0;
+    if value >= 10.0 {
+        format!("{value:.0}k")
+    } else {
+        format!("{value:.1}k").replace(".0k", "k")
+    }
+}
 
 pub struct Renderer {
     filter: StreamFilter,
@@ -34,7 +57,8 @@ impl Renderer {
             AgentEvent::ReasoningDelta(_) => {}
             AgentEvent::ToolCall { name, input } => {
                 self.newline();
-                println!("→ {} {}", name, truncate(&input.to_string(), 180));
+                let line = format!("→ {} {}", name, truncate(&input.to_string(), 180));
+                println!("{}", styled("2", &line));
                 self.at_line_start = true;
             }
             AgentEvent::ToolResult {
@@ -42,12 +66,18 @@ impl Renderer {
             } => {
                 self.newline();
                 let mark = if ok { "✓" } else { "✗" };
-                println!("{mark} {name}: {}", truncate(&summary, 240));
+                let line = format!("{mark} {name}: {}", truncate(&summary, 240));
+                let line = if ok {
+                    styled("2", &line)
+                } else {
+                    styled("31", &line)
+                };
+                println!("{line}");
                 self.at_line_start = true;
             }
             AgentEvent::Warning(warning) => {
                 self.newline();
-                println!("! {warning}");
+                println!("{}", styled("33", &format!("! {warning}")));
                 self.at_line_start = true;
             }
             AgentEvent::Compaction {
@@ -59,7 +89,23 @@ impl Renderer {
                 println!("[compacted {before_tokens} → {after_tokens} tokens]");
                 self.at_line_start = true;
             }
-            AgentEvent::TurnEnd { .. } | AgentEvent::Phase(_) => {}
+            AgentEvent::TurnEnd { usage } => {
+                self.newline();
+                let mut line = format!(
+                    "  {} in · {} out",
+                    compact_tokens(usage.input_tokens),
+                    compact_tokens(usage.output_tokens)
+                );
+                if usage.cached_tokens > 0 {
+                    line.push_str(&format!(
+                        " · {} cached",
+                        compact_tokens(usage.cached_tokens)
+                    ));
+                }
+                println!("{}", styled("2", &line));
+                self.at_line_start = true;
+            }
+            AgentEvent::Phase(_) => {}
         }
     }
 
