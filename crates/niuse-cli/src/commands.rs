@@ -6,8 +6,14 @@ use niuse_core::model::one_line;
 use niuse_core::policy::{search_score, secret_reason};
 use niuse_core::prompt::compose;
 use niuse_core::{Date, MemoryEntry, MemoryKind, Store};
+use std::fs;
 use std::io::{self, Write};
+use std::path::PathBuf;
+use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
+
+use niucode_auth::AuthStore;
+use niucode_provider::Preset;
 
 pub fn mem_list(store: &Store, all: bool) -> Result<()> {
     let today = Date::today();
@@ -499,6 +505,260 @@ fn now_ms() -> u64 {
         .unwrap_or(0)
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Level {
+    Ok,
+    Warn,
+    Fail,
+}
+
+#[derive(Debug, Default)]
+struct Report {
+    failures: usize,
+    warnings: usize,
+}
+
+impl Report {
+    fn record(&mut self, level: Level, label: &str, detail: impl Into<String>) {
+        let tag = match level {
+            Level::Ok => "ok  ",
+            Level::Warn => "warn",
+            Level::Fail => "FAIL",
+        };
+        println!("[{tag}] {label:<11} {}", detail.into());
+        match level {
+            Level::Ok => {}
+            Level::Warn => self.warnings += 1,
+            Level::Fail => self.failures += 1,
+        }
+    }
+}
+
+pub fn doctor(store: &Store, preset: &str) -> Result<()> {
+    let mut report = Report::default();
+
+    match fs::metadata(store.root()) {
+        Ok(metadata) => {
+            let mode = mode_of(&metadata);
+            let writable = write_probe(store.root());
+            let level = if writable { Level::Ok } else { Level::Fail };
+            report.record(
+                level,
+                "home",
+                format!(
+                    "{} ({mode}, {})",
+                    store.root().display(),
+                    if writable { "writable" } else { "not writable" }
+                ),
+            );
+        }
+        Err(error) => report.record(
+            Level::Fail,
+            "home",
+            format!("{}: {error}", store.root().display()),
+        ),
+    }
+
+    match store.identity()? {
+        Some(text) if !text.trim().is_empty() => {
+            report.record(Level::Ok, "identity", format!("set ({} bytes)", text.len()))
+        }
+        _ => report.record(
+            Level::Warn,
+            "identity",
+            "missing; run `niuse identity init`",
+        ),
+    }
+
+    match store.user()? {
+        Some(text) if !text.trim().is_empty() => {
+            report.record(Level::Ok, "user", format!("set ({} bytes)", text.len()))
+        }
+        _ => report.record(
+            Level::Warn,
+            "user",
+            "missing; run `niuse bootstrap` or write user.md",
+        ),
+    }
+
+    let today = Date::today();
+    let memories = store.memories()?;
+    report.record(
+        Level::Ok,
+        "memory",
+        format!(
+            "{} entries ({} stale, {} expired)",
+            memories.len(),
+            memories
+                .iter()
+                .filter(|entry| entry.is_stale(today) && !entry.is_expired(today))
+                .count(),
+            memories
+                .iter()
+                .filter(|entry| entry.is_expired(today))
+                .count()
+        ),
+    );
+
+    let thread = store.session_path();
+    if thread.exists() {
+        match niucode_core::load(&thread) {
+            Ok(loaded) => report.record(
+                Level::Ok,
+                "thread",
+                format!("{} ({} events)", thread.display(), loaded.events.len()),
+            ),
+            Err(error) => report.record(Level::Warn, "thread", format!("unreadable: {error:#}")),
+        }
+    } else {
+        report.record(Level::Ok, "thread", "new; will be created on first run");
+    }
+
+    let metrics = store.metrics()?;
+    report.record(
+        Level::Ok,
+        "metrics",
+        format!("{} records", metrics.lines().count()),
+    );
+
+    match Preset::parse(preset) {
+        Some(preset) => match AuthStore::new() {
+            Ok(auth) => match auth.resolve(preset.as_str()) {
+                Ok(Some(resolved)) => report.record(
+                    Level::Ok,
+                    "credential",
+                    format!("{} via {}", preset.as_str(), resolved.source),
+                ),
+                Ok(None) => report.record(
+                    Level::Fail,
+                    "credential",
+                    format!("missing; run `niucode auth set {}`", preset.as_str()),
+                ),
+                Err(error) => report.record(Level::Fail, "credential", format!("{error}")),
+            },
+            Err(error) => report.record(Level::Fail, "credential", format!("{error}")),
+        },
+        None => report.record(
+            Level::Fail,
+            "credential",
+            format!("unknown provider {preset:?}"),
+        ),
+    }
+
+    if niucode_tools::sandbox_available() {
+        report.record(Level::Ok, "sandbox", "bwrap available");
+    } else {
+        report.record(
+            Level::Warn,
+            "sandbox",
+            "bwrap missing; approvals fall back to per-action prompts",
+        );
+    }
+
+    match pin_status() {
+        Some(PinStatus::Match(rev)) => report.record(
+            Level::Ok,
+            "pin",
+            format!("{rev} matches the local checkout"),
+        ),
+        Some(PinStatus::Drift { pinned, local }) => report.record(
+            Level::Warn,
+            "pin",
+            format!("pinned {pinned}, local {local}; run scripts/sync-niucode.sh"),
+        ),
+        Some(PinStatus::Missing) => report.record(
+            Level::Warn,
+            "pin",
+            "niucode.rev found, sibling checkout missing",
+        ),
+        None => report.record(Level::Ok, "pin", "no niucode.rev (installed binary)"),
+    }
+
+    println!(
+        "\ndoctor: {} failure(s), {} warning(s)",
+        report.failures, report.warnings
+    );
+    if report.failures > 0 {
+        bail!("doctor found {} failure(s)", report.failures);
+    }
+    Ok(())
+}
+
+enum PinStatus {
+    Match(String),
+    Drift { pinned: String, local: String },
+    Missing,
+}
+
+fn pin_status() -> Option<PinStatus> {
+    let root = repo_root()?;
+    let pinned = fs::read_to_string(root.join("niucode.rev")).ok()?;
+    let pinned = pinned.trim().to_string();
+    if pinned.is_empty() {
+        return None;
+    }
+    let Some(parent) = root.parent() else {
+        return Some(PinStatus::Missing);
+    };
+    let checkout = parent.join("niuverse").join("niucode");
+    if !checkout.is_dir() {
+        return Some(PinStatus::Missing);
+    }
+    let output = Command::new("git")
+        .arg("-C")
+        .arg(&checkout)
+        .args(["rev-parse", "--short", "HEAD"])
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return Some(PinStatus::Missing);
+    }
+    let local = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    let pinned_short = pinned.chars().take(local.len()).collect::<String>();
+    if pinned_short == local {
+        Some(PinStatus::Match(pinned_short))
+    } else {
+        Some(PinStatus::Drift {
+            pinned: pinned_short,
+            local,
+        })
+    }
+}
+
+fn repo_root() -> Option<PathBuf> {
+    let mut directory = std::env::current_dir().ok()?;
+    loop {
+        if directory.join("niucode.rev").is_file() {
+            return Some(directory);
+        }
+        if !directory.pop() {
+            return None;
+        }
+    }
+}
+
+fn write_probe(directory: &std::path::Path) -> bool {
+    let probe = directory.join(".doctor-write-test");
+    match fs::write(&probe, b"probe") {
+        Ok(()) => {
+            let _ = fs::remove_file(&probe);
+            true
+        }
+        Err(_) => false,
+    }
+}
+
+#[cfg(unix)]
+fn mode_of(metadata: &fs::Metadata) -> String {
+    use std::os::unix::fs::PermissionsExt;
+    format!("{:04o}", metadata.permissions().mode() & 0o777)
+}
+
+#[cfg(not(unix))]
+fn mode_of(_metadata: &fs::Metadata) -> String {
+    "mode n/a".to_string()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -515,6 +775,16 @@ mod tests {
         assert_eq!(summary.accepted, 1);
         assert_eq!(summary.blocked, 1);
         assert_eq!(summary.acceptance_percent(), Some(50));
+    }
+
+    #[test]
+    fn report_counts_levels() {
+        let mut report = Report::default();
+        report.record(Level::Ok, "a", "b");
+        report.record(Level::Warn, "c", "d");
+        report.record(Level::Fail, "e", "f");
+        assert_eq!(report.failures, 1);
+        assert_eq!(report.warnings, 1);
     }
 
     #[test]

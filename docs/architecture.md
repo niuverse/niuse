@@ -125,6 +125,7 @@ At most one `memory` block per turn; after a rejection, the same tags are not pr
 - Memory is sent to the provider on every turn, so the leak surface is larger than a normal file.
 - Project knowledge stays in the repo's `AGENTS.md`; niuse never edits your repositories.
 - `NIUSE_MEMORY=off` disables injection and candidates, for A/B runs and for recovering trust.
+- `niuse doctor` checks home permissions, identity, credentials, bwrap, and the pinned niucode revision without calling a model.
 - `metrics.jsonl` records local counters only: turn outcomes, candidate decisions, tags, and ids. Memory text never enters it.
 
 ## Explicit non-goals

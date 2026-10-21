@@ -84,6 +84,8 @@ enum Command {
     },
     /// Review bootstrapped candidates
     Review,
+    /// Check local setup without calling a model
+    Doctor,
     /// Show local acceptance counters
     Stats {
         /// Window in days; 0 means all time
@@ -206,6 +208,7 @@ async fn main() -> Result<()> {
             .await
         }
         Some(Command::Review) => bootstrap::review(&store),
+        Some(Command::Doctor) => commands::doctor(&store, &cli.preset),
         Some(Command::Stats { days }) => commands::stats(&store, days),
         Some(Command::Status) => commands::status(&store),
     }
