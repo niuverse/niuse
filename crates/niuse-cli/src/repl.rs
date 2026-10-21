@@ -49,6 +49,7 @@ const SLASH_COMMANDS: &[&str] = &[
     "/cd",
     "/status",
     "/prompt",
+    "/model",
 ];
 
 fn slash_candidates(prefix: &str) -> Vec<&'static str> {
@@ -255,6 +256,7 @@ pub struct App {
     pub provider: Arc<dyn Provider>,
     pub provider_id: String,
     pub model: String,
+    no_thinking: bool,
     pub policy: SandboxPolicy,
     pub approval: ApprovalMode,
     pub allow_unsandboxed: bool,
@@ -290,6 +292,7 @@ impl App {
             provider: bundle.provider,
             provider_id: bundle.provider_id,
             model: bundle.model,
+            no_thinking: cli.no_thinking,
             policy,
             approval,
             allow_unsandboxed,
@@ -637,6 +640,24 @@ impl App {
                     println!("cwd: {}", self.cwd.display());
                 }
             }
+            "/model" => {
+                if argument.is_empty() {
+                    println!("model: {} · provider {}", self.model, self.provider_id);
+                } else {
+                    match build_provider(
+                        &self.provider_id,
+                        model_override(argument),
+                        self.no_thinking,
+                    ) {
+                        Ok(bundle) => {
+                            self.provider = bundle.provider;
+                            self.model = bundle.model;
+                            println!("model: {}", self.model);
+                        }
+                        Err(error) => eprintln!("cannot switch model: {error:#}"),
+                    }
+                }
+            }
             "/status" => {
                 commands::status(&self.store, &thread.path, false)?;
                 let events = load(&thread.path)
@@ -909,6 +930,14 @@ pub async fn run_exec(app: App, prompt: String) -> Result<()> {
     result.map(|_| ())
 }
 
+fn model_override(argument: &str) -> Option<&str> {
+    if argument.eq_ignore_ascii_case("default") {
+        None
+    } else {
+        Some(argument)
+    }
+}
+
 fn join_continuations(input: &str) -> String {
     input
         .split('\n')
@@ -973,7 +1002,8 @@ fn print_help() {
         （终端里行尾加 \\ 可续行）\n\
         /new            归档当前主线并开始一条新的\n\
          /cd <path>      切换工作目录（下一个 turn 生效）\n\
-         /status         当前配置与存储状态\n\
+         /model [name]   查看或切换模型（default 回退）\n\
+        /status         当前配置与存储状态\n\
          /prompt         打印完整 system prompt（调试用）\n\
          /help           本帮助\n\
          /quit           退出"
@@ -993,6 +1023,13 @@ mod tests {
         assert_eq!(slash_candidates("/zzz"), Vec::<&str>::new());
         assert_eq!(slash_candidates("hello"), Vec::<&str>::new());
         assert_eq!(slash_candidates("/mem "), Vec::<&str>::new());
+    }
+
+    #[test]
+    fn default_model_means_provider_default() {
+        assert_eq!(model_override("default"), None);
+        assert_eq!(model_override("DEFAULT"), None);
+        assert_eq!(model_override("deepseek-chat"), Some("deepseek-chat"));
     }
 
     #[test]
