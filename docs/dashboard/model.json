@@ -829,6 +829,26 @@
       "path": "docs/board/M2-013-thread-rotation.md"
     },
     {
+      "id": "M2-014",
+      "title": "Piped output exits cleanly",
+      "status": "done",
+      "milestone": "M2",
+      "module": "cli",
+      "size": "S",
+      "priority": "P2",
+      "updated": "2026-10-21",
+      "completed": "2026-10-21",
+      "depends_on": [
+        "M0-003"
+      ],
+      "docs": [
+        "architecture"
+      ],
+      "blocked_reason": null,
+      "body_html": "<h2>Scope</h2>\n<ul>\n<li><code>niuse ... | head</code> no longer panics when the reader closes early; the process exits 0.</li>\n<li>Only the \"Broken pipe\" panic is intercepted; every other panic goes to the default hook unchanged.</li>\n<li>The fix is a panic hook rather than a global SIGPIPE reset, because SIGPIPE also covers socket writes made by the provider.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n<code>niuse mem list | head -1</code> exits 0 with no panic output.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n<code>niuse status | head -1</code> behaves the same.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nNon-pipe panics still print through the default hook.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n<code>niuse status --thread &lt;archive&gt;</code> reports the requested thread.</li>\n</ul>\n<h2>Notes</h2>\n<p>Small, but it was the first papercut hit while testing; a CLI that panics when paged is not pleasant to script against.</p>\n",
+      "path": "docs/board/M2-014-piped-output.md"
+    },
+    {
       "id": "M3-001",
       "title": "Release and dependency strategy",
       "status": "backlog",
@@ -1014,7 +1034,7 @@
   ],
   "meta": {
     "schema_version": 1,
-    "cards": 21,
+    "cards": 22,
     "modules": 10,
     "docs": 7,
     "generator": "cargo xtask dashboard"

@@ -205,8 +205,32 @@ enum IdentityCommand {
     Edit,
 }
 
+/// Turn a closed stdout into a clean exit.
+///
+/// Rust ignores SIGPIPE, so `niuse ... | head` panics when the reader closes
+/// early. Restoring SIGPIPE globally would also affect network writes; a panic
+/// hook scoped to this one message is safer.
+fn install_pipe_guard() {
+    let default = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |info| {
+        let broken = info
+            .payload()
+            .downcast_ref::<&str>()
+            .is_some_and(|message| message.contains("Broken pipe"))
+            || info
+                .payload()
+                .downcast_ref::<String>()
+                .is_some_and(|message| message.contains("Broken pipe"));
+        if broken {
+            std::process::exit(0);
+        }
+        default(info);
+    }));
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
+    install_pipe_guard();
     let cli = Cli::parse();
     let store = match &cli.home {
         Some(path) => Store::at(path.clone()),
@@ -295,6 +319,9 @@ async fn main() -> Result<()> {
             ConfigCommand::Show => settings::show(&store),
         },
         Some(Command::Stats { days }) => commands::stats(&store, days),
-        Some(Command::Status) => commands::status(&store, &store.session_path()),
+        Some(Command::Status) => {
+            let thread = cli.thread.clone().unwrap_or_else(|| store.session_path());
+            commands::status(&store, &thread)
+        }
     }
 }
