@@ -1,5 +1,6 @@
 //! Interactive REPL and one-shot execution.
 
+use std::collections::HashSet;
 use std::fs;
 use std::io::{self, IsTerminal, Write};
 use std::path::{Path, PathBuf};
@@ -269,6 +270,7 @@ pub struct App {
     pub thread_path: PathBuf,
     memory_enabled: bool,
     suppress_candidates: bool,
+    rejected_tags: HashSet<String>,
 }
 
 impl App {
@@ -305,6 +307,7 @@ impl App {
             thread_path,
             memory_enabled,
             suppress_candidates: false,
+            rejected_tags: HashSet::new(),
         };
         app.rebuild_prompt()?;
         Ok(app)
@@ -766,6 +769,21 @@ impl App {
         Ok(())
     }
 
+    fn suppress_rejected(&mut self, tags: &[String]) -> bool {
+        if suppressed_by_tag(tags, &self.rejected_tags) {
+            println!("候选含本 session 已拒绝的 tag，跳过。");
+            self.metric("suppress", &tags.join(","));
+            return true;
+        }
+        false
+    }
+
+    fn remember_rejected(&mut self, tags: &[String]) {
+        for tag in tags {
+            self.rejected_tags.insert(tag.to_lowercase());
+        }
+    }
+
     fn offer_memory(
         &mut self,
         kind: MemoryKind,
@@ -773,6 +791,9 @@ impl App {
         text: String,
         source: &str,
     ) -> Result<()> {
+        if self.suppress_rejected(&tags) {
+            return Ok(());
+        }
         if let Some(reason) = secret_reason(&text) {
             self.metric("blocked", reason);
             println!("\n[记忆候选被拒绝] 疑似包含 {reason}，没有写入。");
@@ -828,7 +849,8 @@ impl App {
                     println!("本次 session 不再提议。");
                 }
                 _ => {
-                    self.metric("discard", "");
+                    self.remember_rejected(&tags);
+                    self.metric("discard", &tags.join(","));
                     println!("已丢弃。");
                 }
             }
@@ -860,6 +882,7 @@ impl App {
                 println!("已并存，新 id m-{}", entry.id);
             }
             _ => {
+                self.remember_rejected(&tags);
                 self.metric("discard", "conflict");
                 println!("已丢弃。");
             }
@@ -984,6 +1007,11 @@ fn usage_totals(events: &[Event]) -> UsageTotals {
         }
     }
     totals
+}
+
+fn suppressed_by_tag(tags: &[String], rejected: &HashSet<String>) -> bool {
+    tags.iter()
+        .any(|tag| rejected.contains(&tag.to_lowercase()))
 }
 
 fn model_override(argument: &str) -> Option<&str> {
@@ -1112,6 +1140,15 @@ mod tests {
         assert_eq!(totals.input, 150);
         assert_eq!(totals.output, 15);
         assert_eq!(totals.cached, 40);
+    }
+
+    #[test]
+    fn rejected_tags_hide_later_candidates() {
+        let mut rejected = HashSet::new();
+        rejected.insert("rust".to_string());
+        assert!(suppressed_by_tag(&["RUST".to_string()], &rejected));
+        assert!(!suppressed_by_tag(&["style".to_string()], &rejected));
+        assert!(!suppressed_by_tag(&[], &rejected));
     }
 
     #[test]
