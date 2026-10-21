@@ -19,6 +19,7 @@ jobs:
   compat:
     name: Contract tests against main
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Check out niuse
         uses: actions/checkout@v5

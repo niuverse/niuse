@@ -20,6 +20,7 @@ jobs:
   check:
     name: Format, clippy, tests, dashboard
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Check out niuse
         uses: actions/checkout@v5
