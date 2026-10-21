@@ -414,12 +414,9 @@ impl App {
                 continue;
             }
             if let Some(argument) = input.strip_prefix("/resume ") {
-                let index = match argument.trim().parse::<usize>() {
-                    Ok(index) if index > 0 => index,
-                    _ => {
-                        println!("用法：/resume <n>，编号见 /threads");
-                        continue;
-                    }
+                let Some(index) = parse_resume_index(argument) else {
+                    println!("用法：/resume <n>，编号见 /threads");
+                    continue;
                 };
                 let Some(path) = commands::thread_at(&self.store, &thread.path, index)? else {
                     println!("没有第 {index} 条主线；先看 /threads。");
@@ -1048,6 +1045,13 @@ fn usage_totals(events: &[Event]) -> UsageTotals {
     totals
 }
 
+fn parse_resume_index(argument: &str) -> Option<usize> {
+    match argument.trim().parse::<usize>() {
+        Ok(index) if index > 0 => Some(index),
+        _ => None,
+    }
+}
+
 fn suppressed_by_tag(tags: &[String], rejected: &HashSet<String>) -> bool {
     tags.iter()
         .any(|tag| rejected.contains(&tag.to_lowercase()))
@@ -1179,6 +1183,16 @@ mod tests {
         assert_eq!(totals.input, 150);
         assert_eq!(totals.output, 15);
         assert_eq!(totals.cached, 40);
+    }
+
+    #[test]
+    fn resume_index_is_one_based_and_strict() {
+        assert_eq!(parse_resume_index("1"), Some(1));
+        assert_eq!(parse_resume_index(" 2 "), Some(2));
+        assert_eq!(parse_resume_index("0"), None);
+        assert_eq!(parse_resume_index("abc"), None);
+        assert_eq!(parse_resume_index(""), None);
+        assert_eq!(parse_resume_index("-1"), None);
     }
 
     #[test]
