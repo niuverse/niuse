@@ -16,7 +16,7 @@ docs = ["architecture"]
 
 - Tab after `/cd ` lists directories only; Tab after `/export ` lists files and directories.
 - Relative fragments resolve against the session's current working directory, including after `/cd`.
-- `~/` fragments resolve against `$HOME`; absolute fragments against their own root.
+- `~/` fragments resolve against `$HOME`; a bare `~` completes to `~/`; absolute fragments against their own root.
 - Directory replacements end with `/`; hidden entries appear only when the fragment starts with `.`.
 
 ## Acceptance
@@ -24,6 +24,7 @@ docs = ["architecture"]
 - [x] Directories and files are filtered and sorted.
 - [x] `/cd` completion never offers a regular file.
 - [x] The completer shares the live cwd with the REPL, so `/cd` takes effect immediately.
+- [x] A bare `~` completes to `~/`.
 - [x] Pure path helpers have unit tests.
 
 ## Notes
