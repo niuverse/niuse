@@ -19,6 +19,8 @@ use niuse_core::policy::{conflicts, secret_reason};
 use niuse_core::{Date, MemoryEntry, MemoryKind, Store};
 use serde::Deserialize;
 
+use crate::commands::edit_text;
+
 const EXTRACTION_SYSTEM: &str = "你是记忆抽取器。下面是一段 coding agent 与用户的真实历史对话。\n\
 只抽取三类跨会话仍然有用的信息：用户的偏好、做过的决策、踩过的坑。\n\
 每条必须同时满足：脱离这段对话也能看懂；在仓库里 grep 不出来；一句话说得清。\n\
@@ -276,7 +278,7 @@ pub fn review(store: &Store) -> Result<()> {
             item.text
         );
         println!("  来源 {}", item.source);
-        print!("[y] 接受  [n] 丢弃  [s] 留到下次  [q] 退出 > ");
+        print!("[y] 接受  [e] 编辑  [n] 丢弃  [s] 留到下次  [q] 退出 > ");
         let _ = io::stdout().flush();
 
         let mut line = String::new();
@@ -301,6 +303,34 @@ pub fn review(store: &Store) -> Result<()> {
                     accepted += 1;
                     println!("  已接受");
                 }
+            }
+            "e" | "edit" => {
+                let Some(edited) = edit_text(&item.text) else {
+                    println!("  未修改");
+                    index += 1;
+                    continue;
+                };
+                if edited.trim().is_empty() {
+                    println!("  空内容，未保存");
+                    index += 1;
+                    continue;
+                }
+                if let Some(reason) = secret_reason(&edited) {
+                    println!("  拒绝保存：疑似 {reason}");
+                    index += 1;
+                    continue;
+                }
+                let entry = MemoryEntry::new(
+                    item.kind,
+                    edited,
+                    item.tags.clone(),
+                    Date::today(),
+                    Some(item.source.clone()),
+                );
+                store.add_memory(entry)?;
+                record_metric(store, "review_accept", &item.source);
+                accepted += 1;
+                println!("  已编辑并接受");
             }
             "s" | "skip" => remaining.push(item.clone()),
             "q" | "quit" => {
