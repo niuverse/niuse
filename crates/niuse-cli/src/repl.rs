@@ -692,7 +692,7 @@ impl App {
                 if argument.is_empty() {
                     println!("cwd: {}", self.cwd.display());
                 } else {
-                    let path = PathBuf::from(argument);
+                    let path = expand_tilde(argument);
                     let path = if path.is_absolute() {
                         path
                     } else {
@@ -1069,6 +1069,20 @@ fn usage_totals(events: &[Event]) -> UsageTotals {
     totals
 }
 
+fn expand_tilde(input: &str) -> PathBuf {
+    if input == "~" {
+        return std::env::var_os("HOME")
+            .map(PathBuf::from)
+            .unwrap_or_else(|| PathBuf::from("~"));
+    }
+    if let Some(rest) = input.strip_prefix("~/") {
+        if let Some(home) = std::env::var_os("HOME") {
+            return PathBuf::from(home).join(rest);
+        }
+    }
+    PathBuf::from(input)
+}
+
 fn parse_resume_index(argument: &str) -> Option<usize> {
     match argument.trim().parse::<usize>() {
         Ok(index) if index > 0 => Some(index),
@@ -1101,7 +1115,7 @@ fn join_continuations(input: &str) -> String {
 
 fn export_path(store: &Store, thread: &Path, argument: &str, cwd: &Path) -> PathBuf {
     if !argument.is_empty() {
-        let path = PathBuf::from(argument);
+        let path = expand_tilde(argument);
         if path.is_absolute() {
             return path;
         }
@@ -1207,6 +1221,18 @@ mod tests {
         assert_eq!(totals.input, 150);
         assert_eq!(totals.output, 15);
         assert_eq!(totals.cached, 40);
+    }
+
+    #[test]
+    fn tilde_expands_against_home() {
+        if let Some(home) = std::env::var_os("HOME") {
+            assert_eq!(
+                expand_tilde("~/out.md"),
+                PathBuf::from(home.clone()).join("out.md")
+            );
+            assert_eq!(expand_tilde("~"), PathBuf::from(home));
+        }
+        assert_eq!(expand_tilde("plain.md"), PathBuf::from("plain.md"));
     }
 
     #[test]
