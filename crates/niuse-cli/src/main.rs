@@ -106,6 +106,12 @@ enum Command {
         /// List the sessions that would be scanned, without calling a model
         #[arg(long)]
         dry_run: bool,
+        /// Also draft user.md from the selected sessions
+        #[arg(long)]
+        profile: bool,
+        /// Overwrite an existing user.md when drafting
+        #[arg(long)]
+        force_profile: bool,
     },
     /// Review bootstrapped candidates
     Review,
@@ -326,6 +332,8 @@ async fn main() -> Result<()> {
             limit,
             since_days,
             dry_run,
+            profile,
+            force_profile,
         }) => {
             let settings = settings::resolve(&cli, &store)?;
             let app = repl::App::new(&cli, &settings, store)?;
@@ -333,9 +341,13 @@ async fn main() -> Result<()> {
                 &app.store,
                 app.provider.as_ref(),
                 &app.model,
-                limit,
-                since_days,
-                dry_run,
+                bootstrap::BootstrapOptions {
+                    limit,
+                    since_days,
+                    dry_run,
+                    profile,
+                    force_profile,
+                },
             )
             .await
         }

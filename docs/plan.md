@@ -230,7 +230,8 @@ Scanning is a backstop, not a guarantee. Private projects, client names, and int
 2. Send only user / assistant text, **dropping tool output**, through one tool-free extraction that returns `{type, text, evidence}`.
 3. Deduplicate, group by type, and write `~/.niuse/inbox.md` with the source session id on every line.
 4. `niuse review` walks the queue: `y` accept, `n` discard, `e` edit.
-5. `identity.md` is not mined: `niuse identity init` asks eight questions, records your answers, and lets you edit them.
+5. With `--profile`, one extra call drafts `user.md` from the same sessions when the file is missing; `--force-profile` overwrites.
+6. `identity.md` is not mined: `niuse identity init` asks eight questions, records your answers, and lets you edit them.
 
 Cost estimate: 40 sessions × about 2k input tokens ≈ 100k tokens, one-off.
 

@@ -69,7 +69,7 @@ There is no second copy of the conversation. `niuse export` renders the event lo
 ```text
 ~/.niuse/
   identity.md      who it is (human-written; it may only propose)
-  user.md          who you are (bootstrapped, human-reviewed)
+  user.md          who you are (bootstrapped with --profile, human-reviewed)
   memory/          facts: preferences, decisions, pitfalls (confirmed, expiring)
   journal/         experience: one file per month, merged per day (automatic)
   loops.md         promises (automatic, optional due date)

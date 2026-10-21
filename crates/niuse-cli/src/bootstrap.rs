@@ -26,7 +26,14 @@ const EXTRACTION_SYSTEM: &str = "你是记忆抽取器。下面是一段 coding 
 输出 JSON 数组，元素形如 {\"kind\":\"preference|lesson\",\"text\":\"...\",\"tags\":[\"...\"]}。\n\
 没有值得记的就输出 []。不要输出 JSON 以外的任何文字。";
 
+const PROFILE_SYSTEM: &str =
+    "你是用户画像整理器。根据下面的历史对话，写一份 user.md 草稿，用 Markdown，不超过 20 行。\n\
+包含三个小节：## 我在做什么、## 我的工作方式、## 我的雷区。\n\
+只写对话中有证据的内容；不确定的不要编。不要写代码、文件路径、密钥、别人的信息。\n\
+只输出 Markdown，不要解释。";
+
 const MAX_MESSAGE_CHARS: usize = 2_000;
+const MAX_PROFILE_CHARS: usize = 10_000;
 const MAX_TRANSCRIPT_CHARS: usize = 12_000;
 
 #[derive(Debug, Deserialize)]
@@ -45,14 +52,27 @@ struct Pending {
     source: String,
 }
 
+pub struct BootstrapOptions {
+    pub limit: usize,
+    pub since_days: i64,
+    pub dry_run: bool,
+    pub profile: bool,
+    pub force_profile: bool,
+}
+
 pub async fn run(
     store: &Store,
     provider: &dyn Provider,
     model: &str,
-    limit: usize,
-    since_days: i64,
-    dry_run: bool,
+    options: BootstrapOptions,
 ) -> Result<()> {
+    let BootstrapOptions {
+        limit,
+        since_days,
+        dry_run,
+        profile,
+        force_profile,
+    } = options;
     let candidates = recent_sessions(usize::MAX, since_days)?;
     if candidates.is_empty() {
         println!("没有找到最近 {since_days} 天内的 niucode session。");
@@ -90,7 +110,19 @@ pub async fn run(
                 .unwrap_or("session");
             println!("  {name}  {} chars", transcript.chars().count());
         }
+        if profile {
+            println!("would draft user.md from the same sessions");
+        }
         return Ok(());
+    }
+
+    if profile {
+        match store.user()? {
+            Some(text) if !text.trim().is_empty() && !force_profile => {
+                println!("user.md 已存在；跳过 profile（用 --force-profile 覆盖）");
+            }
+            _ => write_profile(store, provider, model, &sessions).await?,
+        }
     }
 
     let mut raw: Vec<Pending> = Vec::new();
@@ -340,13 +372,70 @@ fn parse_inbox_line(line: &str) -> Option<Pending> {
 }
 
 async fn extract(provider: &dyn Provider, model: &str, transcript: &str) -> Result<Vec<Candidate>> {
+    let text = complete(provider, model, EXTRACTION_SYSTEM, transcript, 1_200).await?;
+    Ok(parse_candidates(&text))
+}
+
+async fn write_profile(
+    store: &Store,
+    provider: &dyn Provider,
+    model: &str,
+    sessions: &[(PathBuf, String)],
+) -> Result<()> {
+    let input = profile_input(sessions, MAX_PROFILE_CHARS);
+    let text = complete(provider, model, PROFILE_SYSTEM, &input, 800).await?;
+    let text = text.trim();
+    if text.is_empty() {
+        println!("profile: 模型没有返回内容");
+        return Ok(());
+    }
+    let body = if text.starts_with("# ") {
+        format!("{text}\n")
+    } else {
+        format!("# 关于我\n\n{text}\n")
+    };
+    store.write_user(&body)?;
+    if let Err(error) = store.append_metric("profile", "") {
+        eprintln!("warning: cannot record metric: {error:#}");
+    }
+    println!(
+        "wrote {} — review with `niuse user edit`",
+        store.user_path().display()
+    );
+    Ok(())
+}
+
+/// Concatenate session transcripts for one profile request, with a hard cap.
+fn profile_input(sessions: &[(PathBuf, String)], max_chars: usize) -> String {
+    let mut out = String::new();
+    let mut used = 0usize;
+    for (path, transcript) in sessions {
+        let name = path
+            .file_stem()
+            .and_then(|stem| stem.to_str())
+            .unwrap_or("session");
+        let block = format!("### {name}\n\n{transcript}\n\n");
+        if used + block.chars().count() > max_chars {
+            break;
+        }
+        used += block.chars().count();
+        out.push_str(&block);
+    }
+    out
+}
+
+async fn complete(
+    provider: &dyn Provider,
+    model: &str,
+    system: &str,
+    input: &str,
+    max_tokens: u32,
+) -> Result<String> {
     let mut request = CompletionRequest::new(model);
     request.temperature = Some(0.0);
-    request.max_tokens = Some(1_200);
-    request
-        .messages
-        .push(ChatMessage::system(EXTRACTION_SYSTEM));
-    request.messages.push(ChatMessage::user(transcript));
+    request.max_tokens = Some(max_tokens);
+    request.messages.push(ChatMessage::system(system));
+    request.messages.push(ChatMessage::user(input));
 
     let mut stream = provider.stream(request).await?;
     let mut text = String::new();
@@ -357,7 +446,7 @@ async fn extract(provider: &dyn Provider, model: &str, transcript: &str) -> Resu
             _ => {}
         }
     }
-    Ok(parse_candidates(&text))
+    Ok(text)
 }
 
 fn parse_candidates(raw: &str) -> Vec<Candidate> {
@@ -491,6 +580,18 @@ mod tests {
         assert_eq!(parsed[0].source, "1792-1-0");
         assert_eq!(parsed[1].tags, Vec::<String>::new());
         assert_eq!(parsed[1].text, "先给结论");
+    }
+
+    #[test]
+    fn profile_input_respects_the_cap() {
+        let sessions = vec![
+            (PathBuf::from("a.jsonl"), "a".repeat(600)),
+            (PathBuf::from("b.jsonl"), "b".repeat(600)),
+        ];
+        let input = profile_input(&sessions, 700);
+        assert!(input.contains("### a"));
+        assert!(!input.contains("### b"));
+        assert!(input.chars().count() <= 700);
     }
 
     #[test]
