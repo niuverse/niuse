@@ -5,6 +5,7 @@ mod driver;
 mod export;
 mod render;
 mod repl;
+mod settings;
 
 use std::path::PathBuf;
 
@@ -19,9 +20,9 @@ use niuse_core::Store;
     about = "A personal engineering companion built on niucode"
 )]
 struct Cli {
-    /// Provider preset (deepseek or openai)
-    #[arg(long, global = true, default_value = "deepseek")]
-    preset: String,
+    /// Provider preset (deepseek or openai); defaults from config
+    #[arg(long, global = true)]
+    preset: Option<String>,
     /// Override the preset model
     #[arg(long, global = true)]
     model: Option<String>,
@@ -31,21 +32,21 @@ struct Cli {
     /// Working directory (defaults to cwd); `/cd` changes it at runtime
     #[arg(long, global = true)]
     cwd: Option<PathBuf>,
-    /// Sandbox: read-only, workspace-write, or full-access
-    #[arg(long, global = true, default_value = "workspace-write")]
-    sandbox: String,
-    /// Approval: ask, on-failure, or never
-    #[arg(long, global = true, default_value = "on-failure")]
-    approval: String,
-    /// Network: on or off
-    #[arg(long, global = true, default_value = "off")]
-    network: String,
+    /// Sandbox: read-only, workspace-write, or full-access; defaults from config
+    #[arg(long, global = true)]
+    sandbox: Option<String>,
+    /// Approval: ask, on-failure, or never; defaults from config
+    #[arg(long, global = true)]
+    approval: Option<String>,
+    /// Network: on or off; defaults from config
+    #[arg(long, global = true)]
+    network: Option<String>,
     /// Override the niuse home (defaults to $NIUSE_HOME or ~/.niuse)
     #[arg(long, global = true)]
     home: Option<PathBuf>,
-    /// Maximum model turns per user request (0 = no hard cap)
-    #[arg(long, global = true, default_value_t = 0)]
-    max_steps: usize,
+    /// Maximum model turns per user request (0 = no hard cap); defaults from config
+    #[arg(long, global = true)]
+    max_steps: Option<usize>,
     #[command(subcommand)]
     command: Option<Command>,
 }
@@ -99,6 +100,11 @@ enum Command {
     Review,
     /// Check local setup without calling a model
     Doctor,
+    /// Inspect or create ~/.niuse/config.toml
+    Config {
+        #[command(subcommand)]
+        command: ConfigCommand,
+    },
     /// Show local acceptance counters
     Stats {
         /// Window in days; 0 means all time
@@ -168,6 +174,18 @@ enum LoopsCommand {
 }
 
 #[derive(Subcommand, Debug, Clone)]
+enum ConfigCommand {
+    /// Write a commented template
+    Init {
+        /// Overwrite an existing config
+        #[arg(long)]
+        force: bool,
+    },
+    /// Print the config file
+    Show,
+}
+
+#[derive(Subcommand, Debug, Clone)]
 enum IdentityCommand {
     /// Answer eight questions and write identity.md
     Init {
@@ -191,11 +209,13 @@ async fn main() -> Result<()> {
 
     match command {
         None => {
-            let app = repl::App::new(&cli, store)?;
+            let settings = settings::resolve(&cli, &store)?;
+            let app = repl::App::new(&cli, &settings, store)?;
             app.run().await
         }
         Some(Command::Exec { prompt }) => {
-            let app = repl::App::new(&cli, store)?;
+            let settings = settings::resolve(&cli, &store)?;
+            let app = repl::App::new(&cli, &settings, store)?;
             repl::run_exec(app, prompt).await
         }
         Some(Command::Mem { command }) => match command {
@@ -230,7 +250,8 @@ async fn main() -> Result<()> {
             IdentityCommand::Show => commands::identity_show(&store),
         },
         Some(Command::Bootstrap { limit, since_days }) => {
-            let app = repl::App::new(&cli, store)?;
+            let settings = settings::resolve(&cli, &store)?;
+            let app = repl::App::new(&cli, &settings, store)?;
             bootstrap::run(
                 &app.store,
                 app.provider.as_ref(),
@@ -241,7 +262,24 @@ async fn main() -> Result<()> {
             .await
         }
         Some(Command::Review) => bootstrap::review(&store),
-        Some(Command::Doctor) => commands::doctor(&store, &cli.preset),
+        Some(Command::Doctor) => {
+            let settings = settings::resolve(&cli, &store)?;
+            commands::doctor(&store, &settings.provider)
+        }
+        Some(Command::Config { command }) => match command {
+            ConfigCommand::Init { force } => {
+                if settings::init(&store, force)? {
+                    println!("wrote {}", store.config_path().display());
+                } else {
+                    println!(
+                        "{} already exists; pass --force to overwrite",
+                        store.config_path().display()
+                    );
+                }
+                Ok(())
+            }
+            ConfigCommand::Show => settings::show(&store),
+        },
         Some(Command::Stats { days }) => commands::stats(&store, days),
         Some(Command::Status) => commands::status(&store),
     }

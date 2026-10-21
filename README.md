@@ -35,6 +35,22 @@ niuse pins niucode in `niucode.rev`; required CI and Pages build against that co
 
 The relationship: **niucode is the kernel and reference UI; niuse is the product and identity.** The front end is moving upstream behind a library target and turn hooks ([ADR-0003](docs/adr/0003-kernel-product-boundary.md)); after that niuse keeps only identity, memory, policy, and product defaults.
 
+## Configuration
+
+`~/.niuse/config.toml` holds defaults; CLI flags always win.
+
+```toml
+[defaults]
+provider = "deepseek"
+model = "deepseek-flash"
+sandbox = "workspace-write"
+approval = "on-failure"
+network = "off"
+max_steps = 0
+```
+
+`niuse config init` writes a commented template; `niuse config show` prints it. Offline commands never read the file, so a broken config cannot block memory inspection.
+
 ## What it remembers
 
 ```text

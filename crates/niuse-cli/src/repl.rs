@@ -17,6 +17,7 @@ use crate::commands;
 use crate::config::{build_provider, resolve_cwd, resolve_policy};
 use crate::driver::{self, SessionMeta, Thread};
 use crate::render::{self, Renderer};
+use crate::settings::Settings;
 use crate::Cli;
 
 pub struct App {
@@ -36,10 +37,14 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(cli: &Cli, store: Store) -> Result<Self> {
-        let bundle = build_provider(&cli.preset, cli.model.as_deref(), cli.no_thinking)?;
+    pub fn new(cli: &Cli, settings: &Settings, store: Store) -> Result<Self> {
+        let bundle = build_provider(
+            &settings.provider,
+            settings.model.as_deref(),
+            cli.no_thinking,
+        )?;
         let (policy, approval, allow_unsandboxed) =
-            resolve_policy(&cli.sandbox, &cli.approval, &cli.network)?;
+            resolve_policy(&settings.sandbox, &settings.approval, &settings.network)?;
         let cwd = resolve_cwd(cli.cwd.clone())?;
         let memory_enabled = std::env::var("NIUSE_MEMORY")
             .map(|value| value.trim().to_lowercase() != "off")
@@ -54,7 +59,7 @@ impl App {
             approval,
             allow_unsandboxed,
             cwd,
-            max_steps: cli.max_steps,
+            max_steps: settings.max_steps,
             prompt: String::new(),
             prompt_tokens: 0,
             memory_enabled,

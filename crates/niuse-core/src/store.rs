@@ -66,6 +66,10 @@ impl Store {
         self.root.join("thread.jsonl")
     }
 
+    pub fn config_path(&self) -> PathBuf {
+        self.root.join("config.toml")
+    }
+
     pub fn inbox_path(&self) -> PathBuf {
         self.root.join("inbox.md")
     }
@@ -229,6 +233,14 @@ impl Store {
 
     pub fn write_inbox(&self, text: &str) -> Result<()> {
         write_private(&self.inbox_path(), text)
+    }
+
+    pub fn read_config(&self) -> Result<Option<String>> {
+        read_optional(&self.config_path())
+    }
+
+    pub fn write_config(&self, text: &str) -> Result<()> {
+        write_private(&self.config_path(), text)
     }
 
     pub fn metrics_path(&self) -> PathBuf {
@@ -474,6 +486,26 @@ mod tests {
         {
             use std::os::unix::fs::PermissionsExt;
             let mode = fs::metadata(store.metrics_path())
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o777;
+            assert_eq!(mode, 0o600);
+        }
+    }
+
+    #[test]
+    fn config_round_trips_privately() {
+        let (_directory, store) = store();
+        store.write_config("[defaults]\n").unwrap();
+        assert_eq!(
+            store.read_config().unwrap().as_deref(),
+            Some("[defaults]\n")
+        );
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mode = fs::metadata(store.config_path())
                 .unwrap()
                 .permissions()
                 .mode()

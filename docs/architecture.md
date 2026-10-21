@@ -77,6 +77,8 @@ There is no second copy of the conversation. `niuse export` renders the event lo
   inbox.md         bootstrap review queue
 ```
 
+Defaults come from CLI flags, then `~/.niuse/config.toml`, then built-ins; only commands that build a provider read the file.
+
 Injection order is fixed, stable before volatile:
 
 | Section | Budget | Change rate |
