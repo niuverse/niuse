@@ -219,7 +219,8 @@ pub fn export(store: &Store, out: Option<&Path>, session: Option<&Path>) -> Resu
     for warning in &loaded.warnings {
         eprintln!("warning: {warning}");
     }
-    let text = crate::export::render(&loaded.events, "niuse thread");
+    let title = thread_title(&loaded.events).unwrap_or_else(|| "niuse thread".to_string());
+    let text = crate::export::render(&loaded.events, &title);
     match out {
         Some(out) => {
             write_export(out, &text)?;
