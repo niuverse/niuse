@@ -227,8 +227,17 @@ impl Hinter for SlashCompleter {
 impl Highlighter for SlashCompleter {}
 
 impl Validator for SlashCompleter {
-    fn validate(&self, _ctx: &mut ValidationContext) -> rustyline::Result<ValidationResult> {
-        Ok(ValidationResult::Valid(None))
+    fn validate(&self, ctx: &mut ValidationContext) -> rustyline::Result<ValidationResult> {
+        if ctx
+            .input()
+            .lines()
+            .last()
+            .is_some_and(|line| line.ends_with('\\'))
+        {
+            Ok(ValidationResult::Incomplete)
+        } else {
+            Ok(ValidationResult::Valid(None))
+        }
     }
 }
 
@@ -363,6 +372,7 @@ impl App {
             let line = match editor.as_mut() {
                 Some(editor) => match editor.readline(&prompt) {
                     Ok(line) => {
+                        let line = join_continuations(&line);
                         let _ = editor.add_history_entry(line.as_str());
                         line
                     }
@@ -899,6 +909,16 @@ pub async fn run_exec(app: App, prompt: String) -> Result<()> {
     result.map(|_| ())
 }
 
+fn join_continuations(input: &str) -> String {
+    input
+        .split('\n')
+        .map(|line| line.strip_suffix('\\').unwrap_or(line).trim_end())
+        .collect::<Vec<_>>()
+        .join("\n")
+        .trim()
+        .to_string()
+}
+
 fn export_path(store: &Store, thread: &Path, argument: &str, cwd: &Path) -> PathBuf {
     if !argument.is_empty() {
         let path = PathBuf::from(argument);
@@ -944,11 +964,13 @@ fn print_help() {
          /journal search <query>  检索日记条目\n\
          /journal add <text>      追加一条今天的日记\n\
         /export [path]  导出当前主线为 Markdown\n\
+        （终端里行尾加 \\ 可续行）\n\
          /stats          最近 7 天的候选接受率与活动计数\n\
          /doctor         检查本地设置，不调用模型\n\
          /identity       查看 identity.md（/identity edit 编辑）\n\
          /user           查看 user.md（/user edit 编辑）\n\
          /export [path]  导出当前主线为 Markdown\n\
+        （终端里行尾加 \\ 可续行）\n\
         /new            归档当前主线并开始一条新的\n\
          /cd <path>      切换工作目录（下一个 turn 生效）\n\
          /status         当前配置与存储状态\n\
@@ -971,6 +993,13 @@ mod tests {
         assert_eq!(slash_candidates("/zzz"), Vec::<&str>::new());
         assert_eq!(slash_candidates("hello"), Vec::<&str>::new());
         assert_eq!(slash_candidates("/mem "), Vec::<&str>::new());
+    }
+
+    #[test]
+    fn backslash_continuations_join_lines() {
+        assert_eq!(join_continuations("hello \\\nthere"), "hello\nthere");
+        assert_eq!(join_continuations("one"), "one");
+        assert_eq!(join_continuations("a \\\nb \\\nc"), "a\nb\nc");
     }
 
     #[test]

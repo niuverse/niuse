@@ -100,7 +100,7 @@ niuse status
 
 Inside the REPL: `/help`, `/mem`, `/mem recall`, `/mem review`, `/stats`, `/doctor`, `/remember`, `/forget`, `/loops`, `/loop`, `/done`, `/journal search`, `/journal add`, `/identity edit`, `/user`, `/export`, `/new`, `/journal`, `/identity`, `/cd`, `/status`, `/prompt`, `/quit`.
 
-On a terminal the prompt has line editing, persistent history (`~/.niuse/history`, `0600`), and Tab completion for slash commands, memory/loop ids, and paths after `/cd` / `/export`; piped input keeps the plain reader. Each turn ends with a compact usage line, and tool lines are dimmed unless `NO_COLOR` is set.
+On a terminal the prompt has line editing, persistent history (`~/.niuse/history`, `0600`), Tab completion for slash commands, memory/loop ids, and paths after `/cd` / `/export`; a trailing `\` continues the prompt; piped input keeps the plain reader. Each turn ends with a compact usage line, and tool lines are dimmed unless `NO_COLOR` is set.
 
 Set `NIUSE_MEMORY=off` to disable both memory injection and new candidates, for A/B runs and for recovering trust.
 
