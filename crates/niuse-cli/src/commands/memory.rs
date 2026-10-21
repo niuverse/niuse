@@ -242,12 +242,13 @@ pub fn mem_edit(store: &Store, id: &str) -> Result<()> {
     if let Some(reason) = secret_reason(&text) {
         bail!("refusing to store: looks like a {reason}");
     }
-    let updated = store
-        .update_memory(&id, |entry| {
-            entry.text = text;
-            entry.confirmed = Date::today();
-        })?
-        .expect("entry existed when editing started");
+    let Some(updated) = store.update_memory(&id, |entry| {
+        entry.text = text;
+        entry.confirmed = Date::today();
+    })?
+    else {
+        bail!("memory m-{id} disappeared while editing; nothing was written");
+    };
     if let Err(error) = store.append_metric("edit", &updated.id) {
         eprintln!("warning: cannot record metric: {error:#}");
     }
