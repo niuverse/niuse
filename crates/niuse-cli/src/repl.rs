@@ -48,6 +48,7 @@ const SLASH_COMMANDS: &[&str] = &[
     "/export",
     "/threads",
     "/sessions",
+    "/resume",
     "/new",
     "/cd",
     "/status",
@@ -410,6 +411,40 @@ impl App {
             };
             let input = line.trim();
             if input.is_empty() {
+                continue;
+            }
+            if let Some(argument) = input.strip_prefix("/resume ") {
+                let index = match argument.trim().parse::<usize>() {
+                    Ok(index) if index > 0 => index,
+                    _ => {
+                        println!("用法：/resume <n>，编号见 /threads");
+                        continue;
+                    }
+                };
+                let Some(path) = commands::thread_at(&self.store, &thread.path, index)? else {
+                    println!("没有第 {index} 条主线；先看 /threads。");
+                    continue;
+                };
+                if path == thread.path {
+                    println!("当前就是第 {index} 条。");
+                    continue;
+                }
+                let meta = SessionMeta {
+                    cwd: &self.cwd,
+                    model: &self.model,
+                    provider: &self.provider_id,
+                    policy: self.policy,
+                    approval: self.approval,
+                };
+                match driver::open_thread(&path, &meta) {
+                    Ok(resumed) => {
+                        driver::append_end(&thread.log)?;
+                        thread = resumed;
+                        history = driver::history(&thread.path)?;
+                        println!("resumed {}", thread.path.display());
+                    }
+                    Err(error) => eprintln!("cannot resume {}: {error:#}", path.display()),
+                }
                 continue;
             }
             if input == "/new" {

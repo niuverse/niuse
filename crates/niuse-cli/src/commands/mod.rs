@@ -17,7 +17,7 @@ pub use memory::{
     mem_show,
 };
 pub use profile::{identity_edit, identity_init, identity_show, user_edit, user_show};
-pub use session::{export, sessions, threads};
+pub use session::{export, sessions, thread_at, threads};
 
 use anyhow::Result;
 use niuse_core::prompt::compose;

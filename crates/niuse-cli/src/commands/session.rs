@@ -64,11 +64,12 @@ pub fn threads(store: &Store, active: &Path, json: bool) -> Result<()> {
         println!("还没有主线。第一次对话会自动创建。");
         return Ok(());
     }
-    for info in entries {
+    for (index, info) in entries.into_iter().enumerate() {
         let marker = if info.active { "*" } else { " " };
         let relative = info.path.strip_prefix(store.root()).unwrap_or(&info.path);
         println!(
-            "{marker} {:<8} {:>4} events  {:>8}  {}",
+            "{marker} [{}] {:<8} {:>4} events  {:>8}  {}",
+            index + 1,
             human_age(info.age_secs),
             info.events,
             human_bytes(info.bytes),
@@ -119,6 +120,16 @@ fn jsonl_files(directory: &Path) -> Result<Vec<PathBuf>> {
         }
     }
     Ok(paths)
+}
+
+/// One-based index into the same ordering `threads` prints.
+pub fn thread_at(store: &Store, active: &Path, index: usize) -> Result<Option<PathBuf>> {
+    if index == 0 {
+        return Ok(None);
+    }
+    Ok(collect_threads(store, active)?
+        .get(index - 1)
+        .map(|info| info.path.clone()))
 }
 
 fn collect_threads(store: &Store, active: &Path) -> Result<Vec<ThreadInfo>> {
@@ -249,6 +260,29 @@ fn write_export(path: &Path, text: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn thread_indexes_match_the_listing() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        fs::write(
+            store.session_path(),
+            "{\"type\":\"session_end\",\"ts\":0}\n",
+        )
+        .unwrap();
+        fs::create_dir_all(store.threads_dir()).unwrap();
+        fs::write(
+            store.threads_dir().join("thread-1.jsonl"),
+            "{\"type\":\"session_end\",\"ts\":0}\n",
+        )
+        .unwrap();
+        let active = store.session_path();
+        assert!(thread_at(&store, &active, 1).unwrap().is_some());
+        assert!(thread_at(&store, &active, 2).unwrap().is_some());
+        assert!(thread_at(&store, &active, 3).unwrap().is_none());
+        assert!(thread_at(&store, &active, 0).unwrap().is_none());
+    }
 
     #[test]
     fn sessions_listing_reads_one_shot_logs() {
