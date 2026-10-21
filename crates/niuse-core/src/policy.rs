@@ -70,6 +70,38 @@ pub fn similarity(left: &str, right: &str) -> f64 {
     intersection / union
 }
 
+/// Rank a memory against a free-text query for `/mem recall`.
+///
+/// Substring matches and tag matches deliberately outrank bigram similarity:
+/// a short query like "nextest" has too few bigrams to score well against a
+/// long sentence, but an exact substring is an obviously good hit.
+pub fn search_score(query: &str, text: &str, tags: &[String]) -> f64 {
+    let query = normalize_string(query);
+    if query.is_empty() {
+        return 0.0;
+    }
+
+    if normalize_string(text).contains(&query) {
+        return 0.9;
+    }
+
+    let tag_score = tags
+        .iter()
+        .map(|tag| {
+            let tag = normalize_string(tag);
+            if tag == query {
+                1.0
+            } else if tag.contains(&query) {
+                0.8
+            } else {
+                0.0
+            }
+        })
+        .fold(0.0, f64::max);
+
+    tag_score.max(similarity(&query, text))
+}
+
 pub fn conflicts(
     left_text: &str,
     left_tags: &[String],
@@ -84,6 +116,14 @@ pub fn conflicts(
         .iter()
         .any(|tag| right_tags.iter().any(|other| other == tag));
     shared && score >= TAG_THRESHOLD
+}
+
+fn normalize_string(input: &str) -> String {
+    input
+        .chars()
+        .flat_map(char::to_lowercase)
+        .filter(|character| character.is_alphanumeric())
+        .collect()
 }
 
 fn normalized_chars(input: &str) -> Vec<char> {
@@ -137,6 +177,20 @@ mod tests {
     #[test]
     fn unrelated_claims_are_not_conflicts() {
         assert!(!conflicts("用 nextest 跑测试", &[], "先给结论再展开", &[]));
+    }
+
+    #[test]
+    fn search_prefers_substrings_and_tags() {
+        assert_eq!(
+            search_score("nextest", "Rust 仓库一律用 cargo nextest", &[]),
+            0.9
+        );
+        assert_eq!(
+            search_score("rust", "用 cargo nextest", &["rust".into()]),
+            1.0
+        );
+        assert!(search_score("rust", "用 cargo nextest", &["rust-tooling".into()]) >= 0.8);
+        assert!(search_score("kubernetes", "用 cargo nextest", &["rust".into()]) < 0.2);
     }
 
     #[test]

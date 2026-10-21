@@ -108,6 +108,13 @@ enum MemCommand {
         #[arg(long)]
         force: bool,
     },
+    /// Search memories, including expired ones
+    Search {
+        query: String,
+        /// Exclude expired entries
+        #[arg(long)]
+        fresh: bool,
+    },
     /// Delete a memory
     Forget { id: String },
     /// Refresh the confirmation date
@@ -167,6 +174,7 @@ async fn main() -> Result<()> {
                 tags,
                 force,
             } => commands::mem_add(&store, &text, &kind, tags, force),
+            MemCommand::Search { query, fresh } => commands::mem_search(&store, &query, fresh),
             MemCommand::Forget { id } => commands::mem_forget(&store, &id),
             MemCommand::Confirm { id } => commands::mem_confirm(&store, &id),
             MemCommand::Review => commands::mem_review(&store),

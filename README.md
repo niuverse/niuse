@@ -66,7 +66,7 @@ Global flags: `--preset`, `--model`, `--no-thinking`, `--cwd`, `--sandbox`, `--a
 niuse                         interactive REPL (resumes the same thread)
 niuse exec "<task>"           run one turn; candidates are printed, never written
 niuse identity init|show
-niuse mem list|add|forget|confirm|review
+niuse mem list|search|add|forget|confirm|review
 niuse loops list|done
 niuse journal [--days N]
 niuse bootstrap [--limit N] [--since-days N]
@@ -74,7 +74,7 @@ niuse review
 niuse status
 ```
 
-Inside the REPL: `/help`, `/mem`, `/mem review`, `/remember`, `/forget`, `/loops`, `/done`, `/journal`, `/identity`, `/cd`, `/status`, `/prompt`, `/quit`.
+Inside the REPL: `/help`, `/mem`, `/mem recall`, `/mem review`, `/remember`, `/forget`, `/loops`, `/done`, `/journal`, `/identity`, `/cd`, `/status`, `/prompt`, `/quit`.
 
 Set `NIUSE_MEMORY=off` to disable both memory injection and new candidates, for A/B runs and for recovering trust.
 

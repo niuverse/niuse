@@ -3,7 +3,7 @@
 
 use anyhow::{bail, Context, Result};
 use niuse_core::model::one_line;
-use niuse_core::policy::secret_reason;
+use niuse_core::policy::{search_score, secret_reason};
 use niuse_core::prompt::compose;
 use niuse_core::{Date, MemoryEntry, MemoryKind, Store};
 use std::io::{self, Write};
@@ -35,26 +35,65 @@ pub fn mem_list(store: &Store, all: bool) -> Result<()> {
         return Ok(());
     }
     for entry in shown {
-        let age = entry.age_days(today);
-        let age_label = match age {
-            0 => "今天".to_string(),
-            1..=30 => format!("{age} 天前"),
-            _ if entry.is_expired(today) => format!("{age} 天前 · 已过期"),
-            _ => format!("{age} 天前 · 待验证"),
-        };
-        let tags = if entry.tags.is_empty() {
-            String::new()
-        } else {
-            format!(" [{}]", entry.tags.join(", "))
-        };
-        println!(
-            "m-{}  {}{}  {}  {}",
-            entry.id,
-            entry.kind.as_str(),
-            tags,
-            age_label,
-            entry.text
-        );
+        println!("{}", entry_line(entry, today));
+    }
+    Ok(())
+}
+
+fn entry_line(entry: &MemoryEntry, today: Date) -> String {
+    let age = entry.age_days(today);
+    let age_label = match age {
+        0 => "今天".to_string(),
+        1..=30 => format!("{age} 天前"),
+        _ if entry.is_expired(today) => format!("{age} 天前 · 已过期"),
+        _ => format!("{age} 天前 · 待验证"),
+    };
+    let tags = if entry.tags.is_empty() {
+        String::new()
+    } else {
+        format!(" [{}]", entry.tags.join(", "))
+    };
+    format!(
+        "m-{}  {}{}  {}  {}",
+        entry.id,
+        entry.kind.as_str(),
+        tags,
+        age_label,
+        entry.text
+    )
+}
+
+/// Search every memory, including expired ones: recall is exactly where old
+/// entries are still useful, even though they are no longer auto-injected.
+pub fn mem_search(store: &Store, query: &str, fresh_only: bool) -> Result<()> {
+    let today = Date::today();
+    let query = query.trim();
+    if query.is_empty() {
+        bail!("usage: niuse mem search <query>");
+    }
+
+    let memories = store.memories()?;
+    let mut scored: Vec<(f64, &MemoryEntry)> = memories
+        .iter()
+        .filter(|entry| !fresh_only || !entry.is_expired(today))
+        .map(|entry| (search_score(query, &entry.text, &entry.tags), entry))
+        .filter(|(score, _)| *score >= 0.2)
+        .collect();
+    scored.sort_by(|left, right| {
+        right
+            .0
+            .partial_cmp(&left.0)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
+
+    if scored.is_empty() {
+        println!("没有匹配「{query}」的记忆。");
+        return Ok(());
+    }
+
+    println!("{} 条匹配「{query}」", scored.len());
+    for (_, entry) in scored.iter().take(10) {
+        println!("{}", entry_line(entry, today));
     }
     Ok(())
 }

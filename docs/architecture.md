@@ -116,7 +116,7 @@ something it promised to do
 <</niuse:journal>>
 ```
 
-At most one `memory` block per turn; after a rejection, the same tags are not proposed again in that session. `journal` records changes, not activity logs.
+At most one `memory` block per turn; after a rejection, the same tags are not proposed again in that session. `journal` records changes, not activity logs. Expired memory leaves the prompt but stays searchable through `niuse mem search` and `/mem recall`.
 
 ## Safety and privacy
 

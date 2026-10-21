@@ -219,6 +219,8 @@ impl App {
             "/mem" => {
                 if argument == "review" {
                     commands::mem_review(&self.store)?;
+                } else if let Some(query) = argument.strip_prefix("recall ") {
+                    commands::mem_search(&self.store, query.trim(), false)?;
                 } else {
                     commands::mem_list(&self.store, false)?;
                 }
@@ -517,6 +519,7 @@ fn print_help() {
     println!(
         "对话：直接输入；空行忽略。\n\
          /mem            列出现行记忆\n\
+         /mem recall <query>  检索记忆，包含已过期条目\n\
          /mem review     复核过期条目（y 仍然成立 / d 删除 / s 跳过）\n\
          /remember <一句话>  直接记住一条偏好\n\
          /forget <id>    删除一条记忆\n\
