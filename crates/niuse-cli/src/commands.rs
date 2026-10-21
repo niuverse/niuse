@@ -24,7 +24,7 @@ pub fn mem_list(store: &Store, all: bool, json: bool, kind: Option<&str>) -> Res
     let shown: Vec<&MemoryEntry> = memories
         .iter()
         .filter(|entry| all || !entry.is_expired(today))
-        .filter(|entry| kind.map_or(true, |kind| entry.kind == kind))
+        .filter(|entry| kind.is_none_or(|kind| entry.kind == kind))
         .collect();
 
     if json {
@@ -138,7 +138,7 @@ pub fn mem_search(
     let mut scored: Vec<(f64, &MemoryEntry)> = memories
         .iter()
         .filter(|entry| !fresh_only || !entry.is_expired(today))
-        .filter(|entry| kind.map_or(true, |kind| entry.kind == kind))
+        .filter(|entry| kind.is_none_or(|kind| entry.kind == kind))
         .map(|entry| (search_score(query, &entry.text, &entry.tags), entry))
         .filter(|(score, _)| *score >= 0.2)
         .collect();
