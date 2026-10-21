@@ -70,6 +70,7 @@ niuse identity init|show
 niuse mem list|search|show|edit|add|forget|confirm|review
 niuse loops list|add|done
 niuse journal [--days N] [--search QUERY]
+niuse export [--out FILE] [--session PATH]
 niuse bootstrap [--limit N] [--since-days N]
 niuse review
 niuse doctor                    check home, identity, credentials, sandbox, pin

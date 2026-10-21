@@ -62,7 +62,7 @@ user input
   └─ re-project history, next turn
 ```
 
-There is no second copy of the conversation. `history` is projected from the event log by niucode's `project_history`, so compaction, replay, and fork behave exactly as they do in niucode.
+There is no second copy of the conversation. `niuse export` renders the event log as Markdown without changing it. `history` is projected from the event log by niucode's `project_history`, so compaction, replay, and fork behave exactly as they do in niucode.
 
 ## The five stores and injection
 

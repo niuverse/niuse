@@ -2,6 +2,7 @@ mod bootstrap;
 mod commands;
 mod config;
 mod driver;
+mod export;
 mod render;
 mod repl;
 
@@ -62,6 +63,15 @@ enum Command {
     Loops {
         #[command(subcommand)]
         command: LoopsCommand,
+    },
+    /// Export a session log as Markdown
+    Export {
+        /// Write to a file instead of stdout
+        #[arg(long)]
+        out: Option<PathBuf>,
+        /// Session JSONL to export (defaults to the main thread)
+        #[arg(long)]
+        session: Option<PathBuf>,
     },
     /// Show or search the journal
     Journal {
@@ -208,6 +218,9 @@ async fn main() -> Result<()> {
             LoopsCommand::Add { text, due } => commands::loops_add(&store, &text, due.as_deref()),
             LoopsCommand::Done { id } => commands::loops_done(&store, &id),
         },
+        Some(Command::Export { out, session }) => {
+            commands::export(&store, out.as_deref(), session.as_deref())
+        }
         Some(Command::Journal { days, search }) => match search {
             Some(query) => commands::journal_search(&store, &query),
             None => commands::journal_show(&store, days),

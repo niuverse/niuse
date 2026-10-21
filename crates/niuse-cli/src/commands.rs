@@ -8,7 +8,7 @@ use niuse_core::prompt::compose;
 use niuse_core::{Date, JournalDay, LoopItem, MemoryEntry, MemoryKind, Store};
 use std::fs;
 use std::io::{self, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -327,6 +327,43 @@ pub fn journal_show(store: &Store, days: usize) -> Result<()> {
             println!("- {bullet}");
         }
         println!();
+    }
+    Ok(())
+}
+
+pub fn export(store: &Store, out: Option<&Path>, session: Option<&Path>) -> Result<()> {
+    let path = session
+        .map(Path::to_path_buf)
+        .unwrap_or_else(|| store.session_path());
+    if !path.exists() {
+        bail!("no session at {}", path.display());
+    }
+    let loaded = niucode_core::load(&path)?;
+    for warning in &loaded.warnings {
+        eprintln!("warning: {warning}");
+    }
+    let text = crate::export::render(&loaded.events, "niuse thread");
+    match out {
+        Some(out) => {
+            write_export(out, &text)?;
+            println!("wrote {} ({} events)", out.display(), loaded.events.len());
+        }
+        None => print!("{text}"),
+    }
+    Ok(())
+}
+
+fn write_export(path: &Path, text: &str) -> Result<()> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("create directory {}", parent.display()))?;
+    }
+    fs::write(path, text).with_context(|| format!("write {}", path.display()))?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(path, fs::Permissions::from_mode(0o600))
+            .with_context(|| format!("chmod 0600 {}", path.display()))?;
     }
     Ok(())
 }
