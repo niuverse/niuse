@@ -82,10 +82,10 @@ Global flags: `--preset`, `--model`, `--no-thinking`, `--cwd`, `--sandbox`, `--a
 ```text
 niuse                         interactive REPL (resumes the same thread)
 niuse exec "<task>"           run one turn; candidates are printed, never written
-niuse identity init|show
+niuse identity init|show|edit
 niuse mem list|search|show|edit|add|forget|confirm|review
 niuse loops list|add|done
-niuse journal [--days N] [--search QUERY]
+niuse journal [--days N] [--search QUERY] [--add TEXT]
 niuse export [--out FILE] [--session PATH]
 niuse bootstrap [--limit N] [--since-days N]
 niuse review
@@ -94,7 +94,7 @@ niuse stats [--days N]          local acceptance counters
 niuse status
 ```
 
-Inside the REPL: `/help`, `/mem`, `/mem recall`, `/mem review`, `/stats`, `/doctor`, `/remember`, `/forget`, `/loops`, `/loop`, `/done`, `/journal search`, `/journal`, `/identity`, `/cd`, `/status`, `/prompt`, `/quit`.
+Inside the REPL: `/help`, `/mem`, `/mem recall`, `/mem review`, `/stats`, `/doctor`, `/remember`, `/forget`, `/loops`, `/loop`, `/done`, `/journal search`, `/journal add`, `/identity edit`, `/journal`, `/identity`, `/cd`, `/status`, `/prompt`, `/quit`.
 
 Set `NIUSE_MEMORY=off` to disable both memory injection and new candidates, for A/B runs and for recovering trust.
 

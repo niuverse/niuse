@@ -182,17 +182,25 @@ pub fn mem_edit(store: &Store, id: &str) -> Result<()> {
     Ok(())
 }
 
-/// Open `$EDITOR` on the current text. Returns `None` when the editor fails or
+/// Open `$EDITOR` on a Markdown body. Returns `None` when the editor fails or
 /// leaves the file empty.
-pub(crate) fn edit_text(initial: &str) -> Option<String> {
-    let path = std::env::temp_dir().join(format!("niuse-memory-{}.md", std::process::id()));
+pub(crate) fn edit_markdown(initial: &str) -> Option<String> {
+    let path = std::env::temp_dir().join(format!("niuse-edit-{}.md", std::process::id()));
     fs::write(&path, initial).ok()?;
     let editor = std::env::var("EDITOR").unwrap_or_else(|_| "vi".to_string());
     let status = std::process::Command::new(&editor).arg(&path).status();
     let text = fs::read_to_string(&path).ok();
     let _ = fs::remove_file(&path);
     status.ok()?.success().then_some(())?;
-    text.map(one_line).filter(|text| !text.is_empty())
+    text.map(|text| text.trim().to_string())
+        .filter(|text| !text.is_empty())
+}
+
+/// One-line variant used by candidate and memory editing.
+pub(crate) fn edit_text(initial: &str) -> Option<String> {
+    edit_markdown(initial)
+        .map(one_line)
+        .filter(|text| !text.is_empty())
 }
 
 pub fn mem_forget(store: &Store, id: &str) -> Result<()> {
@@ -368,6 +376,23 @@ fn write_export(path: &Path, text: &str) -> Result<()> {
     Ok(())
 }
 
+pub fn journal_add(store: &Store, text: &str) -> Result<()> {
+    let text = one_line(text.trim().to_string());
+    if text.is_empty() {
+        bail!("journal text is empty");
+    }
+    if let Some(reason) = secret_reason(&text) {
+        bail!("refusing to store: looks like a {reason}");
+    }
+    if store.append_journal(Date::today(), std::slice::from_ref(&text))? {
+        if let Err(error) = store.append_metric("journal", "1") {
+            eprintln!("warning: cannot record metric: {error:#}");
+        }
+        println!("journal +1");
+    }
+    Ok(())
+}
+
 pub fn journal_search(store: &Store, query: &str) -> Result<()> {
     let query = query.trim();
     if query.is_empty() {
@@ -403,6 +428,22 @@ fn rank_journal<'a>(query: &str, days: &'a [JournalDay]) -> Vec<(f64, &'a Journa
             .unwrap_or(std::cmp::Ordering::Equal)
     });
     hits
+}
+
+pub fn identity_edit(store: &Store) -> Result<()> {
+    let current = store
+        .identity()?
+        .unwrap_or_else(|| "# 你是 niuse\n\n描述它是谁、它的边界和说话方式。\n".to_string());
+    let Some(updated) = edit_markdown(&current) else {
+        println!("no change");
+        return Ok(());
+    };
+    store.write_identity(&updated)?;
+    if let Err(error) = store.append_metric("identity_edit", "") {
+        eprintln!("warning: cannot record metric: {error:#}");
+    }
+    println!("updated {}", store.identity_path().display());
+    Ok(())
 }
 
 pub fn identity_show(store: &Store) -> Result<()> {
@@ -786,6 +827,16 @@ pub fn doctor(store: &Store, preset: &str) -> Result<()> {
         format!("{} records", metrics.lines().count()),
     );
 
+    match crate::settings::load(store) {
+        Ok(_) if store.config_path().exists() => report.record(
+            Level::Ok,
+            "config",
+            format!("{} (valid)", store.config_path().display()),
+        ),
+        Ok(_) => report.record(Level::Ok, "config", "defaults (no config.toml)"),
+        Err(error) => report.record(Level::Fail, "config", format!("{error:#}")),
+    }
+
     match Preset::parse(preset) {
         Some(preset) => match AuthStore::new() {
             Ok(auth) => match auth.resolve(preset.as_str()) {
@@ -940,6 +991,20 @@ mod tests {
         assert_eq!(summary.accepted, 1);
         assert_eq!(summary.blocked, 1);
         assert_eq!(summary.acceptance_percent(), Some(50));
+    }
+
+    #[test]
+    fn manual_journal_entry_persists() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        journal_add(&store, "decided to ship the config file").unwrap();
+        let days = store.recent_journal(1).unwrap();
+        assert_eq!(days.len(), 1);
+        assert!(days[0]
+            .bullets
+            .iter()
+            .any(|bullet| bullet.contains("config file")));
     }
 
     #[test]

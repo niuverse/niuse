@@ -265,6 +265,8 @@ impl App {
             "/journal" => {
                 if let Some(query) = argument.strip_prefix("search ") {
                     commands::journal_search(&self.store, query.trim())?;
+                } else if let Some(text) = argument.strip_prefix("add ") {
+                    commands::journal_add(&self.store, text.trim())?;
                 } else {
                     commands::journal_show(&self.store, 7)?;
                 }
@@ -329,7 +331,13 @@ impl App {
                 println!("cwd       {}", self.cwd.display());
                 println!("session   {} events", events);
             }
-            "/identity" => commands::identity_show(&self.store)?,
+            "/identity" => {
+                if argument == "edit" {
+                    commands::identity_edit(&self.store)?;
+                } else {
+                    commands::identity_show(&self.store)?;
+                }
+            }
             "/prompt" => println!("{}", self.prompt),
             other => println!("未知命令 {other}；/help 查看可用命令。"),
         }
@@ -580,9 +588,10 @@ fn print_help() {
          /done <l-id>    关闭一条承诺\n\
          /journal        最近 7 天\n\
          /journal search <query>  检索日记条目\n\
+         /journal add <text>      追加一条今天的日记\n\
          /stats          最近 7 天的候选接受率与活动计数\n\
          /doctor         检查本地设置，不调用模型\n\
-         /identity       查看 identity.md\n\
+         /identity       查看 identity.md（/identity edit 编辑）\n\
          /cd <path>      切换工作目录（下一个 turn 生效）\n\
          /status         当前配置与存储状态\n\
          /prompt         打印完整 system prompt（调试用）\n\

@@ -81,6 +81,9 @@ enum Command {
         /// Search entries instead of listing recent days
         #[arg(long)]
         search: Option<String>,
+        /// Append an entry to today instead of listing
+        #[arg(long)]
+        add: Option<String>,
     },
     /// Create or show identity.md
     Identity {
@@ -195,6 +198,8 @@ enum IdentityCommand {
     },
     /// Print identity.md
     Show,
+    /// Edit identity.md in $EDITOR
+    Edit,
 }
 
 #[tokio::main]
@@ -241,13 +246,19 @@ async fn main() -> Result<()> {
         Some(Command::Export { out, session }) => {
             commands::export(&store, out.as_deref(), session.as_deref())
         }
-        Some(Command::Journal { days, search }) => match search {
-            Some(query) => commands::journal_search(&store, &query),
-            None => commands::journal_show(&store, days),
-        },
+        Some(Command::Journal { days, search, add }) => {
+            if let Some(text) = add {
+                commands::journal_add(&store, &text)
+            } else if let Some(query) = search {
+                commands::journal_search(&store, &query)
+            } else {
+                commands::journal_show(&store, days)
+            }
+        }
         Some(Command::Identity { command }) => match command {
             IdentityCommand::Init { force } => commands::identity_init(&store, force),
             IdentityCommand::Show => commands::identity_show(&store),
+            IdentityCommand::Edit => commands::identity_edit(&store),
         },
         Some(Command::Bootstrap { limit, since_days }) => {
             let settings = settings::resolve(&cli, &store)?;
