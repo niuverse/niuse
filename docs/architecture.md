@@ -130,7 +130,7 @@ At most one `memory` block per turn; after a rejection, the same tags are not pr
 
 ## Safety and privacy
 
-- `~/.niuse` directories are `0700`, files are `0600`; writes go to a temporary file and are renamed.
+- `~/.niuse` directories are `0700`, files are `0600`. Writers create the file at `0600` from the first byte (unique temp name, then rename); a chmod only repairs pre-existing files. `$EDITOR` scratch files, exports, and thread logs follow the same rule.
 - `mem prune --apply` copies memory files to `~/.niuse/backups/` before deleting.
 - Secret patterns are scanned before every write; a match is refused, and the CLI requires `--force` to override where an override exists.
 - `identity.md` and `user.md` edits, and the bootstrap profile draft, are refused on a secret match; these files are injected every turn.
