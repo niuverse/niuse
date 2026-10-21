@@ -22,7 +22,8 @@ The contract is deliberately small: `run_with_history`, `AgentConfig`, `project_
 
 | niuse | niucode | status | updated |
 |---|---|---|---|
-| 0.1.0 | `f65ca7a` | current pin; contract tests pass; session-log forward-compat tests | 2026-10-22 |
+| 0.1.0 | `f3711b1` | current pin; session files created 0600 | 2026-10-22 |
+| 0.1.0 | `f65ca7a` | previous pin; forward-compat tests | 2026-10-22 |
 | 0.1.0 | `27b2c55` | previous pin; MSRV declared 1.88 | 2026-10-22 |
 | 0.1.0 | `eabc0c4` | previous pin; ADR-0032 sketch added | 2026-10-22 |
 | 0.1.0 | `6fd40ca` | previous pin; contract tests pass | 2026-10-22 |
