@@ -306,17 +306,20 @@ pub fn review(store: &Store) -> Result<()> {
             }
             "e" | "edit" => {
                 let Some(edited) = edit_text(&item.text) else {
-                    println!("  未修改");
+                    println!("  未修改，保留到下次");
+                    remaining.push(item.clone());
                     index += 1;
                     continue;
                 };
                 if edited.trim().is_empty() {
-                    println!("  空内容，未保存");
+                    println!("  空内容，保留到下次");
+                    remaining.push(item.clone());
                     index += 1;
                     continue;
                 }
                 if let Some(reason) = secret_reason(&edited) {
-                    println!("  拒绝保存：疑似 {reason}");
+                    println!("  拒绝保存：疑似 {reason}；保留到下次");
+                    remaining.push(item.clone());
                     index += 1;
                     continue;
                 }
