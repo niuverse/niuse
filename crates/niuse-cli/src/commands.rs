@@ -431,8 +431,31 @@ pub fn loops_done(store: &Store, id: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn journal_show(store: &Store, days: usize) -> Result<()> {
+#[derive(Debug, serde::Serialize)]
+struct JournalDayJson {
+    date: String,
+    bullets: Vec<String>,
+}
+
+#[derive(Debug, serde::Serialize)]
+struct JournalHitJson {
+    date: String,
+    text: String,
+}
+
+pub fn journal_show(store: &Store, days: usize, json: bool) -> Result<()> {
     let days = store.recent_journal(days)?;
+    if json {
+        let items: Vec<JournalDayJson> = days
+            .iter()
+            .map(|day| JournalDayJson {
+                date: day.date.to_string(),
+                bullets: day.bullets.clone(),
+            })
+            .collect();
+        println!("{}", serde_json::to_string_pretty(&items)?);
+        return Ok(());
+    }
     if days.is_empty() {
         println!("（还没有 journal。）");
         return Ok(());
@@ -457,8 +480,16 @@ struct ThreadInfo {
     modified: SystemTime,
 }
 
-pub fn threads(store: &Store, active: &Path) -> Result<()> {
+pub fn threads(store: &Store, active: &Path, json: bool) -> Result<()> {
     let entries = collect_threads(store, active)?;
+    if json {
+        let items: Vec<ThreadJson> = entries
+            .iter()
+            .map(|info| thread_json(store, info))
+            .collect();
+        println!("{}", serde_json::to_string_pretty(&items)?);
+        return Ok(());
+    }
     if entries.is_empty() {
         println!("还没有主线。第一次对话会自动创建。");
         return Ok(());
@@ -475,6 +506,30 @@ pub fn threads(store: &Store, active: &Path) -> Result<()> {
         );
     }
     Ok(())
+}
+
+#[derive(Debug, serde::Serialize)]
+struct ThreadJson {
+    path: String,
+    active: bool,
+    events: usize,
+    bytes: u64,
+    age_seconds: u64,
+}
+
+fn thread_json(store: &Store, info: &ThreadInfo) -> ThreadJson {
+    ThreadJson {
+        path: info
+            .path
+            .strip_prefix(store.root())
+            .unwrap_or(&info.path)
+            .to_string_lossy()
+            .to_string(),
+        active: info.active,
+        events: info.events,
+        bytes: info.bytes,
+        age_seconds: info.age_secs,
+    }
 }
 
 fn collect_threads(store: &Store, active: &Path) -> Result<Vec<ThreadInfo>> {
@@ -592,13 +647,24 @@ pub fn journal_add(store: &Store, text: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn journal_search(store: &Store, query: &str) -> Result<()> {
+pub fn journal_search(store: &Store, query: &str, json: bool) -> Result<()> {
     let query = query.trim();
     if query.is_empty() {
         bail!("usage: niuse journal --search <query>");
     }
     let days = store.recent_journal(usize::MAX)?;
     let hits = rank_journal(query, &days);
+    if json {
+        let items: Vec<JournalHitJson> = hits
+            .iter()
+            .map(|(_, day, text)| JournalHitJson {
+                date: day.date.to_string(),
+                text: (*text).to_string(),
+            })
+            .collect();
+        println!("{}", serde_json::to_string_pretty(&items)?);
+        return Ok(());
+    }
     if hits.is_empty() {
         println!("没有匹配「{query}」的日记。");
         return Ok(());
@@ -1462,6 +1528,24 @@ mod tests {
         let second = days.get(&Date::from_days(1)).unwrap();
         assert_eq!(second.turns, 1);
         assert_eq!(second.acceptance_percent(), None);
+    }
+
+    #[test]
+    fn thread_json_uses_relative_paths() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        let info = ThreadInfo {
+            path: store.root().join("thread.jsonl"),
+            active: true,
+            events: 3,
+            bytes: 120,
+            age_secs: 5,
+            modified: SystemTime::now(),
+        };
+        let json = serde_json::to_value(thread_json(&store, &info)).unwrap();
+        assert_eq!(json["path"], "thread.jsonl");
+        assert_eq!(json["active"], true);
+        assert_eq!(json["events"], 3);
     }
 
     #[test]

@@ -78,7 +78,11 @@ enum Command {
         session: Option<PathBuf>,
     },
     /// List the active thread and archived chapters
-    Threads,
+    Threads {
+        /// Emit JSON
+        #[arg(long)]
+        json: bool,
+    },
     /// Show or search the journal
     Journal {
         #[arg(long, default_value_t = 7)]
@@ -89,6 +93,9 @@ enum Command {
         /// Append an entry to today instead of listing
         #[arg(long)]
         add: Option<String>,
+        /// Emit JSON for show or search
+        #[arg(long)]
+        json: bool,
     },
     /// Create, show, or edit identity.md
     Identity {
@@ -329,20 +336,25 @@ async fn main() -> Result<()> {
             LoopsCommand::Add { text, due } => commands::loops_add(&store, &text, due.as_deref()),
             LoopsCommand::Done { id } => commands::loops_done(&store, &id),
         },
-        Some(Command::Threads) => {
+        Some(Command::Threads { json }) => {
             let active = cli.thread.clone().unwrap_or_else(|| store.session_path());
-            commands::threads(&store, &active)
+            commands::threads(&store, &active, json)
         }
         Some(Command::Export { out, session }) => {
             commands::export(&store, out.as_deref(), session.as_deref())
         }
-        Some(Command::Journal { days, search, add }) => {
+        Some(Command::Journal {
+            days,
+            search,
+            add,
+            json,
+        }) => {
             if let Some(text) = add {
                 commands::journal_add(&store, &text)
             } else if let Some(query) = search {
-                commands::journal_search(&store, &query)
+                commands::journal_search(&store, &query, json)
             } else {
-                commands::journal_show(&store, days)
+                commands::journal_show(&store, days, json)
             }
         }
         Some(Command::Identity { command }) => match command {

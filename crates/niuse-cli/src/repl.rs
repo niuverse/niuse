@@ -290,11 +290,11 @@ impl App {
             }
             "/journal" => {
                 if let Some(query) = argument.strip_prefix("search ") {
-                    commands::journal_search(&self.store, query.trim())?;
+                    commands::journal_search(&self.store, query.trim(), false)?;
                 } else if let Some(text) = argument.strip_prefix("add ") {
                     commands::journal_add(&self.store, text.trim())?;
                 } else {
-                    commands::journal_show(&self.store, 7)?;
+                    commands::journal_show(&self.store, 7, false)?;
                 }
             }
             "/stats" => commands::stats(&self.store, 7, false, false)?,
