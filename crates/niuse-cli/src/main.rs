@@ -145,7 +145,7 @@ enum MemCommand {
         kind: String,
         #[arg(long, value_delimiter = ',')]
         tags: Vec<String>,
-        /// Store even if the secret scan matches
+        /// Store even if the secret scan or duplicate check matches
         #[arg(long)]
         force: bool,
     },

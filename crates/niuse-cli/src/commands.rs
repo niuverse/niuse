@@ -3,7 +3,7 @@
 
 use anyhow::{bail, Context, Result};
 use niuse_core::model::one_line;
-use niuse_core::policy::{search_score, secret_reason};
+use niuse_core::policy::{conflicts, search_score, secret_reason};
 use niuse_core::prompt::compose;
 use niuse_core::{Date, JournalDay, LoopItem, MemoryEntry, MemoryKind, Store};
 use std::collections::BTreeMap;
@@ -125,6 +125,18 @@ pub fn mem_add(
         }
         eprintln!("warning: overriding secret scan ({reason})");
     }
+    let existing = store.memories()?;
+    let similar: Vec<&MemoryEntry> = existing
+        .iter()
+        .filter(|entry| conflicts(&entry.text, &entry.tags, &text, &tags))
+        .collect();
+    if !similar.is_empty() && !force {
+        for entry in similar {
+            eprintln!("similar to m-{}: {}", entry.id, entry.text);
+        }
+        bail!("a similar memory exists; pass --force to add anyway");
+    }
+
     let entry = store.add_memory(MemoryEntry::new(kind, text, tags, Date::today(), None))?;
     println!("m-{}", entry.id);
     Ok(())
@@ -1174,6 +1186,39 @@ mod tests {
             .bullets
             .iter()
             .any(|bullet| bullet.contains("config file")));
+    }
+
+    #[test]
+    fn mem_add_refuses_a_similar_entry_without_force() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        mem_add(
+            &store,
+            "Rust 仓库一律用 cargo nextest",
+            "lesson",
+            Vec::new(),
+            false,
+        )
+        .unwrap();
+        assert!(mem_add(
+            &store,
+            "Rust 仓库一律用 cargo nextest 跑测试",
+            "lesson",
+            Vec::new(),
+            false,
+        )
+        .is_err());
+        assert_eq!(store.memories().unwrap().len(), 1);
+        mem_add(
+            &store,
+            "Rust 仓库一律用 cargo nextest 跑测试",
+            "lesson",
+            Vec::new(),
+            true,
+        )
+        .unwrap();
+        assert_eq!(store.memories().unwrap().len(), 2);
     }
 
     #[test]
