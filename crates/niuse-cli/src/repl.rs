@@ -12,8 +12,91 @@ use niucode_tools::SandboxPolicy;
 use niuse_core::policy::{conflicts, secret_reason};
 use niuse_core::prompt::compose;
 use niuse_core::{Block, Date, LoopItem, MemoryEntry, MemoryKind, Store};
+use rustyline::completion::{Completer, Pair};
+use rustyline::config::Config;
 use rustyline::error::ReadlineError;
-use rustyline::DefaultEditor;
+use rustyline::highlight::Highlighter;
+use rustyline::hint::Hinter;
+use rustyline::history::FileHistory;
+use rustyline::validate::{ValidationContext, ValidationResult, Validator};
+use rustyline::{Context as RlContext, Editor, Helper};
+
+const SLASH_COMMANDS: &[&str] = &[
+    "/help",
+    "/quit",
+    "/exit",
+    "/mem",
+    "/mem recall",
+    "/mem show",
+    "/mem review",
+    "/remember",
+    "/forget",
+    "/loops",
+    "/loop",
+    "/done",
+    "/journal",
+    "/journal search",
+    "/journal add",
+    "/stats",
+    "/doctor",
+    "/identity",
+    "/identity edit",
+    "/user",
+    "/user edit",
+    "/new",
+    "/cd",
+    "/status",
+    "/prompt",
+];
+
+fn slash_candidates(prefix: &str) -> Vec<&'static str> {
+    if !prefix.starts_with('/') || prefix.ends_with(' ') {
+        return Vec::new();
+    }
+    let mut matches: Vec<&'static str> = SLASH_COMMANDS
+        .iter()
+        .copied()
+        .filter(|command| command.starts_with(prefix))
+        .collect();
+    matches.sort_by_key(|command| command.len());
+    matches
+}
+
+struct SlashCompleter;
+
+impl Completer for SlashCompleter {
+    type Candidate = Pair;
+
+    fn complete(
+        &self,
+        line: &str,
+        pos: usize,
+        _ctx: &RlContext<'_>,
+    ) -> rustyline::Result<(usize, Vec<Pair>)> {
+        let candidates = slash_candidates(&line[..pos])
+            .into_iter()
+            .map(|command| Pair {
+                display: command.to_string(),
+                replacement: format!("{command} "),
+            })
+            .collect();
+        Ok((0, candidates))
+    }
+}
+
+impl Hinter for SlashCompleter {
+    type Hint = String;
+}
+
+impl Highlighter for SlashCompleter {}
+
+impl Validator for SlashCompleter {
+    fn validate(&self, _ctx: &mut ValidationContext) -> rustyline::Result<ValidationResult> {
+        Ok(ValidationResult::Valid(None))
+    }
+}
+
+impl Helper for SlashCompleter {}
 
 use crate::commands;
 use crate::config::{build_provider, resolve_cwd, resolve_policy};
@@ -114,8 +197,9 @@ impl App {
 
         let history_path = self.store.history_path();
         let mut editor = if io::stdin().is_terminal() {
-            match DefaultEditor::new() {
+            match Editor::<SlashCompleter, FileHistory>::with_config(Config::default()) {
                 Ok(mut editor) => {
+                    editor.set_helper(Some(SlashCompleter));
                     if history_path.exists() {
                         if let Err(error) = editor.load_history(&history_path) {
                             eprintln!("warning: cannot load history: {error}");
@@ -712,6 +796,16 @@ fn print_help() {
 mod tests {
     use super::*;
     use std::os::unix::fs::PermissionsExt;
+
+    #[test]
+    fn slash_completion_matches_prefixes() {
+        assert_eq!(slash_candidates("/mem rec"), vec!["/mem recall"]);
+        assert!(slash_candidates("/mem r").contains(&"/mem review"));
+        assert!(slash_candidates("/mem").contains(&"/mem review"));
+        assert_eq!(slash_candidates("/zzz"), Vec::<&str>::new());
+        assert_eq!(slash_candidates("hello"), Vec::<&str>::new());
+        assert_eq!(slash_candidates("/mem "), Vec::<&str>::new());
+    }
 
     #[test]
     fn history_file_is_private() {
