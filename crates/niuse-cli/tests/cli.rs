@@ -277,3 +277,21 @@ fn effective_config_json_is_structured() {
     assert_eq!(config["sandbox"], "workspace-write");
     assert_eq!(config["max_steps"], 0);
 }
+
+#[test]
+fn memory_show_json_round_trip() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    let add = run(&home, &["mem", "add", "single entry", "--tags", "style"]);
+    assert!(add.status.success(), "{add:?}");
+    let list = run(&home, &["mem", "list", "--json"]);
+    let entries: serde_json::Value = serde_json::from_slice(&list.stdout).expect("valid JSON");
+    let id = entries[0]["id"].as_str().unwrap().to_string();
+
+    let output = run(&home, &["mem", "show", &id, "--json"]);
+    assert!(output.status.success(), "{output:?}");
+    let entry: serde_json::Value = serde_json::from_slice(&output.stdout).expect("valid JSON");
+    assert_eq!(entry["id"], id);
+    assert_eq!(entry["text"], "single entry");
+    assert_eq!(entry["tags"][0], "style");
+}

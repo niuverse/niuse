@@ -220,7 +220,12 @@ enum MemCommand {
         tag: Option<String>,
     },
     /// Show one memory in full
-    Show { id: String },
+    Show {
+        id: String,
+        /// Emit JSON
+        #[arg(long)]
+        json: bool,
+    },
     /// Edit a memory in $EDITOR
     Edit { id: String },
     /// Delete a memory
@@ -374,7 +379,7 @@ async fn main() -> Result<()> {
                 kind,
                 tag,
             } => commands::mem_search(&store, &query, fresh, json, kind.as_deref(), tag.as_deref()),
-            MemCommand::Show { id } => commands::mem_show(&store, &id),
+            MemCommand::Show { id, json } => commands::mem_show(&store, &id, json),
             MemCommand::Edit { id } => commands::mem_edit(&store, &id),
             MemCommand::Forget { id } => commands::mem_forget(&store, &id),
             MemCommand::Confirm { id } => commands::mem_confirm(&store, &id),

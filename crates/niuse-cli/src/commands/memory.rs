@@ -244,12 +244,19 @@ pub fn mem_add(
     Ok(())
 }
 
-pub fn mem_show(store: &Store, id: &str) -> Result<()> {
+pub fn mem_show(store: &Store, id: &str, json: bool) -> Result<()> {
     let id = normalize_id(id);
     let memories = store.memories()?;
     let Some(entry) = memories.iter().find(|entry| entry.id == id) else {
         bail!("no memory m-{id}");
     };
+    if json {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&MemoryJson::from(entry))?
+        );
+        return Ok(());
+    }
     println!("m-{}", entry.id);
     println!("kind        {}", entry.kind.as_str());
     println!(
