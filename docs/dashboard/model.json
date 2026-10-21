@@ -2090,6 +2090,26 @@
       "path": "docs/board/M2-073-review-edit-pending.md"
     },
     {
+      "id": "M2-074",
+      "title": "Unknown config keys are rejected",
+      "status": "done",
+      "milestone": "M2",
+      "module": "cli",
+      "size": "S",
+      "priority": "P2",
+      "updated": "2026-10-22",
+      "completed": "2026-10-22",
+      "depends_on": [
+        "M2-010"
+      ],
+      "docs": [
+        "architecture"
+      ],
+      "blocked_reason": null,
+      "body_html": "<h2>Problem</h2>\n<p><code>config.toml</code> was parsed without <code>deny_unknown_fields</code>, so <code>provder = \"deepseek\"</code> was silently ignored and the built-in default was used. The user sees the typo in the file and a different behavior at runtime.</p>\n<h2>Fix</h2>\n<ul>\n<li><code>FileConfig</code> and <code>Defaults</code> deny unknown fields.</li>\n<li><code>config effective</code>, <code>doctor</code>, and any provider-building command now fail with the TOML parse error instead of guessing.</li>\n<li>The settings test covers a misspelled field and an unknown top-level key.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n<code>provder</code> under <code>[defaults]</code> is a parse error.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nAn unknown top-level key is a parse error.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nEmpty and valid files still parse.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nNo runtime fallback hides the typo.</li>\n</ul>\n<h2>Notes</h2>\n<p>A config file is a contract with the user; silently ignoring a line is the opposite of reviewable.</p>\n",
+      "path": "docs/board/M2-074-config-unknown-keys.md"
+    },
+    {
       "id": "M3-001",
       "title": "Release and dependency strategy",
       "status": "backlog",
@@ -2329,7 +2349,7 @@
   ],
   "meta": {
     "schema_version": 1,
-    "cards": 82,
+    "cards": 83,
     "modules": 10,
     "docs": 10,
     "generator": "cargo xtask dashboard"

@@ -21,12 +21,14 @@ pub const TEMPLATE: &str = "\
 ";
 
 #[derive(Debug, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct FileConfig {
     #[serde(default)]
     pub defaults: Defaults,
 }
 
 #[derive(Debug, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Defaults {
     pub provider: Option<String>,
     pub model: Option<String>,
@@ -134,6 +136,12 @@ max_steps = 4
         );
         assert_eq!(pick(None, Some("file".into()), "builtin".into()), "file");
         assert_eq!(pick(None, None, "builtin".into()), "builtin");
+    }
+
+    #[test]
+    fn unknown_keys_are_rejected() {
+        assert!(toml::from_str::<FileConfig>("[defaults]\nprovder = \"deepseek\"\n").is_err());
+        assert!(toml::from_str::<FileConfig>("typo = 1\n").is_err());
     }
 
     #[test]
