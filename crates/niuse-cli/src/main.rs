@@ -90,12 +90,12 @@ enum Command {
         #[arg(long)]
         add: Option<String>,
     },
-    /// Create or show identity.md
+    /// Create, show, or edit identity.md
     Identity {
         #[command(subcommand)]
         command: IdentityCommand,
     },
-    /// Mine recent niucode sessions for memory candidates
+    /// Mine sessions for memory candidates or a user profile
     Bootstrap {
         /// Maximum number of sessions to scan
         #[arg(long, default_value_t = 40)]
