@@ -156,6 +156,12 @@ Four views: Architecture (default), Work, Docs, Decisions. Sources are `docs/das
 
 `.github/workflows/pages.yml` deploys the generated board to GitHub Pages. A private repository needs GitHub Pro/Team/Enterprise; on the Free plan the workflow skips with a notice until Pages is available.
 
+## Privacy
+
+Everything niuse stores is local Markdown under `~/.niuse`: directories `0700`, files `0600`. Writers create files private from the first byte; `$EDITOR` scratch files and exports are `0600` too. Memory, journal, loops, identity, and user text are scanned for common secret patterns before writing; a match is refused. `NIUSE_MEMORY=off` disables injection entirely for an A/B run or trust recovery.
+
+History (`~/.niuse/history`) contains the prompts you typed, and thread/session logs contain transcripts; both are covered by the same permissions. Nothing leaves the machine except the provider calls you configured.
+
 ## Development
 
 ```sh
