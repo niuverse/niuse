@@ -242,3 +242,26 @@ fn completions_render_without_touching_the_home() {
     assert!(stdout.contains("niuse"));
     assert!(!home.exists());
 }
+
+#[test]
+fn overdue_filter_selects_late_loops() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    let late = run(
+        &home,
+        &["loops", "add", "late promise", "--due", "2020-01-01"],
+    );
+    assert!(late.status.success(), "{late:?}");
+    let future = run(
+        &home,
+        &["loops", "add", "future promise", "--due", "2099-01-01"],
+    );
+    assert!(future.status.success(), "{future:?}");
+
+    let output = run(&home, &["loops", "list", "--overdue", "--json"]);
+    assert!(output.status.success(), "{output:?}");
+    let loops: serde_json::Value = serde_json::from_slice(&output.stdout).expect("valid JSON");
+    assert_eq!(loops.as_array().unwrap().len(), 1);
+    assert_eq!(loops[0]["text"], "late promise");
+    assert_eq!(loops[0]["overdue"], true);
+}

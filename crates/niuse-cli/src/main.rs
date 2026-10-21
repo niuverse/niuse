@@ -247,6 +247,9 @@ enum LoopsCommand {
         /// Emit JSON
         #[arg(long)]
         json: bool,
+        /// Only overdue loops
+        #[arg(long)]
+        overdue: bool,
     },
     /// Add a loop manually
     Add {
@@ -375,7 +378,9 @@ async fn main() -> Result<()> {
             MemCommand::Prune { apply } => commands::mem_prune(&store, apply),
         },
         Some(Command::Loops { command }) => match command {
-            LoopsCommand::List { all, json } => commands::loops_list(&store, all, json),
+            LoopsCommand::List { all, json, overdue } => {
+                commands::loops_list(&store, all, json, overdue)
+            }
             LoopsCommand::Add { text, due } => commands::loops_add(&store, &text, due.as_deref()),
             LoopsCommand::Done { id } => commands::loops_done(&store, &id),
         },

@@ -672,7 +672,7 @@ impl App {
                     println!("{error}");
                 }
             }
-            "/loops" => commands::loops_list(&self.store, false, false)?,
+            "/loops" => commands::loops_list(&self.store, false, false, false)?,
             "/loop" => {
                 if argument.is_empty() {
                     println!("用法：/loop <一件你答应要做的事>");

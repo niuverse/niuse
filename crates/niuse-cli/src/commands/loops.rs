@@ -17,13 +17,14 @@ struct LoopJson {
     overdue: bool,
 }
 
-pub fn loops_list(store: &Store, all: bool, json: bool) -> Result<()> {
+pub fn loops_list(store: &Store, all: bool, json: bool, overdue_only: bool) -> Result<()> {
     let today = Date::today();
     let loops = store.loops()?;
     if json {
         let items: Vec<LoopJson> = loops
             .iter()
             .filter(|item| all || !item.done)
+            .filter(|item| !overdue_only || item.is_overdue(today))
             .map(|item| LoopJson {
                 id: format!("l-{}", item.id),
                 text: item.text.clone(),
@@ -36,9 +37,17 @@ pub fn loops_list(store: &Store, all: bool, json: bool) -> Result<()> {
         return Ok(());
     }
     let open = loops.iter().filter(|item| !item.done).count();
-    println!("{} 条承诺 · {} 条未完成", loops.len(), open);
+    if overdue_only {
+        let overdue = loops.iter().filter(|item| item.is_overdue(today)).count();
+        println!("{overdue} 条逾期");
+    } else {
+        println!("{} 条承诺 · {} 条未完成", loops.len(), open);
+    }
     for item in &loops {
         if item.done && !all {
+            continue;
+        }
+        if overdue_only && !item.is_overdue(today) {
             continue;
         }
         let mark = if item.done { "x" } else { " " };
