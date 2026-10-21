@@ -111,6 +111,11 @@ enum Command {
     Review,
     /// Check local setup without calling a model
     Doctor,
+    /// Inspect or edit user.md
+    User {
+        #[command(subcommand)]
+        command: UserCommand,
+    },
     /// Inspect or create ~/.niuse/config.toml
     Config {
         #[command(subcommand)]
@@ -194,6 +199,14 @@ enum LoopsCommand {
     },
     /// Close a loop
     Done { id: String },
+}
+
+#[derive(Subcommand, Debug, Clone)]
+enum UserCommand {
+    /// Print user.md
+    Show,
+    /// Edit user.md in $EDITOR
+    Edit,
 }
 
 #[derive(Subcommand, Debug, Clone)]
@@ -331,6 +344,10 @@ async fn main() -> Result<()> {
             let settings = settings::resolve(&cli, &store)?;
             commands::doctor(&store, &settings.provider)
         }
+        Some(Command::User { command }) => match command {
+            UserCommand::Show => commands::user_show(&store),
+            UserCommand::Edit => commands::user_edit(&store),
+        },
         Some(Command::Config { command }) => match command {
             ConfigCommand::Init { force } => {
                 if settings::init(&store, force)? {

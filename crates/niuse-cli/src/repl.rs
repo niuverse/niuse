@@ -357,6 +357,13 @@ impl App {
                 println!("cwd       {}", self.cwd.display());
                 println!("session   {} events", events);
             }
+            "/user" => {
+                if argument == "edit" {
+                    commands::user_edit(&self.store)?;
+                } else {
+                    commands::user_show(&self.store)?;
+                }
+            }
             "/identity" => {
                 if argument == "edit" {
                     commands::identity_edit(&self.store)?;
@@ -618,6 +625,7 @@ fn print_help() {
          /stats          最近 7 天的候选接受率与活动计数\n\
          /doctor         检查本地设置，不调用模型\n\
          /identity       查看 identity.md（/identity edit 编辑）\n\
+         /user           查看 user.md（/user edit 编辑）\n\
          /new            归档当前主线并开始一条新的\n\
          /cd <path>      切换工作目录（下一个 turn 生效）\n\
          /status         当前配置与存储状态\n\

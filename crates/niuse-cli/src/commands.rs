@@ -566,6 +566,31 @@ fn rank_journal<'a>(query: &str, days: &'a [JournalDay]) -> Vec<(f64, &'a Journa
     hits
 }
 
+pub fn user_show(store: &Store) -> Result<()> {
+    println!("{}", store.user_path().display());
+    match store.user()? {
+        Some(text) => print!("{text}"),
+        None => println!("(missing; run `niuse bootstrap --profile` or `niuse user edit`)"),
+    }
+    Ok(())
+}
+
+pub fn user_edit(store: &Store) -> Result<()> {
+    let current = store.user()?.unwrap_or_else(|| {
+        "# 关于我\n\n- 我在做什么：\n- 我的工作方式：\n- 我的雷区：\n".to_string()
+    });
+    let Some(updated) = edit_markdown(&current) else {
+        println!("no change");
+        return Ok(());
+    };
+    store.write_user(&updated)?;
+    if let Err(error) = store.append_metric("user_edit", "") {
+        eprintln!("warning: cannot record metric: {error:#}");
+    }
+    println!("updated {}", store.user_path().display());
+    Ok(())
+}
+
 pub fn identity_edit(store: &Store) -> Result<()> {
     let current = store
         .identity()?
