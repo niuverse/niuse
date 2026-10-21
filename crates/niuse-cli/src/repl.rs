@@ -62,7 +62,63 @@ fn slash_candidates(prefix: &str) -> Vec<&'static str> {
     matches
 }
 
-struct SlashCompleter;
+#[derive(Clone, Copy)]
+enum IdScope {
+    Memory,
+    Loop,
+}
+
+/// Where an id completion starts, the fragment typed so far, and which store.
+fn id_query(line: &str) -> Option<(usize, &str, IdScope)> {
+    if let Some(rest) = line.strip_prefix("/mem ") {
+        let (sub, fragment) = rest.split_once(' ')?;
+        let scope = match sub {
+            "show" | "edit" | "confirm" | "forget" => IdScope::Memory,
+            _ => return None,
+        };
+        return Some((line.len() - fragment.len(), fragment, scope));
+    }
+    for (command, scope) in [("/forget ", IdScope::Memory), ("/done ", IdScope::Loop)] {
+        if let Some(fragment) = line.strip_prefix(command) {
+            if !fragment.contains(' ') {
+                return Some((command.len(), fragment, scope));
+            }
+        }
+    }
+    None
+}
+
+fn id_candidates(store: &Store, scope: IdScope, fragment: &str) -> Vec<Pair> {
+    let items: Vec<(String, String)> = match scope {
+        IdScope::Memory => store
+            .memories()
+            .unwrap_or_default()
+            .into_iter()
+            .map(|entry| (entry.id, entry.text))
+            .collect(),
+        IdScope::Loop => store
+            .loops()
+            .unwrap_or_default()
+            .into_iter()
+            .filter(|item| !item.done)
+            .map(|item| (format!("l-{}", item.id), item.text))
+            .collect(),
+    };
+    let mut matches: Vec<Pair> = items
+        .into_iter()
+        .filter(|(id, _)| id.starts_with(fragment))
+        .map(|(id, text)| Pair {
+            display: format!("{id}  {}", text.chars().take(50).collect::<String>()),
+            replacement: id,
+        })
+        .collect();
+    matches.sort_by(|left, right| left.replacement.cmp(&right.replacement));
+    matches
+}
+
+struct SlashCompleter {
+    root: PathBuf,
+}
 
 impl Completer for SlashCompleter {
     type Candidate = Pair;
@@ -73,7 +129,12 @@ impl Completer for SlashCompleter {
         pos: usize,
         _ctx: &RlContext<'_>,
     ) -> rustyline::Result<(usize, Vec<Pair>)> {
-        let candidates = slash_candidates(&line[..pos])
+        let typed = &line[..pos];
+        if let Some((start, fragment, scope)) = id_query(typed) {
+            let store = Store::at(self.root.clone());
+            return Ok((start, id_candidates(&store, scope, fragment)));
+        }
+        let candidates = slash_candidates(typed)
             .into_iter()
             .map(|command| Pair {
                 display: command.to_string(),
@@ -199,7 +260,9 @@ impl App {
         let mut editor = if io::stdin().is_terminal() {
             match Editor::<SlashCompleter, FileHistory>::with_config(Config::default()) {
                 Ok(mut editor) => {
-                    editor.set_helper(Some(SlashCompleter));
+                    editor.set_helper(Some(SlashCompleter {
+                        root: self.store.root().to_path_buf(),
+                    }));
                     if history_path.exists() {
                         if let Err(error) = editor.load_history(&history_path) {
                             eprintln!("warning: cannot load history: {error}");
@@ -805,6 +868,38 @@ mod tests {
         assert_eq!(slash_candidates("/zzz"), Vec::<&str>::new());
         assert_eq!(slash_candidates("hello"), Vec::<&str>::new());
         assert_eq!(slash_candidates("/mem "), Vec::<&str>::new());
+    }
+
+    #[test]
+    fn id_completion_reads_the_stores() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        let first = store
+            .add_memory(MemoryEntry::new(
+                MemoryKind::Preference,
+                "prefer short paragraphs",
+                vec!["style".into()],
+                Date::today(),
+                None,
+            ))
+            .unwrap();
+        store
+            .add_memory(MemoryEntry::new(
+                MemoryKind::Lesson,
+                "use nextest",
+                vec!["rust".into()],
+                Date::today(),
+                None,
+            ))
+            .unwrap();
+        let matches = id_candidates(&store, IdScope::Memory, &first.id[..2]);
+        assert_eq!(matches.len(), 1);
+        assert_eq!(matches[0].replacement, first.id);
+
+        let line = format!("/mem show {}", &first.id[..2]);
+        let (start, fragment, _) = id_query(&line).unwrap();
+        assert_eq!(start, "/mem show ".len());
+        assert_eq!(fragment, &first.id[..2]);
     }
 
     #[test]
