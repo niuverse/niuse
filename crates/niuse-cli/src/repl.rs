@@ -1022,7 +1022,7 @@ const HELP: &str = r#"对话
   /mem                    列出现行记忆
   /mem recall <query>     检索记忆，包含已过期条目
   /mem show <id>          查看单条记忆的全部字段
-  /mem review             复核过期条目（y 保留 / d 删除 / s 跳过）
+  /mem review             复核过期条目（y 保留 / e 编辑 / d 删除 / s 跳过）
   /remember <一句话>      直接记住一条偏好
   /forget <id>            删除一条记忆
 

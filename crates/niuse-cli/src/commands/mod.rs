@@ -149,6 +149,7 @@ struct Summary {
     review_accepted: usize,
     review_discarded: usize,
     mem_reviews_kept: usize,
+    mem_reviews_edited: usize,
     mem_reviews_deleted: usize,
 }
 
@@ -203,13 +204,15 @@ pub fn stats(store: &Store, days: u64, trend: bool, json: bool) -> Result<()> {
         None => println!("acceptance   n/a (no candidates yet)"),
     }
     println!(
-        "activity     {} journal writes · {} loops · {} manual memories · {} review accepted · {} review discarded · {} memory reviews kept · {} deleted",
-        report.journals,
-        report.loops,
-        report.remembers,
+        "activity     {} journal writes · {} loops · {} manual memories",
+        report.journals, report.loops, report.remembers
+    );
+    println!(
+        "reviews      {} bootstrap accepted · {} bootstrap discarded · {} memory kept · {} edited · {} deleted",
         report.review_accepted,
         report.review_discarded,
         report.mem_reviews_kept,
+        report.mem_reviews_edited,
         report.mem_reviews_deleted
     );
 
@@ -249,6 +252,7 @@ struct StatsReport {
     review_accepted: usize,
     review_discarded: usize,
     mem_reviews_kept: usize,
+    mem_reviews_edited: usize,
     mem_reviews_deleted: usize,
     days: Vec<DayReport>,
 }
@@ -282,6 +286,7 @@ impl StatsReport {
             review_accepted: summary.review_accepted,
             review_discarded: summary.review_discarded,
             mem_reviews_kept: summary.mem_reviews_kept,
+            mem_reviews_edited: summary.mem_reviews_edited,
             mem_reviews_deleted: summary.mem_reviews_deleted,
             days: daily
                 .into_iter()
@@ -365,6 +370,7 @@ fn summarize(metrics: &[Metric], since_ms: u64) -> Summary {
             "review_accept" => summary.review_accepted += 1,
             "review_discard" => summary.review_discarded += 1,
             "mem_review_accept" => summary.mem_reviews_kept += 1,
+            "mem_review_edit" => summary.mem_reviews_edited += 1,
             "mem_review_delete" => summary.mem_reviews_deleted += 1,
             _ => {}
         }
@@ -385,9 +391,9 @@ mod tests {
 
     #[test]
     fn metrics_parse_and_summarize() {
-        let text = "1000\tturn\tok\n1100\tpropose\trust\n1200\taccept\tm-1\n1300\tpropose\tgit\n1400\tdiscard\t\n1500\tblocked\tAPI key\n1600\tturn\tcancelled\n1700\tmem_review_accept\tm-1\n1800\tmem_review_delete\tm-2\n";
+        let text = "1000\tturn\tok\n1100\tpropose\trust\n1200\taccept\tm-1\n1300\tpropose\tgit\n1400\tdiscard\t\n1500\tblocked\tAPI key\n1600\tturn\tcancelled\n1700\tmem_review_accept\tm-1\n1800\tmem_review_delete\tm-2\n1900\tmem_review_edit\tm-3\n";
         let metrics = parse_metrics(text);
-        assert_eq!(metrics.len(), 9);
+        assert_eq!(metrics.len(), 10);
         let summary = summarize(&metrics, 0);
         assert_eq!(summary.turns, 2);
         assert_eq!(summary.cancelled, 1);
@@ -395,6 +401,7 @@ mod tests {
         assert_eq!(summary.accepted, 1);
         assert_eq!(summary.blocked, 1);
         assert_eq!(summary.mem_reviews_kept, 1);
+        assert_eq!(summary.mem_reviews_edited, 1);
         assert_eq!(summary.mem_reviews_deleted, 1);
         assert_eq!(summary.acceptance_percent(), Some(50));
     }

@@ -431,7 +431,7 @@ pub fn mem_review(store: &Store) -> Result<()> {
             expired
         );
         println!("  {}", entry.text);
-        print!("[y] 仍然成立  [d] 删除  [s] 跳过  [q] 退出 > ");
+        print!("[y] 仍然成立  [e] 编辑  [d] 删除  [s] 跳过  [q] 退出 > ");
         let _ = io::stdout().flush();
 
         let mut line = String::new();
@@ -445,6 +445,36 @@ pub fn mem_review(store: &Store) -> Result<()> {
                     eprintln!("warning: cannot record metric: {error:#}");
                 }
                 println!("  已确认");
+            }
+            "e" | "edit" => {
+                let Some(updated) = edit_text(&entry.text) else {
+                    println!("  未修改");
+                    continue;
+                };
+                if updated.trim().is_empty() {
+                    println!("  空内容，未保存");
+                    continue;
+                }
+                if updated == entry.text {
+                    println!("  未修改");
+                    continue;
+                }
+                if let Some(reason) = secret_reason(&updated) {
+                    println!("  拒绝保存：疑似 {reason}");
+                    continue;
+                }
+                let Some(saved) = store.update_memory(&entry.id, |entry| {
+                    entry.text = updated;
+                    entry.confirmed = today;
+                })?
+                else {
+                    println!("  条目已不存在");
+                    continue;
+                };
+                if let Err(error) = store.append_metric("mem_review_edit", &saved.id) {
+                    eprintln!("warning: cannot record metric: {error:#}");
+                }
+                println!("  已更新并确认");
             }
             "d" | "delete" => {
                 store.remove_memory(&entry.id)?;
