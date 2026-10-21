@@ -19,6 +19,37 @@ struct ThreadInfo {
     title: Option<String>,
 }
 
+pub fn sessions(store: &Store, json: bool) -> Result<()> {
+    let entries = collect_sessions(store)?;
+    if json {
+        let items: Vec<ThreadJson> = entries
+            .iter()
+            .map(|info| thread_json(store, info))
+            .collect();
+        println!("{}", serde_json::to_string_pretty(&items)?);
+        return Ok(());
+    }
+    if entries.is_empty() {
+        println!("还没有一次性 session。`niuse exec` 会在这里留下日志。");
+        return Ok(());
+    }
+    println!("{} 个一次性 session", entries.len());
+    for info in entries {
+        let relative = info.path.strip_prefix(store.root()).unwrap_or(&info.path);
+        println!(
+            "  {:<8} {:>4} events  {:>8}  {}",
+            human_age(info.age_secs),
+            info.events,
+            human_bytes(info.bytes),
+            relative.display()
+        );
+        if let Some(title) = &info.title {
+            println!("      {title}");
+        }
+    }
+    Ok(())
+}
+
 pub fn threads(store: &Store, active: &Path, json: bool) -> Result<()> {
     let entries = collect_threads(store, active)?;
     if json {
@@ -76,25 +107,40 @@ fn thread_json(store: &Store, info: &ThreadInfo) -> ThreadJson {
     }
 }
 
+fn jsonl_files(directory: &Path) -> Result<Vec<PathBuf>> {
+    if !directory.is_dir() {
+        return Ok(Vec::new());
+    }
+    let mut paths = Vec::new();
+    for entry in fs::read_dir(directory).with_context(|| format!("read {}", directory.display()))? {
+        let path = entry?.path();
+        if path.extension().and_then(|extension| extension.to_str()) == Some("jsonl") {
+            paths.push(path);
+        }
+    }
+    Ok(paths)
+}
+
 fn collect_threads(store: &Store, active: &Path) -> Result<Vec<ThreadInfo>> {
     let mut entries = Vec::new();
-    push_thread(&mut entries, &store.session_path(), active)?;
-    let directory = store.threads_dir();
-    if directory.is_dir() {
-        for entry in
-            fs::read_dir(&directory).with_context(|| format!("read {}", directory.display()))?
-        {
-            let path = entry?.path();
-            if path.extension().and_then(|extension| extension.to_str()) == Some("jsonl") {
-                push_thread(&mut entries, &path, active)?;
-            }
-        }
+    push_thread(&mut entries, &store.session_path(), Some(active))?;
+    for path in jsonl_files(&store.threads_dir())? {
+        push_thread(&mut entries, &path, Some(active))?;
     }
     entries.sort_by_key(|entry| std::cmp::Reverse(entry.modified));
     Ok(entries)
 }
 
-fn push_thread(entries: &mut Vec<ThreadInfo>, path: &Path, active: &Path) -> Result<()> {
+fn collect_sessions(store: &Store) -> Result<Vec<ThreadInfo>> {
+    let mut entries = Vec::new();
+    for path in jsonl_files(&store.root().join("sessions"))? {
+        push_thread(&mut entries, &path, None)?;
+    }
+    entries.sort_by_key(|entry| std::cmp::Reverse(entry.modified));
+    Ok(entries)
+}
+
+fn push_thread(entries: &mut Vec<ThreadInfo>, path: &Path, active: Option<&Path>) -> Result<()> {
     if !path.exists() {
         return Ok(());
     }
@@ -115,7 +161,7 @@ fn push_thread(entries: &mut Vec<ThreadInfo>, path: &Path, active: &Path) -> Res
         .and_then(|loaded| thread_title(&loaded.events));
     entries.push(ThreadInfo {
         path: path.to_path_buf(),
-        active: path == active,
+        active: active.is_some_and(|active| path == active),
         events,
         bytes: metadata.len(),
         age_secs,
@@ -202,6 +248,24 @@ fn write_export(path: &Path, text: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn sessions_listing_reads_one_shot_logs() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        let sessions = store.root().join("sessions");
+        fs::create_dir_all(&sessions).unwrap();
+        fs::write(
+            sessions.join("run-1.jsonl"),
+            "{\"type\":\"user_message\",\"text\":\"one shot\",\"ts\":1}\n",
+        )
+        .unwrap();
+        let entries = collect_sessions(&store).unwrap();
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].title.as_deref(), Some("one shot"));
+        assert!(!entries[0].active);
+    }
 
     #[test]
     fn thread_listing_reads_sessions() {

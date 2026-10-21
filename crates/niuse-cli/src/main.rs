@@ -85,6 +85,12 @@ enum Command {
         #[arg(long)]
         json: bool,
     },
+    /// List one-shot `exec` session logs
+    Sessions {
+        /// Emit JSON
+        #[arg(long)]
+        json: bool,
+    },
     /// Show or search the journal
     Journal {
         #[arg(long, default_value_t = 7)]
@@ -361,6 +367,7 @@ async fn main() -> Result<()> {
             LoopsCommand::Add { text, due } => commands::loops_add(&store, &text, due.as_deref()),
             LoopsCommand::Done { id } => commands::loops_done(&store, &id),
         },
+        Some(Command::Sessions { json }) => commands::sessions(&store, json),
         Some(Command::Threads { json }) => {
             let active = config::resolve_thread(cli.thread.clone(), &store)?;
             commands::threads(&store, &active, json)

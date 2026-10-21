@@ -165,3 +165,23 @@ fn relative_thread_path_is_marked_active() {
     assert_eq!(threads[0]["path"], "thread.jsonl");
     assert_eq!(threads[0]["active"], true);
 }
+
+#[test]
+fn sessions_json_lists_exec_logs() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    let sessions = home.join("sessions");
+    std::fs::create_dir_all(&sessions).unwrap();
+    std::fs::write(
+        sessions.join("run-1.jsonl"),
+        "{\"type\":\"user_message\",\"text\":\"one shot\",\"ts\":1}\n",
+    )
+    .unwrap();
+
+    let output = run(&home, &["sessions", "--json"]);
+    assert!(output.status.success(), "{output:?}");
+    let entries: serde_json::Value = serde_json::from_slice(&output.stdout).expect("valid JSON");
+    assert_eq!(entries.as_array().unwrap().len(), 1);
+    assert_eq!(entries[0]["title"], "one shot");
+    assert_eq!(entries[0]["active"], false);
+}
