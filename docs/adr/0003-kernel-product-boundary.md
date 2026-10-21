@@ -11,7 +11,7 @@ summary = "Keep two repositories. Upstream a reusable CLI library and turn hooks
 
 Accepted · 2026-10-21.
 
-Upstream proposal: [niuverse/niucode#1](https://github.com/niuverse/niucode/issues/1).
+Upstream proposal: [niucode ADR-0032](https://github.com/niuverse/niucode/blob/main/docs/adr/0032-embedding-library-surface.md) · [niuverse/niucode#1](https://github.com/niuverse/niucode/issues/1).
 
 ## Context
 

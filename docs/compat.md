@@ -14,6 +14,8 @@ summary = "Pinned niucode revision, the weekly bump ritual, and the nightly chec
 - A nightly workflow runs the same tests against niucode `main`. Failures are an early signal, not a pull-request gate.
 - `scripts/check-niucode-drift.sh` reports when the local sibling checkout no longer matches the pin.
 
+The front-end seam is proposed upstream in [ADR-0032](https://github.com/niuverse/niucode/blob/main/docs/adr/0032-embedding-library-surface.md); this document tracks the call surface niuse uses today.
+
 The contract is deliberately small: `run_with_history`, `AgentConfig`, `project_history`, `SessionLog` and `Event`, the provider trait, credentials, sandbox and approval types, per-turn `working_dir` on one session, and approval denial carrying a structured preview. `crates/niuse-cli/tests/niucode_contract.rs` exercises them offline with `ScriptedProvider`, so the check costs no tokens.
 
 ## Matrix
