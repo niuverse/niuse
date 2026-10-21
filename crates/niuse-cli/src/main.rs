@@ -12,7 +12,7 @@ mod settings;
 use std::path::PathBuf;
 
 use anyhow::Result;
-use clap::{Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand};
 use niuse_core::Store;
 
 #[derive(Parser, Debug)]
@@ -84,6 +84,11 @@ enum Command {
         /// Emit JSON
         #[arg(long)]
         json: bool,
+    },
+    /// Generate shell completions
+    Completions {
+        /// Target shell
+        shell: clap_complete::Shell,
     },
     /// List one-shot `exec` session logs
     Sessions {
@@ -317,14 +322,21 @@ fn install_pipe_guard() {
 async fn main() -> Result<()> {
     install_pipe_guard();
     let cli = Cli::parse();
+    let command = cli.command.clone();
+    if let Some(Command::Completions { shell }) = &command {
+        let mut command = Cli::command();
+        clap_complete::generate(*shell, &mut command, "niuse", &mut std::io::stdout());
+        return Ok(());
+    }
+
     let store = match &cli.home {
         Some(path) => Store::at(path.clone()),
         None => Store::discover()?,
     };
     store.init()?;
-    let command = cli.command.clone();
 
     match command {
+        Some(Command::Completions { .. }) => Ok(()),
         None => {
             let settings = settings::resolve(&cli, &store)?;
             let app = repl::App::new(&cli, &settings, store)?;

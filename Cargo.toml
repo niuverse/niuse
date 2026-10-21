@@ -12,6 +12,7 @@ repository = "https://github.com/niuverse/niuse"
 anyhow = "1.0"
 base64 = "0.22"
 clap = { version = "4.5", features = ["derive"] }
+clap_complete = "4"
 futures-util = { version = "0.3", default-features = false, features = ["std"] }
 pulldown-cmark = { version = "0.12", default-features = false, features = ["html"] }
 regex = "1"

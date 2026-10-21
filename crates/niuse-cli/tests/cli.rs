@@ -231,3 +231,14 @@ fn corrupt_session_lines_are_tolerated() {
         assert_eq!(mode, 0o600);
     }
 }
+
+#[test]
+fn completions_render_without_touching_the_home() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    let output = run(&home, &["completions", "bash"]);
+    assert!(output.status.success(), "{output:?}");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("niuse"));
+    assert!(!home.exists());
+}
