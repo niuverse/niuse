@@ -20,7 +20,7 @@ The memory parse check stopped at memory. `loops.md` and `journal/*.md` are hand
 
 - `Store::content_issues()` extends `memory_issues()` with:
   - loops: `- [` lines versus parsed promises, plus stray non-comment lines;
-  - journal: `## ` headings and `- ` bullets versus parsed days/bullets per file.
+  - journal: `## ` headings and `- ` bullets versus parsed days/bullets per file, plus stray non-comment lines.
 - `doctor` reports one `parse` check for all three stores.
 - The unit test plants a malformed loop and an invalid journal heading and asserts both are named.
 - No automatic repair; files stay human-owned.
@@ -28,7 +28,7 @@ The memory parse check stopped at memory. `loops.md` and `journal/*.md` are hand
 ## Acceptance
 
 - [x] A malformed promise line is reported as `loops.md`.
-- [x] An invalid date heading and its bullet are reported for the journal file.
+- [x] An invalid date heading, its bullet, and a stray prose line are reported for the journal file.
 - [x] Clean stores report `all stored content parsed`.
 - [x] The check is read-only.
 

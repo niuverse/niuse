@@ -210,6 +210,24 @@ impl Store {
                         parsed_bullets
                     ));
                 }
+                let stray = text
+                    .lines()
+                    .map(str::trim)
+                    .filter(|line| {
+                        !line.is_empty()
+                            && !line.starts_with('#')
+                            && !line.starts_with("<!--")
+                            && !line.starts_with("-->")
+                            && !line.starts_with("- ")
+                    })
+                    .count();
+                if stray > 0 {
+                    issues.push(format!(
+                        "{}: {} stray line(s)",
+                        path.file_name().unwrap_or_default().to_string_lossy(),
+                        stray
+                    ));
+                }
             }
         }
 
