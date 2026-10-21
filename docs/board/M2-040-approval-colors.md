@@ -8,7 +8,7 @@ size = "S"
 priority = "P2"
 updated = "2026-10-22"
 completed = "2026-10-22"
-depends_on = ["M0-007"]
+depends_on = ["M2-002"]
 docs = ["architecture"]
 +++
 
