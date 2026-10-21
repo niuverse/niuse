@@ -268,7 +268,7 @@ Written down is not verified. Each was tested in the first week; if any had fail
 | Week | Deliverable | Status |
 |---|---|---|
 | W1 | Three spikes; crate skeleton; five-store reads/writes; prompt assembly; one real turn in the REPL | done |
-| W2 | Candidate block and confirmation; journal; loops; soft expiry; secret scan | done (approval preview is still a summary, not a full diff) |
+| W2 | Candidate block and confirmation; journal; loops; soft expiry; secret scan | done |
 | W3 | `niuse bootstrap`; dogfood; acceptance data | bootstrap and review done; dogfood pending |
 
 ## 11. Acceptance
@@ -327,4 +327,4 @@ Three deviations from the plan:
 
 1. **A third protocol block, `journal`.** The plan had memory and loop only; to avoid an extra model call, the main model emits a journal block and niuse writes it automatically.
 2. **`exec` never writes memory.** It prints candidates to stderr so scripted calls cannot change the store silently.
-3. **Approval shows a summary and +/- counts.** A structured unified diff is deferred; the security boundary is unchanged.
+3. **Approval shows a unified diff.** The preview is capped at 80 lines and `d` prints the full diff before the y/N decision; denial still returns the structured preview to the model. The earlier summary-only limitation is resolved.
