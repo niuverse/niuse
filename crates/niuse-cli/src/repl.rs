@@ -958,11 +958,14 @@ struct UsageTotals {
 fn usage_totals(events: &[Event]) -> UsageTotals {
     let mut totals = UsageTotals::default();
     for event in events {
-        if let Event::TurnEnd { usage, .. } = event {
-            totals.turns += 1;
-            totals.input += usage.input_tokens;
-            totals.output += usage.output_tokens;
-            totals.cached += usage.cached_tokens;
+        match event {
+            Event::UserMessage { .. } => totals.turns += 1,
+            Event::TurnEnd { usage, .. } => {
+                totals.input += usage.input_tokens;
+                totals.output += usage.output_tokens;
+                totals.cached += usage.cached_tokens;
+            }
+            _ => {}
         }
     }
     totals
@@ -1078,6 +1081,7 @@ mod tests {
     #[test]
     fn usage_totals_counts_turns() {
         let events: Vec<Event> = vec![
+            serde_json::from_str(r#"{"type":"user_message","text":"first","ts":0}"#).unwrap(),
             serde_json::from_str(
                 r#"{"type":"turn_end","usage":{"input_tokens":100,"output_tokens":10,"cached_tokens":40},"ts":1}"#,
             )
@@ -1086,6 +1090,7 @@ mod tests {
                 r#"{"type":"turn_end","usage":{"input_tokens":50,"output_tokens":5,"cached_tokens":0},"ts":2}"#,
             )
             .unwrap(),
+            serde_json::from_str(r#"{"type":"user_message","text":"second","ts":3}"#).unwrap(),
         ];
         let totals = usage_totals(&events);
         assert_eq!(totals.turns, 2);

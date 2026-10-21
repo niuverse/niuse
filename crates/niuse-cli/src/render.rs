@@ -57,6 +57,10 @@ pub(crate) fn compact_tokens(tokens: u64) -> String {
 pub struct Renderer {
     filter: StreamFilter,
     at_line_start: bool,
+    steps: u64,
+    usage_input: u64,
+    usage_output: u64,
+    usage_cached: u64,
 }
 
 impl Renderer {
@@ -64,6 +68,10 @@ impl Renderer {
         Self {
             filter: StreamFilter::new(),
             at_line_start: true,
+            steps: 0,
+            usage_input: 0,
+            usage_output: 0,
+            usage_cached: 0,
         }
     }
 
@@ -141,6 +149,19 @@ impl Renderer {
             self.at_line_start = tail.ends_with('\n');
         }
         self.newline();
+        if self.steps > 0 {
+            let mut line = format!(
+                "  {} step{} · {} in · {} out",
+                self.steps,
+                if self.steps == 1 { "" } else { "s" },
+                compact_tokens(self.usage_input),
+                compact_tokens(self.usage_output)
+            );
+            if self.usage_cached > 0 {
+                line.push_str(&format!(" · {} cached", compact_tokens(self.usage_cached)));
+            }
+            println!("{}", styled("2", &line));
+        }
         parse(&raw)
     }
 
