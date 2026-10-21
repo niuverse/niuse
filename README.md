@@ -7,7 +7,7 @@
 
 niuse is a personal engineering companion built on top of [niucode](https://github.com/niuverse/niucode). It keeps your judgements, preferences, and hard-won pitfalls in human-readable Markdown, so the same companion can remember you across projects and sessions, track what it promised, and speak up when you are wrong.
 
-> Status: **runnable MVP**. The five stores, candidate protocol, soft expiry, bootstrap from history, and the REPL are implemented. What is missing is long-term dogfooding in a real terminal.
+> Status: **runnable MVP**. The five stores, candidate protocol, soft expiry, bootstrap from history, and an interactive REPL (line editing, history, completion, multi-line input, `/model`, `/cost`, `/export`) are implemented. What is missing is long-term dogfooding in a real terminal.
 
 ## Quick start
 

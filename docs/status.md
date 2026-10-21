@@ -9,7 +9,7 @@ summary = "Entry point after the autonomous iteration: what works, what is pinne
 
 ## Snapshot · 2026-10-22
 
-niuse is runnable end to end: five Markdown stores, a REPL with confirmation and conflict handling, the in-band protocol, bootstrap from history (memory candidates and a user profile), JSON views for every store, approval diffs, `doctor`, and acceptance metrics.
+niuse is runnable end to end: five Markdown stores, an interactive REPL with line editing, history, completion, multi-line input, confirmation and conflict handling, the in-band protocol, bootstrap from history (memory candidates and a user profile), JSON views for every store, colored approval diffs, `doctor`, and acceptance metrics.
 
 Both repositories are green. The board at <https://niuverse.github.io/niuse/> is deployed from a single generated file; source docs are not published. niuse builds against the niucode revision in `niucode.rev`.
 
@@ -23,10 +23,11 @@ cargo xtask dashboard --check
 
 ## Works
 
-- `niuse` REPL: streaming, slash commands, `/new` chapters, `/cd`, candidate confirm/edit/skip, conflict replace/keep.
-- Memory: search including expired entries, kind filter, show/edit, prune, duplicate guard, secret scan, soft expiry.
+- `niuse` REPL: streaming, slash commands, line editing and history, Tab completion for commands/ids/paths, backslash continuation, `/new` chapters, `/cd`, `/model`, `/cost`, `/export`, candidate confirm/edit/skip, conflict replace/keep.
+- Memory: search including expired entries, kind filter, kind counts, show/edit, review with metrics, prune with backup and freed-byte report, duplicate guard, secret scan, soft expiry.
 - Journal and loops: model-written blocks plus manual entry and manual promises.
 - Bootstrap: dry-run preview, candidate merge into the inbox, optional `user.md` draft.
+- Sessions: derived thread titles, Markdown export, JSON listing.
 - Machine output: JSON for memory, journal, threads, loops, status, doctor, stats.
 - Operations: pinned niucode revision, contract tests, nightly main check, doctor, acceptance metrics.
 
