@@ -223,6 +223,37 @@ pub fn mem_confirm(store: &Store, id: &str) -> Result<()> {
     Ok(())
 }
 
+pub fn mem_prune(store: &Store, apply: bool) -> Result<()> {
+    let today = Date::today();
+    let memories = store.memories()?;
+    let expired: Vec<&MemoryEntry> = memories
+        .iter()
+        .filter(|entry| entry.is_expired(today))
+        .collect();
+    if expired.is_empty() {
+        println!("没有超过 90 天的记忆。");
+        return Ok(());
+    }
+
+    println!("{} 条已过期（不再注入）：", expired.len());
+    for entry in &expired {
+        println!("{}", entry_line(entry, today));
+    }
+    if !apply {
+        println!("dry run；加 --apply 才会删除。");
+        return Ok(());
+    }
+
+    for entry in &expired {
+        store.remove_memory(&entry.id)?;
+    }
+    if let Err(error) = store.append_metric("prune", &expired.len().to_string()) {
+        eprintln!("warning: cannot record metric: {error:#}");
+    }
+    println!("已删除 {} 条。", expired.len());
+    Ok(())
+}
+
 pub fn mem_review(store: &Store) -> Result<()> {
     let today = Date::today();
     let stale: Vec<MemoryEntry> = store
@@ -1096,6 +1127,36 @@ mod tests {
             .bullets
             .iter()
             .any(|bullet| bullet.contains("config file")));
+    }
+
+    #[test]
+    fn prune_removes_only_expired_entries() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        let fresh = MemoryEntry::new(
+            MemoryKind::Preference,
+            "fresh",
+            Vec::new(),
+            Date::parse("2026-10-20").unwrap(),
+            None,
+        );
+        let expired = MemoryEntry {
+            id: "dead".into(),
+            kind: MemoryKind::Lesson,
+            text: "old".into(),
+            tags: Vec::new(),
+            created: Date::parse("2026-01-01").unwrap(),
+            confirmed: Date::parse("2026-01-01").unwrap(),
+            source: None,
+        };
+        store.add_memory(fresh).unwrap();
+        store.add_memory(expired).unwrap();
+
+        mem_prune(&store, true).unwrap();
+        let remaining = store.memories().unwrap();
+        assert_eq!(remaining.len(), 1);
+        assert_eq!(remaining[0].text, "fresh");
     }
 
     #[test]

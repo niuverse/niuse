@@ -160,6 +160,12 @@ enum MemCommand {
     Confirm { id: String },
     /// Review stale memories interactively
     Review,
+    /// Remove memories older than 90 days (dry run by default)
+    Prune {
+        /// Actually delete the expired entries
+        #[arg(long)]
+        apply: bool,
+    },
 }
 
 #[derive(Subcommand, Debug, Clone)]
@@ -266,6 +272,7 @@ async fn main() -> Result<()> {
             MemCommand::Forget { id } => commands::mem_forget(&store, &id),
             MemCommand::Confirm { id } => commands::mem_confirm(&store, &id),
             MemCommand::Review => commands::mem_review(&store),
+            MemCommand::Prune { apply } => commands::mem_prune(&store, apply),
         },
         Some(Command::Loops { command }) => match command {
             LoopsCommand::List { all } => commands::loops_list(&store, all),

@@ -83,7 +83,7 @@ Global flags: `--preset`, `--model`, `--no-thinking`, `--cwd`, `--sandbox`, `--a
 niuse                         interactive REPL (resumes the same thread)
 niuse exec "<task>"           run one turn; candidates are printed, never written
 niuse identity init|show|edit
-niuse mem list|search|show|edit|add|forget|confirm|review
+niuse mem list|search|show|edit|add|forget|confirm|review|prune
 niuse loops list|add|done
 niuse journal [--days N] [--search QUERY] [--add TEXT]
 niuse threads                   list the active thread and archived chapters
