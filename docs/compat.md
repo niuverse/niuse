@@ -14,7 +14,7 @@ summary = "Pinned niucode revision, the weekly bump ritual, and the nightly chec
 - A nightly workflow runs the same tests against niucode `main`. Failures are an early signal, not a pull-request gate.
 - `scripts/check-niucode-drift.sh` reports when the local sibling checkout no longer matches the pin.
 
-The contract is deliberately small: `run_with_history`, `AgentConfig`, `project_history`, `SessionLog` and `Event`, the provider trait, credentials, sandbox and approval types, and per-turn `working_dir` on one session. `crates/niuse-cli/tests/niucode_contract.rs` exercises them offline with `ScriptedProvider`, so the check costs no tokens.
+The contract is deliberately small: `run_with_history`, `AgentConfig`, `project_history`, `SessionLog` and `Event`, the provider trait, credentials, sandbox and approval types, per-turn `working_dir` on one session, and approval denial carrying a structured preview. `crates/niuse-cli/tests/niucode_contract.rs` exercises them offline with `ScriptedProvider`, so the check costs no tokens.
 
 ## Matrix
 

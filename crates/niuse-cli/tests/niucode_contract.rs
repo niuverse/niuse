@@ -5,6 +5,7 @@
 
 use std::fs;
 use std::path::Path;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use niucode_agent::{
     project_history, run_with_history, AgentConfig, AgentEvent, ApprovalMode, ApprovalRequest,
@@ -135,4 +136,69 @@ async fn one_session_switches_working_directory_per_turn() {
     assert!(events
         .iter()
         .any(|event| matches!(event, Event::UserMessage { text, .. } if text == "read b")));
+}
+
+static SAW_PREVIEW: AtomicBool = AtomicBool::new(false);
+
+fn deny_and_record(request: &ApprovalRequest) -> bool {
+    SAW_PREVIEW.store(request.preview.is_some(), Ordering::SeqCst);
+    false
+}
+
+fn ignore_event(_event: AgentEvent) {}
+
+/// Approval is a security boundary niuse renders but does not implement.
+/// A denial must stop the mutation and still carry a structured preview.
+#[tokio::test]
+async fn denying_approval_blocks_the_write_and_exposes_a_preview() {
+    let directory = tempfile::tempdir().expect("temp dir");
+    let target = directory.path().join("created.txt");
+
+    let provider = ScriptedProvider::from_turns(vec![
+        vec![
+            StreamEvent::ToolCallDelta(ToolCallDelta {
+                index: 0,
+                id: Some("call-write".into()),
+                name: Some("write".into()),
+                arguments: r#"{"path":"created.txt","content":"hello"}"#.into(),
+            }),
+            StreamEvent::Done {
+                finish_reason: Some("tool_calls".into()),
+            },
+        ],
+        text_turn("denied"),
+    ]);
+
+    let mut log = SessionLog::create(directory.path()).expect("create session");
+    log.append(&Event::SessionStart {
+        id: log.id().to_string(),
+        cwd: directory.path().display().to_string(),
+        model: "scripted".into(),
+        provider: "scripted".into(),
+        ts: now_ms(),
+    })
+    .expect("append start");
+
+    let mut config = config(directory.path());
+    config.approval = ApprovalMode::Ask;
+    config.sandbox = SandboxPolicy::new(SandboxMode::WorkspaceWrite, NetworkMode::Off);
+
+    let outcome = run_with_history(
+        &provider,
+        &mut log,
+        &config,
+        "write a file",
+        Vec::new(),
+        &mut deny_and_record,
+        &mut ignore_event,
+    )
+    .await
+    .expect("turn completes after denial");
+
+    assert_eq!(outcome.final_text, "denied");
+    assert!(!target.exists(), "a denied write must not touch disk");
+    assert!(
+        SAW_PREVIEW.load(Ordering::SeqCst),
+        "the approver should receive a structured preview"
+    );
 }
