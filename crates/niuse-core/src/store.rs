@@ -118,6 +118,36 @@ impl Store {
         Ok(entries)
     }
 
+    /// Sections that look like memories but cannot be parsed. Used by doctor
+    /// to catch a hand-edit that silently hid an entry.
+    pub fn memory_issues(&self) -> Result<Vec<String>> {
+        let entries = self.memories()?;
+        let mut issues = Vec::new();
+        for kind in [MemoryKind::Preference, MemoryKind::Lesson] {
+            let path = self.memory_dir().join(kind.file());
+            let text = read_optional(&path)?.unwrap_or_default();
+            let headers = text
+                .lines()
+                .filter(|line| line.trim_start().starts_with("### m-"))
+                .count();
+            let parsed = entries.iter().filter(|entry| entry.kind == kind).count();
+            if headers > parsed {
+                issues.push(format!(
+                    "{}: {} of {} section(s) could not be parsed",
+                    kind.file(),
+                    headers - parsed,
+                    headers
+                ));
+            } else if parsed == 0 && has_stray_content(&text) {
+                issues.push(format!(
+                    "{}: has content but no parseable entries",
+                    kind.file()
+                ));
+            }
+        }
+        Ok(issues)
+    }
+
     pub fn add_memory(&self, mut entry: MemoryEntry) -> Result<MemoryEntry> {
         let mut entries = self.memories()?;
         while entries.iter().any(|existing| existing.id == entry.id) {
@@ -310,6 +340,16 @@ impl Store {
         days.truncate(limit);
         Ok(days)
     }
+}
+
+fn has_stray_content(text: &str) -> bool {
+    text.lines().any(|line| {
+        let line = line.trim();
+        !line.is_empty()
+            && !line.starts_with('#')
+            && !line.starts_with("<!--")
+            && !line.starts_with("-->")
+    })
 }
 
 fn parse_memory_file(text: &str, kind: MemoryKind, today: Date) -> Vec<MemoryEntry> {

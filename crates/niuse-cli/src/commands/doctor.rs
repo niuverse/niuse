@@ -156,6 +156,14 @@ pub fn doctor(store: &Store, preset: &str, json: bool) -> Result<()> {
         "prune backups",
     );
 
+    match store.memory_issues() {
+        Ok(issues) if issues.is_empty() => {
+            report.record(Level::Ok, "parse", "all memory sections parsed")
+        }
+        Ok(issues) => report.record(Level::Warn, "parse", issues.join("; ")),
+        Err(error) => report.record(Level::Fail, "parse", format!("{error:#}")),
+    }
+
     let metrics = store.metrics()?;
     report.record(
         Level::Ok,
