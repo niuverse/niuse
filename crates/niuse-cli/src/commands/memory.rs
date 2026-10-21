@@ -4,7 +4,10 @@
 //! The store stays the source of truth; this module only shapes output and
 //! applies write-time policy.
 
+use std::fs;
 use std::io::{self, Write};
+use std::path::PathBuf;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use anyhow::{bail, Context, Result};
 use niuse_core::model::one_line;
@@ -315,6 +318,8 @@ pub fn mem_prune(store: &Store, apply: bool) -> Result<()> {
         return Ok(());
     }
 
+    let backup = backup_memories(store)?;
+    println!("backup: {}", backup.display());
     for entry in &expired {
         store.remove_memory(&entry.id)?;
     }
@@ -323,6 +328,35 @@ pub fn mem_prune(store: &Store, apply: bool) -> Result<()> {
     }
     println!("已删除 {} 条。", expired.len());
     Ok(())
+}
+
+fn backup_memories(store: &Store) -> Result<PathBuf> {
+    let stamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|elapsed| elapsed.as_millis())
+        .unwrap_or(0);
+    let directory = store.root().join("backups").join(format!("prune-{stamp}"));
+    fs::create_dir_all(&directory)
+        .with_context(|| format!("create backup directory {}", directory.display()))?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let _ = fs::set_permissions(&directory, fs::Permissions::from_mode(0o700));
+    }
+    for kind in [MemoryKind::Preference, MemoryKind::Lesson] {
+        let source = store.memory_dir().join(kind.file());
+        if !source.exists() {
+            continue;
+        }
+        let target = directory.join(kind.file());
+        fs::copy(&source, &target).with_context(|| format!("back up {}", source.display()))?;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let _ = fs::set_permissions(&target, fs::Permissions::from_mode(0o600));
+        }
+    }
+    Ok(directory)
 }
 
 pub fn mem_review(store: &Store) -> Result<()> {
@@ -454,6 +488,21 @@ mod tests {
         let remaining = store.memories().unwrap();
         assert_eq!(remaining.len(), 1);
         assert_eq!(remaining[0].text, "fresh");
+
+        let backup = fs::read_dir(store.root().join("backups"))
+            .unwrap()
+            .next()
+            .unwrap()
+            .unwrap()
+            .path();
+        let lessons = fs::read_to_string(backup.join("lessons.md")).unwrap();
+        assert!(lessons.contains("old"));
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mode = fs::metadata(&backup).unwrap().permissions().mode() & 0o777;
+            assert_eq!(mode, 0o700);
+        }
     }
 
     #[test]

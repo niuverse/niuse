@@ -126,6 +126,7 @@ At most one `memory` block per turn; after a rejection, the same tags are not pr
 ## Safety and privacy
 
 - `~/.niuse` directories are `0700`, files are `0600`; writes go to a temporary file and are renamed.
+- `mem prune --apply` copies memory files to `~/.niuse/backups/` before deleting.
 - Secret patterns are scanned before every write; a match is refused, and the CLI requires `--force` to override where an override exists.
 - `identity.md` and `user.md` edits, and the bootstrap profile draft, are refused on a secret match; these files are injected every turn.
 - Manual `mem add` runs the same conflict rule as candidates; `--force` overrides both the secret and duplicate checks.
