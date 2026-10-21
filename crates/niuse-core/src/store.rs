@@ -148,6 +148,74 @@ impl Store {
         Ok(issues)
     }
 
+    /// Parse-integrity issues across memory, loops, and journal. Read-only;
+    /// doctor uses it to surface content that a typo made invisible.
+    pub fn content_issues(&self) -> Result<Vec<String>> {
+        let mut issues = self.memory_issues()?;
+
+        let loops_text = read_optional(&self.loops_path())?.unwrap_or_default();
+        let loop_lines = loops_text
+            .lines()
+            .filter(|line| line.trim_start().starts_with("- ["))
+            .count();
+        let loops = self.loops()?;
+        if loop_lines > loops.len() {
+            issues.push(format!(
+                "loops.md: {} of {} promise(s) could not be parsed",
+                loop_lines - loops.len(),
+                loop_lines
+            ));
+        }
+        let stray_loops = loops_text
+            .lines()
+            .map(str::trim)
+            .filter(|line| {
+                !line.is_empty()
+                    && !line.starts_with('#')
+                    && !line.starts_with("<!--")
+                    && !line.starts_with("-->")
+                    && !line.starts_with("- [")
+            })
+            .count();
+        if stray_loops > 0 {
+            issues.push(format!("loops.md: {stray_loops} stray line(s)"));
+        }
+
+        if self.journal_dir().is_dir() {
+            let mut files: Vec<PathBuf> = fs::read_dir(self.journal_dir())?
+                .filter_map(Result::ok)
+                .map(|entry| entry.path())
+                .filter(|path| path.extension().and_then(|ext| ext.to_str()) == Some("md"))
+                .collect();
+            files.sort();
+            for path in files {
+                let text = read_optional(&path)?.unwrap_or_default();
+                let headings = text
+                    .lines()
+                    .filter(|line| line.trim_start().starts_with("## "))
+                    .count();
+                let bullets = text
+                    .lines()
+                    .filter(|line| line.trim_start().starts_with("- "))
+                    .count();
+                let parsed = parse_journal(&text);
+                let parsed_bullets: usize = parsed.iter().map(|day| day.bullets.len()).sum();
+                if headings > parsed.len() || bullets > parsed_bullets {
+                    issues.push(format!(
+                        "{}: {} heading(s), {} bullet(s); parsed {} day(s), {} bullet(s)",
+                        path.file_name().unwrap_or_default().to_string_lossy(),
+                        headings,
+                        bullets,
+                        parsed.len(),
+                        parsed_bullets
+                    ));
+                }
+            }
+        }
+
+        Ok(issues)
+    }
+
     pub fn add_memory(&self, mut entry: MemoryEntry) -> Result<MemoryEntry> {
         let mut entries = self.memories()?;
         while entries.iter().any(|existing| existing.id == entry.id) {
