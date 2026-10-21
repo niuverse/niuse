@@ -174,7 +174,7 @@ pub async fn run(
     if progress {
         eprintln!();
     }
-    if !sessions.is_empty() && skipped == sessions.len() {
+    if all_failed(sessions.len(), skipped) {
         bail!(
             "all {} session(s) failed; the inbox was left untouched",
             sessions.len()
@@ -209,6 +209,10 @@ pub async fn run(
 ///
 /// Accepted memories and secret-bearing entries are dropped from both sides;
 /// duplicates are compared with the same similarity rule as memory writes.
+fn all_failed(selected: usize, skipped: usize) -> bool {
+    selected > 0 && skipped == selected
+}
+
 fn merge_candidates(
     memories: &[MemoryEntry],
     inbox: Option<&str>,
@@ -616,6 +620,14 @@ mod tests {
         assert!(input.contains("### a"));
         assert!(!input.contains("### b"));
         assert!(input.chars().count() <= 700);
+    }
+
+    #[test]
+    fn all_failed_only_when_every_session_was_skipped() {
+        assert!(all_failed(3, 3));
+        assert!(!all_failed(3, 2));
+        assert!(!all_failed(3, 0));
+        assert!(!all_failed(0, 0));
     }
 
     #[test]
