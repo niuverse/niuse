@@ -234,8 +234,13 @@ pub fn stats(store: &Store, days: u64, trend: bool, json: bool) -> Result<()> {
                 .map(|percent| format!("{percent}%"))
                 .unwrap_or_else(|| "-".to_string());
             println!(
-                "{}  {:>3} turns  {:>2}/{:<2} accepted  {acceptance}",
-                day.date, day.turns, day.accepted, day.proposals
+                "{}  {:>3} turns  {:>2}/{:<2} accepted  {acceptance}  {:>5} in · {:>4} out",
+                day.date,
+                day.turns,
+                day.accepted,
+                day.proposals,
+                crate::render::compact_tokens(day.input_tokens),
+                crate::render::compact_tokens(day.output_tokens)
             );
         }
     }
@@ -276,6 +281,9 @@ struct DayReport {
     proposals: usize,
     accepted: usize,
     acceptance_percent: Option<usize>,
+    input_tokens: u64,
+    output_tokens: u64,
+    cached_tokens: u64,
 }
 
 impl StatsReport {
@@ -311,6 +319,9 @@ impl StatsReport {
                     proposals: day.proposals,
                     accepted: day.accepted,
                     acceptance_percent: day.acceptance_percent(),
+                    input_tokens: day.input_tokens,
+                    output_tokens: day.output_tokens,
+                    cached_tokens: day.cached_tokens,
                 })
                 .collect(),
         }
@@ -322,12 +333,23 @@ struct DaySummary {
     turns: usize,
     proposals: usize,
     accepted: usize,
+    input_tokens: u64,
+    output_tokens: u64,
+    cached_tokens: u64,
 }
 
 impl DaySummary {
     fn acceptance_percent(&self) -> Option<usize> {
         (self.proposals > 0).then(|| self.accepted * 100 / self.proposals)
     }
+}
+
+fn parse_token_detail(detail: &str) -> Option<(u64, u64, u64)> {
+    let mut parts = detail.split(',');
+    let input = parts.next()?.parse().ok()?;
+    let output = parts.next()?.parse().ok()?;
+    let cached = parts.next()?.parse().ok()?;
+    Some((input, output, cached))
 }
 
 fn daily_summary(metrics: &[Metric], since_ms: u64) -> BTreeMap<Date, DaySummary> {
@@ -339,6 +361,13 @@ fn daily_summary(metrics: &[Metric], since_ms: u64) -> BTreeMap<Date, DaySummary
             "turn" => day.turns += 1,
             "propose" => day.proposals += 1,
             "accept" => day.accepted += 1,
+            "tokens" => {
+                if let Some((input, output, cached)) = parse_token_detail(&metric.detail) {
+                    day.input_tokens += input;
+                    day.output_tokens += output;
+                    day.cached_tokens += cached;
+                }
+            }
             _ => {}
         }
     }
@@ -388,19 +417,10 @@ fn summarize(metrics: &[Metric], since_ms: u64) -> Summary {
             "mem_review_edit" => summary.mem_reviews_edited += 1,
             "mem_review_delete" => summary.mem_reviews_deleted += 1,
             "tokens" => {
-                let mut parts = metric.detail.split(',');
-                if let (Some(input), Some(output), Some(cached)) =
-                    (parts.next(), parts.next(), parts.next())
-                {
-                    if let (Ok(input), Ok(output), Ok(cached)) = (
-                        input.parse::<u64>(),
-                        output.parse::<u64>(),
-                        cached.parse::<u64>(),
-                    ) {
-                        summary.input_tokens += input;
-                        summary.output_tokens += output;
-                        summary.cached_tokens += cached;
-                    }
+                if let Some((input, output, cached)) = parse_token_detail(&metric.detail) {
+                    summary.input_tokens += input;
+                    summary.output_tokens += output;
+                    summary.cached_tokens += cached;
                 }
             }
             _ => {}
@@ -454,7 +474,7 @@ mod tests {
     #[test]
     fn daily_summary_groups_by_utc_day() {
         let metrics = parse_metrics(
-            "0\tturn\tok\n1000\tpropose\trust\n2000\taccept\tm-1\n86400000\tturn\tok\n",
+            "0\tturn\tok\n1000\tpropose\trust\n2000\taccept\tm-1\n3000\ttokens\t100,20,5\n86400000\tturn\tok\n",
         );
         let days = daily_summary(&metrics, 0);
         assert_eq!(days.len(), 2);
@@ -462,6 +482,8 @@ mod tests {
         assert_eq!(first.turns, 1);
         assert_eq!(first.proposals, 1);
         assert_eq!(first.accepted, 1);
+        assert_eq!(first.input_tokens, 100);
+        assert_eq!(first.output_tokens, 20);
         assert_eq!(first.acceptance_percent(), Some(100));
         let second = days.get(&Date::from_days(1)).unwrap();
         assert_eq!(second.turns, 1);
