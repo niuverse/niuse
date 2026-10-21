@@ -196,7 +196,7 @@ fn journal_section(journal: &[JournalDay]) -> String {
         }
         let cost = estimate_text_tokens(&block) + 1;
         if used + cost > JOURNAL_BUDGET {
-            break;
+            continue;
         }
         used += cost;
         chosen.push(day);
@@ -300,6 +300,22 @@ mod tests {
         assert!(!composition.system.contains("很久以前的结论"));
         assert_eq!(composition.memory_injected, 2);
         assert_eq!(composition.memory_dropped, 1);
+    }
+
+    #[test]
+    fn oversized_journal_day_does_not_hide_older_ones() {
+        let today = date("2026-10-21");
+        let huge = JournalDay {
+            date: today,
+            bullets: vec!["x".repeat(4_000)],
+        };
+        let small = JournalDay {
+            date: date("2026-10-20"),
+            bullets: vec!["pay the invoice".into()],
+        };
+        let composition = compose(None, None, &[], &[], &[huge, small], today);
+        assert!(composition.system.contains("pay the invoice"));
+        assert!(!composition.system.contains("xxxx"));
     }
 
     #[test]
