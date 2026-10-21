@@ -351,7 +351,7 @@
       "date": "2026-10-21",
       "kind": "milestone",
       "title": "MVP implemented",
-      "detail": "Five stores, prompt, protocol, REPL, driver, and bootstrap landed; 35 core tests and 2 bootstrap tests pass.",
+      "detail": "Five stores, prompt, protocol, REPL, driver, and bootstrap landed; the offline test suite passes.",
       "refs": [
         "M0-001",
         "M0-002",
