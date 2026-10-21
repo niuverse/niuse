@@ -2370,6 +2370,26 @@
       "path": "docs/board/M2-087-overdue-loops.md"
     },
     {
+      "id": "M2-088",
+      "title": "Effective config as JSON",
+      "status": "done",
+      "milestone": "M2",
+      "module": "cli",
+      "size": "S",
+      "priority": "P2",
+      "updated": "2026-10-22",
+      "completed": "2026-10-22",
+      "depends_on": [
+        "M2-028"
+      ],
+      "docs": [
+        "architecture"
+      ],
+      "blocked_reason": null,
+      "body_html": "<h2>Scope</h2>\n<ul>\n<li><code>niuse config effective --json</code> emits provider, model, sandbox, approval, network, and max_steps.</li>\n<li>A missing model is <code>null</code>, matching the runtime's provider-default meaning.</li>\n<li>The text view is unchanged when the flag is absent.</li>\n<li>An end-to-end CLI test parses the object and checks defaults.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nJSON parses and carries the six settings.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n<code>model</code> is null when unset.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\n<code>max_steps</code> stays numeric.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nNo provider or credential is constructed.</li>\n</ul>\n<h2>Notes</h2>\n<p><code>config effective</code> now matches the machine-readable style of the rest of the CLI.</p>\n",
+      "path": "docs/board/M2-088-config-effective-json.md"
+    },
+    {
       "id": "M3-001",
       "title": "Release and dependency strategy",
       "status": "backlog",
@@ -2609,7 +2629,7 @@
   ],
   "meta": {
     "schema_version": 1,
-    "cards": 96,
+    "cards": 97,
     "modules": 10,
     "docs": 10,
     "generator": "cargo xtask dashboard"

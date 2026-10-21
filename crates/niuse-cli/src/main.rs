@@ -281,7 +281,11 @@ enum ConfigCommand {
     /// Print the config file
     Show,
     /// Print the merged effective values
-    Effective,
+    Effective {
+        /// Emit JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(Subcommand, Debug, Clone)]
@@ -458,8 +462,20 @@ async fn main() -> Result<()> {
                 Ok(())
             }
             ConfigCommand::Show => settings::show(&store),
-            ConfigCommand::Effective => {
+            ConfigCommand::Effective { json } => {
                 let settings = settings::resolve(&cli, &store)?;
+                if json {
+                    let payload = serde_json::json!({
+                        "provider": settings.provider,
+                        "model": settings.model,
+                        "sandbox": settings.sandbox,
+                        "approval": settings.approval,
+                        "network": settings.network,
+                        "max_steps": settings.max_steps,
+                    });
+                    println!("{}", serde_json::to_string_pretty(&payload)?);
+                    return Ok(());
+                }
                 println!("provider    {}", settings.provider);
                 println!(
                     "model       {}",

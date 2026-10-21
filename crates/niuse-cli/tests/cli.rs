@@ -265,3 +265,15 @@ fn overdue_filter_selects_late_loops() {
     assert_eq!(loops[0]["text"], "late promise");
     assert_eq!(loops[0]["overdue"], true);
 }
+
+#[test]
+fn effective_config_json_is_structured() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    let output = run(&home, &["config", "effective", "--json"]);
+    assert!(output.status.success(), "{output:?}");
+    let config: serde_json::Value = serde_json::from_slice(&output.stdout).expect("valid JSON");
+    assert_eq!(config["provider"], "deepseek");
+    assert_eq!(config["sandbox"], "workspace-write");
+    assert_eq!(config["max_steps"], 0);
+}
