@@ -58,6 +58,7 @@ pub struct BootstrapOptions {
     pub dry_run: bool,
     pub profile: bool,
     pub force_profile: bool,
+    pub profile_only: bool,
 }
 
 pub async fn run(
@@ -72,7 +73,9 @@ pub async fn run(
         dry_run,
         profile,
         force_profile,
+        profile_only,
     } = options;
+    let profile = profile || profile_only;
     let candidates = recent_sessions(usize::MAX, since_days)?;
     if candidates.is_empty() {
         println!("没有找到最近 {since_days} 天内的 niucode session。");
@@ -123,6 +126,10 @@ pub async fn run(
             }
             _ => write_profile(store, provider, model, &sessions).await?,
         }
+    }
+    if profile_only {
+        println!("profile-only：跳过记忆候选。");
+        return Ok(());
     }
 
     let mut raw: Vec<Pending> = Vec::new();

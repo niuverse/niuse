@@ -89,7 +89,7 @@ niuse loops list|add|done
 niuse journal [--days N] [--search QUERY] [--add TEXT]
 niuse threads                   list the active thread and archived chapters
 niuse export [--out FILE] [--session PATH]
-niuse bootstrap [--limit N] [--since-days N] [--dry-run] [--profile]
+niuse bootstrap [--limit N] [--since-days N] [--dry-run] [--profile] [--profile-only]
 niuse review
 niuse doctor                    check home, identity, credentials, sandbox, pin
 niuse stats [--days N] [--trend] [--json] local acceptance counters

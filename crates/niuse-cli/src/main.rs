@@ -112,6 +112,9 @@ enum Command {
         /// Overwrite an existing user.md when drafting
         #[arg(long)]
         force_profile: bool,
+        /// Draft user.md only; skip memory candidates
+        #[arg(long)]
+        profile_only: bool,
     },
     /// Review bootstrapped candidates
     Review,
@@ -334,6 +337,7 @@ async fn main() -> Result<()> {
             dry_run,
             profile,
             force_profile,
+            profile_only,
         }) => {
             let settings = settings::resolve(&cli, &store)?;
             let app = repl::App::new(&cli, &settings, store)?;
@@ -347,6 +351,7 @@ async fn main() -> Result<()> {
                     dry_run,
                     profile,
                     force_profile,
+                    profile_only,
                 },
             )
             .await
