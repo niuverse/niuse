@@ -35,9 +35,9 @@ pub fn open_thread(path: &Path, meta: &SessionMeta<'_>) -> Result<Thread> {
     }
     let created = !path.exists() || fs::metadata(path).map(|m| m.len() == 0).unwrap_or(true);
     if !path.exists() {
-        fs::File::create(path).with_context(|| format!("create thread {}", path.display()))?;
-        set_private(path)?;
+        create_private_file(path).with_context(|| format!("create thread {}", path.display()))?;
     }
+    set_private(path)?;
 
     let log = SessionLog::open(path)?;
     if created {
@@ -173,6 +173,18 @@ pub async fn run_turn(
 }
 
 #[cfg(unix)]
+fn create_private_file(path: &Path) -> Result<()> {
+    let mut options = fs::OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    options.open(path)?;
+    Ok(())
+}
+
 fn set_private(path: &Path) -> Result<()> {
     use std::os::unix::fs::PermissionsExt;
     let mut permissions = fs::metadata(path)?.permissions();
@@ -189,6 +201,30 @@ fn set_private(_path: &Path) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(unix)]
+    #[test]
+    fn thread_files_are_created_private() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("thread.jsonl");
+        create_private_file(&path).unwrap();
+        use std::os::unix::fs::PermissionsExt;
+        let mode = fs::metadata(&path).unwrap().permissions().mode() & 0o777;
+        assert_eq!(mode, 0o600);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn existing_thread_permissions_are_repaired() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("thread.jsonl");
+        fs::write(&path, "{}\n").unwrap();
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o644)).unwrap();
+        set_private(&path).unwrap();
+        let mode = fs::metadata(&path).unwrap().permissions().mode() & 0o777;
+        assert_eq!(mode, 0o600);
+    }
 
     #[test]
     fn archive_moves_the_thread() {
