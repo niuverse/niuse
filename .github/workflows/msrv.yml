@@ -1,0 +1,67 @@
+name: MSRV
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "crates/**/Cargo.toml"
+      - ".github/workflows/msrv.yml"
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: msrv
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  MSRV: "1.88.0"
+
+jobs:
+  check:
+    name: Check with Rust 1.88
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out niuse
+        uses: actions/checkout@v5
+        with:
+          path: niuse
+
+      - name: Read pinned niucode revision
+        id: niucode
+        working-directory: niuse
+        run: echo "rev=$(cat niucode.rev)" >> "$GITHUB_OUTPUT"
+
+      - name: Check out niucode
+        uses: actions/checkout@v5
+        with:
+          repository: niuverse/niucode
+          ref: ${{ steps.niucode.outputs.rev }}
+          path: niuverse/niucode
+
+      - name: Install Rust 1.88
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.MSRV }}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libdbus-1-dev pkg-config
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: niuse -> target
+          key: msrv-1.88
+
+      - name: Check
+        working-directory: niuse
+        run: cargo check --workspace --all-targets
