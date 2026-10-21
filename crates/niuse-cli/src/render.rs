@@ -18,6 +18,29 @@ fn styled(code: &str, text: &str) -> String {
     }
 }
 
+/// Color code for one diff line: headers bold, additions green, removals
+/// red, hunk headers cyan. Context lines are left alone.
+fn diff_style(line: &str) -> Option<&'static str> {
+    if line.starts_with("+++") || line.starts_with("---") {
+        Some("1")
+    } else if line.starts_with('+') {
+        Some("32")
+    } else if line.starts_with('-') {
+        Some("31")
+    } else if line.starts_with("@@") {
+        Some("36")
+    } else {
+        None
+    }
+}
+
+fn paint_diff(line: &str) -> String {
+    match diff_style(line) {
+        Some(code) => styled(code, line),
+        None => line.to_string(),
+    }
+}
+
 /// Short token counts: `999`, `1.5k`, `12k`.
 pub(crate) fn compact_tokens(tokens: u64) -> String {
     if tokens < 1_000 {
@@ -139,13 +162,19 @@ impl Default for Renderer {
 /// Per-action approval for mutating tools. Reads one line from the terminal.
 pub fn approve(request: &ApprovalRequest) -> bool {
     println!();
-    println!("[approval] {}: {}", request.tool, request.summary);
+    println!(
+        "{}",
+        styled(
+            "1",
+            &format!("[approval] {}: {}", request.tool, request.summary)
+        )
+    );
     if let Some(preview) = &request.preview {
         for line in preview_lines(preview, 80) {
-            println!("{line}");
+            println!("{}", paint_diff(&line));
         }
         if let Some(warning) = &preview.warning {
-            println!("  warning: {warning}");
+            println!("{}", styled("33", &format!("  warning: {warning}")));
         }
     }
     print!("allow? [y/N] ");
