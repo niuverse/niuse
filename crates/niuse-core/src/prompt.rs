@@ -303,6 +303,36 @@ mod tests {
     }
 
     #[test]
+    fn memory_budget_holds_at_capacity() {
+        let today = date("2026-10-21");
+        let memories: Vec<MemoryEntry> = (0..250)
+            .map(|index| {
+                entry(
+                    &format!(
+                        "preference number {index} with enough words to consume the prompt budget quickly"
+                    ),
+                    "2026-10-20",
+                )
+            })
+            .collect();
+        let composition = compose(None, None, &memories, &[], &[], today);
+        assert_eq!(
+            composition.memory_injected + composition.memory_dropped,
+            250
+        );
+        assert!(composition.memory_injected > 0);
+        assert!(
+            composition.memory_injected < 250,
+            "the budget should drop entries once the store is large"
+        );
+        assert!(
+            composition.tokens < 6_000,
+            "system prompt grew to {} tokens",
+            composition.tokens
+        );
+    }
+
+    #[test]
     fn long_identity_is_truncated() {
         let today = date("2026-10-21");
         let identity = "很长的身份。".repeat(400);
