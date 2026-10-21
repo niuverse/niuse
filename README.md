@@ -175,6 +175,7 @@ A daemon, a web UI, WeChat / Feishu bridges, scheduled push notifications, vecto
 
 ## Docs
 
+- [Status](docs/status.md): what works and what waits on a decision
 - [Implementation plan](docs/plan.md): decisions, stores, turn lifecycle, milestones, acceptance.
 - [Architecture](docs/architecture.md): boundaries, data flow, write thresholds.
 - [ADR-0001: memory layer](docs/adr/0001-memory-layer.md)
