@@ -77,6 +77,8 @@ enum Command {
         #[arg(long)]
         session: Option<PathBuf>,
     },
+    /// List the active thread and archived chapters
+    Threads,
     /// Show or search the journal
     Journal {
         #[arg(long, default_value_t = 7)]
@@ -270,6 +272,10 @@ async fn main() -> Result<()> {
             LoopsCommand::Add { text, due } => commands::loops_add(&store, &text, due.as_deref()),
             LoopsCommand::Done { id } => commands::loops_done(&store, &id),
         },
+        Some(Command::Threads) => {
+            let active = cli.thread.clone().unwrap_or_else(|| store.session_path());
+            commands::threads(&store, &active)
+        }
         Some(Command::Export { out, session }) => {
             commands::export(&store, out.as_deref(), session.as_deref())
         }

@@ -86,6 +86,7 @@ niuse identity init|show|edit
 niuse mem list|search|show|edit|add|forget|confirm|review
 niuse loops list|add|done
 niuse journal [--days N] [--search QUERY] [--add TEXT]
+niuse threads                   list the active thread and archived chapters
 niuse export [--out FILE] [--session PATH]
 niuse bootstrap [--limit N] [--since-days N]
 niuse review
