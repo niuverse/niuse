@@ -318,6 +318,7 @@ pub fn mem_prune(store: &Store, apply: bool) -> Result<()> {
         return Ok(());
     }
 
+    let before = memory_bytes(store);
     let backup = backup_memories(store)?;
     println!("backup: {}", backup.display());
     for entry in &expired {
@@ -326,8 +327,21 @@ pub fn mem_prune(store: &Store, apply: bool) -> Result<()> {
     if let Err(error) = store.append_metric("prune", &expired.len().to_string()) {
         eprintln!("warning: cannot record metric: {error:#}");
     }
-    println!("已删除 {} 条。", expired.len());
+    let freed = before.saturating_sub(memory_bytes(store));
+    println!(
+        "已删除 {} 条，释放 {}。",
+        expired.len(),
+        super::session::human_bytes(freed)
+    );
     Ok(())
+}
+
+fn memory_bytes(store: &Store) -> u64 {
+    [MemoryKind::Preference, MemoryKind::Lesson]
+        .iter()
+        .filter_map(|kind| fs::metadata(store.memory_dir().join(kind.file())).ok())
+        .map(|metadata| metadata.len())
+        .sum()
 }
 
 fn backup_memories(store: &Store) -> Result<PathBuf> {
@@ -503,6 +517,24 @@ mod tests {
             let mode = fs::metadata(&backup).unwrap().permissions().mode() & 0o777;
             assert_eq!(mode, 0o700);
         }
+    }
+
+    #[test]
+    fn memory_bytes_counts_the_files() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        assert_eq!(memory_bytes(&store), 0);
+        store
+            .add_memory(MemoryEntry::new(
+                MemoryKind::Preference,
+                "short paragraphs",
+                vec![],
+                Date::today(),
+                None,
+            ))
+            .unwrap();
+        assert!(memory_bytes(&store) > 0);
     }
 
     #[test]

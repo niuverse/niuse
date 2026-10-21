@@ -152,7 +152,7 @@ fn human_age(seconds: u64) -> String {
     }
 }
 
-fn human_bytes(bytes: u64) -> String {
+pub(crate) fn human_bytes(bytes: u64) -> String {
     if bytes < 1_024 {
         format!("{bytes} B")
     } else if bytes < 1_048_576 {
