@@ -6,6 +6,7 @@
 
 use std::cmp::Reverse;
 use std::fs;
+use std::io::Write as _;
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
@@ -230,6 +231,42 @@ impl Store {
         write_private(&self.inbox_path(), text)
     }
 
+    pub fn metrics_path(&self) -> PathBuf {
+        self.root.join("metrics.jsonl")
+    }
+
+    /// Append one tab-separated metric line.
+    ///
+    /// Metrics are local counters only: kinds, tags, and ids. Never memory text.
+    pub fn append_metric(&self, kind: &str, detail: &str) -> Result<()> {
+        let at = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|elapsed| elapsed.as_millis())
+            .unwrap_or(0);
+        let line = format!(
+            "{at}\t{}\t{}\n",
+            sanitize_metric(kind),
+            sanitize_metric(detail)
+        );
+        let path = self.metrics_path();
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)
+                .with_context(|| format!("create directory {}", parent.display()))?;
+        }
+        let mut file = fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&path)
+            .with_context(|| format!("open {}", path.display()))?;
+        set_mode(&path, 0o600)?;
+        file.write_all(line.as_bytes())
+            .with_context(|| format!("append {}", path.display()))
+    }
+
+    pub fn metrics(&self) -> Result<String> {
+        Ok(read_optional(&self.metrics_path())?.unwrap_or_default())
+    }
+
     /// Newest first, at most `limit` days.
     pub fn recent_journal(&self, limit: usize) -> Result<Vec<JournalDay>> {
         let mut days = Vec::new();
@@ -278,6 +315,16 @@ fn parse_memory_file(text: &str, kind: MemoryKind, today: Date) -> Vec<MemoryEnt
 
 fn parse_loops(text: &str) -> Vec<LoopItem> {
     text.lines().filter_map(parse_loop_line).collect()
+}
+
+fn sanitize_metric(value: &str) -> String {
+    value
+        .chars()
+        .map(|character| match character {
+            '\t' | '\n' | '\r' => ' ',
+            other => other,
+        })
+        .collect()
 }
 
 fn read_optional(path: &Path) -> Result<Option<String>> {
@@ -409,6 +456,28 @@ mod tests {
                 .unwrap();
             let path = store.memory_dir().join("preferences.md");
             let mode = fs::metadata(&path).unwrap().permissions().mode() & 0o777;
+            assert_eq!(mode, 0o600);
+        }
+    }
+
+    #[test]
+    fn metrics_append_and_stay_private() {
+        let (_directory, store) = store();
+        store.append_metric("propose", "rust,testing").unwrap();
+        store.append_metric("accept", "m-1234").unwrap();
+        let text = store.metrics().unwrap();
+        let lines: Vec<&str> = text.lines().collect();
+        assert_eq!(lines.len(), 2);
+        assert!(lines[0].ends_with("\tpropose\trust,testing"));
+        assert!(lines[1].ends_with("\taccept\tm-1234"));
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mode = fs::metadata(store.metrics_path())
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o777;
             assert_eq!(mode, 0o600);
         }
     }

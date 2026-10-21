@@ -46,6 +46,7 @@ The relationship: **niucode is the kernel and reference UI; niuse is the product
   loops.md         promises it made, with optional due dates
   thread.jsonl     the relationship thread (a resumable niucode session)
   inbox.md         review queue produced by bootstrap
+  metrics.jsonl    local acceptance counters (no memory text)
 ```
 
 Injection order is stable-to-volatile: `identity → user → memory → protocol → today → loops → journal`. The system prompt is assembled once per session so the provider's prompt cache survives every turn.
@@ -71,10 +72,11 @@ niuse loops list|done
 niuse journal [--days N]
 niuse bootstrap [--limit N] [--since-days N]
 niuse review
+niuse stats [--days N]          local acceptance counters
 niuse status
 ```
 
-Inside the REPL: `/help`, `/mem`, `/mem recall`, `/mem review`, `/remember`, `/forget`, `/loops`, `/done`, `/journal`, `/identity`, `/cd`, `/status`, `/prompt`, `/quit`.
+Inside the REPL: `/help`, `/mem`, `/mem recall`, `/mem review`, `/stats`, `/remember`, `/forget`, `/loops`, `/done`, `/journal`, `/identity`, `/cd`, `/status`, `/prompt`, `/quit`.
 
 Set `NIUSE_MEMORY=off` to disable both memory injection and new candidates, for A/B runs and for recovering trust.
 

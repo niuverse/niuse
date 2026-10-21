@@ -144,11 +144,18 @@ impl App {
             let parsed = renderer.finish();
             match result {
                 Ok(Some(_)) => {
+                    self.metric("turn", "ok");
                     let source = thread.log.id().to_string();
                     self.handle_blocks(parsed.blocks, &source)?;
                 }
-                Ok(None) => println!("[cancelled]"),
-                Err(error) => eprintln!("error: {error:#}"),
+                Ok(None) => {
+                    self.metric("turn", "cancelled");
+                    println!("[cancelled]");
+                }
+                Err(error) => {
+                    self.metric("turn", "error");
+                    eprintln!("error: {error:#}");
+                }
             }
             history = match driver::history(&thread.path) {
                 Ok(history) => history,
@@ -238,6 +245,7 @@ impl App {
                         Date::today(),
                         Some(thread.log.id().to_string()),
                     ))?;
+                    self.metric("remember", &entry.id);
                     println!("已记住 m-{}（下一个 session 生效）", entry.id);
                 }
             }
@@ -246,9 +254,11 @@ impl App {
                     println!("用法：/forget <id>");
                 } else {
                     commands::mem_forget(&self.store, argument)?;
+                    self.metric("forget", argument);
                 }
             }
             "/journal" => commands::journal_show(&self.store, 7)?,
+            "/stats" => commands::stats(&self.store, 7)?,
             "/loops" => commands::loops_list(&self.store, false)?,
             "/done" => {
                 if argument.is_empty() {
@@ -307,10 +317,13 @@ impl App {
             for block in blocks {
                 match block {
                     Block::Journal { bullets } => {
-                        self.store.append_journal(today, &bullets)?;
+                        if self.store.append_journal(today, &bullets)? {
+                            self.metric("journal", &bullets.len().to_string());
+                        }
                     }
                     Block::Loop { due, text } => {
-                        self.store.add_loop(LoopItem::new(text, due))?;
+                        let item = self.store.add_loop(LoopItem::new(text, due))?;
+                        self.metric("loop", &item.id);
                     }
                     Block::Memory { .. } => {}
                 }
@@ -323,11 +336,13 @@ impl App {
             match block {
                 Block::Journal { bullets } => {
                     if self.store.append_journal(today, &bullets)? {
+                        self.metric("journal", &bullets.len().to_string());
                         println!("journal +{}", bullets.len());
                     }
                 }
                 Block::Loop { due, text } => {
                     let item = self.store.add_loop(LoopItem::new(text, due))?;
+                    self.metric("loop", &item.id);
                     println!("承诺已记录 l-{}", item.id);
                 }
                 Block::Memory { kind, tags, text } => {
@@ -350,6 +365,7 @@ impl App {
         source: &str,
     ) -> Result<()> {
         if let Some(reason) = secret_reason(&text) {
+            self.metric("blocked", reason);
             println!("\n[记忆候选被拒绝] 疑似包含 {reason}，没有写入。");
             return Ok(());
         }
@@ -367,6 +383,7 @@ impl App {
         };
         println!("\n记忆候选 [{}{tag_label}]", kind.as_str());
         println!("  {text}");
+        self.metric("propose", &tags.join(","));
 
         if conflicts.is_empty() {
             print!("[y] 接受  [n] 丢弃  [e] 编辑  [s] 本次 session 不再提议 > ");
@@ -379,6 +396,7 @@ impl App {
             {
                 "y" | "yes" => {
                     let entry = self.save_memory(kind, text, tags, source)?;
+                    self.metric("accept", &entry.id);
                     println!("已记住 m-{}", entry.id);
                 }
                 "e" | "edit" => {
@@ -387,6 +405,8 @@ impl App {
                             println!("拒绝：疑似包含 {reason}。");
                         } else {
                             let entry = self.save_memory(kind, edited, tags, source)?;
+                            self.metric("accept", &entry.id);
+                            self.metric("edit", &entry.id);
                             println!("已记住 m-{}", entry.id);
                         }
                     } else {
@@ -395,9 +415,13 @@ impl App {
                 }
                 "s" | "stop" => {
                     self.suppress_candidates = true;
+                    self.metric("suppress", "");
                     println!("本次 session 不再提议。");
                 }
-                _ => println!("已丢弃。"),
+                _ => {
+                    self.metric("discard", "");
+                    println!("已丢弃。");
+                }
             }
             return Ok(());
         }
@@ -418,15 +442,26 @@ impl App {
                     self.store.remove_memory(&old.id)?;
                 }
                 let entry = self.save_memory(kind, text, tags, source)?;
+                self.metric("accept", &format!("replace:{}", entry.id));
                 println!("已替换，新 id m-{}", entry.id);
             }
             "k" | "keep" => {
                 let entry = self.save_memory(kind, text, tags, source)?;
+                self.metric("accept", &format!("keep:{}", entry.id));
                 println!("已并存，新 id m-{}", entry.id);
             }
-            _ => println!("已丢弃。"),
+            _ => {
+                self.metric("discard", "conflict");
+                println!("已丢弃。");
+            }
         }
         Ok(())
+    }
+
+    fn metric(&self, kind: &str, detail: &str) {
+        if let Err(error) = self.store.append_metric(kind, detail) {
+            eprintln!("warning: cannot record metric: {error:#}");
+        }
     }
 
     fn save_memory(
@@ -526,6 +561,7 @@ fn print_help() {
          /loops          列出承诺\n\
          /done <l-id>    关闭一条承诺\n\
          /journal        最近 7 天\n\
+         /stats          最近 7 天的候选接受率与活动计数\n\
          /identity       查看 identity.md\n\
          /cd <path>      切换工作目录（下一个 turn 生效）\n\
          /status         当前配置与存储状态\n\

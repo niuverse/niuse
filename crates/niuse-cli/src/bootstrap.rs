@@ -196,6 +196,7 @@ pub fn review(store: &Store) -> Result<()> {
                         Some(item.source.clone()),
                     );
                     store.add_memory(entry)?;
+                    record_metric(store, "review_accept", &item.source);
                     accepted += 1;
                     println!("  已接受");
                 }
@@ -205,7 +206,10 @@ pub fn review(store: &Store) -> Result<()> {
                 remaining.extend(items[index..].iter().cloned());
                 break;
             }
-            _ => println!("  已丢弃"),
+            _ => {
+                record_metric(store, "review_discard", &item.source);
+                println!("  已丢弃");
+            }
         }
         index += 1;
     }
@@ -213,6 +217,12 @@ pub fn review(store: &Store) -> Result<()> {
     write_inbox(store, &remaining)?;
     println!("\n接受 {} 条，剩余 {} 条。", accepted, remaining.len());
     Ok(())
+}
+
+fn record_metric(store: &Store, kind: &str, detail: &str) {
+    if let Err(error) = store.append_metric(kind, detail) {
+        eprintln!("warning: cannot record metric: {error:#}");
+    }
 }
 
 fn write_inbox(store: &Store, items: &[Pending]) -> Result<()> {

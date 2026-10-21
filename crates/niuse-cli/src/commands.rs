@@ -7,6 +7,7 @@ use niuse_core::policy::{search_score, secret_reason};
 use niuse_core::prompt::compose;
 use niuse_core::{Date, MemoryEntry, MemoryKind, Store};
 use std::io::{self, Write};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub fn mem_list(store: &Store, all: bool) -> Result<()> {
     let today = Date::today();
@@ -361,4 +362,165 @@ fn normalize_id(id: &str) -> String {
         .trim_start_matches('l')
         .trim_start_matches('-')
         .to_string()
+}
+
+/// Local acceptance counters. One tab-separated line per event:
+/// `unix_ms<TAB>kind<TAB>detail`. Detail never contains memory text.
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct Metric {
+    at_ms: u64,
+    kind: String,
+    detail: String,
+}
+
+#[derive(Debug, Default, PartialEq, Eq)]
+struct Summary {
+    turns: usize,
+    cancelled: usize,
+    errors: usize,
+    proposals: usize,
+    accepted: usize,
+    discarded: usize,
+    edited: usize,
+    suppressed: usize,
+    blocked: usize,
+    journals: usize,
+    loops: usize,
+    remembers: usize,
+    review_accepted: usize,
+    review_discarded: usize,
+}
+
+impl Summary {
+    /// Accepted over proposed. Edited and replace/keep decisions count as
+    /// accepted; suppressed candidates stay in the denominator.
+    fn acceptance_percent(&self) -> Option<usize> {
+        (self.proposals > 0).then(|| self.accepted * 100 / self.proposals)
+    }
+}
+
+pub fn stats(store: &Store, days: u64) -> Result<()> {
+    let metrics = parse_metrics(&store.metrics()?);
+    if metrics.is_empty() {
+        println!("还没有指标。下一次对话开始后会自动记录。");
+        return Ok(());
+    }
+
+    let since = if days == 0 {
+        0
+    } else {
+        now_ms().saturating_sub(days.saturating_mul(86_400_000))
+    };
+    let summary = summarize(&metrics, since);
+    let window = if days == 0 {
+        "all time".to_string()
+    } else {
+        format!("last {days} day(s)")
+    };
+
+    println!("{window}");
+    println!(
+        "turns        {} ({} cancelled, {} errors)",
+        summary.turns, summary.cancelled, summary.errors
+    );
+    println!(
+        "candidates   {} proposed · {} accepted · {} discarded · {} edited · {} suppressed · {} blocked",
+        summary.proposals,
+        summary.accepted,
+        summary.discarded,
+        summary.edited,
+        summary.suppressed,
+        summary.blocked
+    );
+    match summary.acceptance_percent() {
+        Some(percent) => println!("acceptance   {percent}% (accepted / proposed)"),
+        None => println!("acceptance   n/a (no candidates yet)"),
+    }
+    println!(
+        "activity     {} journal writes · {} loops · {} manual memories · {} review accepted · {} review discarded",
+        summary.journals,
+        summary.loops,
+        summary.remembers,
+        summary.review_accepted,
+        summary.review_discarded
+    );
+    Ok(())
+}
+
+fn parse_metrics(text: &str) -> Vec<Metric> {
+    text.lines()
+        .filter_map(|line| {
+            let mut parts = line.splitn(3, '\t');
+            let at_ms = parts.next()?.parse().ok()?;
+            let kind = parts.next()?.to_string();
+            let detail = parts.next().unwrap_or_default().to_string();
+            Some(Metric {
+                at_ms,
+                kind,
+                detail,
+            })
+        })
+        .collect()
+}
+
+fn summarize(metrics: &[Metric], since_ms: u64) -> Summary {
+    let mut summary = Summary::default();
+    for metric in metrics.iter().filter(|metric| metric.at_ms >= since_ms) {
+        match metric.kind.as_str() {
+            "turn" => {
+                summary.turns += 1;
+                match metric.detail.as_str() {
+                    "cancelled" => summary.cancelled += 1,
+                    "error" => summary.errors += 1,
+                    _ => {}
+                }
+            }
+            "propose" => summary.proposals += 1,
+            "accept" => summary.accepted += 1,
+            "discard" => summary.discarded += 1,
+            "edit" => summary.edited += 1,
+            "suppress" => summary.suppressed += 1,
+            "blocked" => summary.blocked += 1,
+            "journal" => summary.journals += 1,
+            "loop" => summary.loops += 1,
+            "remember" => summary.remembers += 1,
+            "review_accept" => summary.review_accepted += 1,
+            "review_discard" => summary.review_discarded += 1,
+            _ => {}
+        }
+    }
+    summary
+}
+
+fn now_ms() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|elapsed| elapsed.as_millis() as u64)
+        .unwrap_or(0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn metrics_parse_and_summarize() {
+        let text = "1000\tturn\tok\n1100\tpropose\trust\n1200\taccept\tm-1\n1300\tpropose\tgit\n1400\tdiscard\t\n1500\tblocked\tAPI key\n1600\tturn\tcancelled\n";
+        let metrics = parse_metrics(text);
+        assert_eq!(metrics.len(), 7);
+        let summary = summarize(&metrics, 0);
+        assert_eq!(summary.turns, 2);
+        assert_eq!(summary.cancelled, 1);
+        assert_eq!(summary.proposals, 2);
+        assert_eq!(summary.accepted, 1);
+        assert_eq!(summary.blocked, 1);
+        assert_eq!(summary.acceptance_percent(), Some(50));
+    }
+
+    #[test]
+    fn window_filters_old_metrics() {
+        let metrics = parse_metrics("1000\tturn\tok\n9999999999999\tturn\tok\n");
+        let summary = summarize(&metrics, 5000);
+        assert_eq!(summary.turns, 1);
+    }
 }
