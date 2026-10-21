@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/niuverse/niuse/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/niuverse/niuse/actions/workflows/ci.yml)
 [![Pages](https://github.com/niuverse/niuse/actions/workflows/pages.yml/badge.svg?branch=main)](https://github.com/niuverse/niuse/actions/workflows/pages.yml)
+[![MSRV](https://github.com/niuverse/niuse/actions/workflows/msrv.yml/badge.svg?branch=main)](https://github.com/niuverse/niuse/actions/workflows/msrv.yml)
 
 **niucode is the body. niuse is the identity.**
 
