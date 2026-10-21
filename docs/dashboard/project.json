@@ -103,7 +103,8 @@
       "contract": "Parse flags and dispatch; offline commands never construct a provider; only agent commands resolve credentials.",
       "paths": [
         "crates/niuse-cli/src/main.rs",
-        "crates/niuse-cli/src/commands.rs",
+        "crates/niuse-cli/src/commands/mod.rs",
+        "crates/niuse-cli/src/commands/doctor.rs",
         "crates/niuse-cli/src/config.rs"
       ],
       "notes": [
