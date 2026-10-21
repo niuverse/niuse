@@ -18,7 +18,7 @@ echo "== tests =="
 cargo test --workspace
 
 echo "== package =="
-cargo package -p niuse-core --allow-dirty
+cargo package -p niuse-core --allow-dirty --offline
 
 echo "== dashboard =="
 cargo xtask dashboard --check

@@ -362,7 +362,7 @@ async fn main() -> Result<()> {
             LoopsCommand::Done { id } => commands::loops_done(&store, &id),
         },
         Some(Command::Threads { json }) => {
-            let active = cli.thread.clone().unwrap_or_else(|| store.session_path());
+            let active = config::resolve_thread(cli.thread.clone(), &store)?;
             commands::threads(&store, &active, json)
         }
         Some(Command::Export { out, session }) => {
@@ -457,7 +457,7 @@ async fn main() -> Result<()> {
         },
         Some(Command::Stats { days, trend, json }) => commands::stats(&store, days, trend, json),
         Some(Command::Status { json }) => {
-            let thread = cli.thread.clone().unwrap_or_else(|| store.session_path());
+            let thread = config::resolve_thread(cli.thread.clone(), &store)?;
             commands::status(&store, &thread, json)
         }
     }

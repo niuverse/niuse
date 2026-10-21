@@ -115,6 +115,18 @@ pub fn resolve_policy(
     Ok((policy, approval, allow_unsandboxed))
 }
 
+/// `--thread` is a path argument: resolve relative paths against the process
+/// cwd, and fall back to the store's active session when absent.
+pub fn resolve_thread(path: Option<PathBuf>, store: &niuse_core::Store) -> Result<PathBuf> {
+    match path {
+        Some(path) if path.is_absolute() => Ok(path),
+        Some(path) => Ok(std::env::current_dir()
+            .context("resolve current directory")?
+            .join(path)),
+        None => Ok(store.session_path()),
+    }
+}
+
 pub fn resolve_cwd(cwd: Option<PathBuf>) -> Result<PathBuf> {
     let cwd = match cwd {
         Some(path) => path,

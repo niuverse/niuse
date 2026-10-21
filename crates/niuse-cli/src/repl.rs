@@ -246,7 +246,7 @@ impl Validator for SlashCompleter {
 impl Helper for SlashCompleter {}
 
 use crate::commands;
-use crate::config::{build_provider, resolve_cwd, resolve_policy};
+use crate::config::{build_provider, resolve_cwd, resolve_policy, resolve_thread};
 use crate::driver::{self, SessionMeta, Thread};
 use crate::render::{self, Renderer};
 use crate::settings::Settings;
@@ -286,7 +286,7 @@ impl App {
             .map(|value| value.trim().to_lowercase() != "off")
             .unwrap_or(true);
 
-        let thread_path = cli.thread.clone().unwrap_or_else(|| store.session_path());
+        let thread_path = resolve_thread(cli.thread.clone(), &store)?;
 
         let mut app = Self {
             store,
