@@ -382,9 +382,10 @@ async fn mcp_init_writes_a_mountable_read_only_config() {
     assert!(packs.join("notes/server.py").is_file());
     assert!(packs.join("calendar/server.py").is_file());
 
-    let refused = run(&home, &args);
-    assert!(!refused.status.success());
-    assert!(String::from_utf8_lossy(&refused.stderr).contains("--force"));
+    let again = run(&home, &args);
+    assert!(again.status.success(), "{again:?}");
+    assert!(String::from_utf8_lossy(&again.stdout).contains("unchanged"));
+    assert_eq!(text.matches("read_only = true").count(), 2);
     let mut forced = args.to_vec();
     forced.push("--force");
     assert!(run(&home, &forced).status.success());
@@ -410,6 +411,76 @@ async fn mcp_init_writes_a_mountable_read_only_config() {
     assert!(calendar_hit.ok);
     assert!(calendar_hit.output.contains("Standup"));
     host.shutdown().await.unwrap();
+}
+
+#[test]
+fn mcp_init_merges_new_servers_and_keeps_existing_text() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    let notes = directory.path().join("notes");
+    std::fs::create_dir_all(&notes).unwrap();
+    let calendar = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../packs/calendar/tests/sample.ics");
+    let config = directory.path().join("mcp.toml");
+    let packs = directory.path().join("packs");
+
+    let notes_only = run(
+        &home,
+        &[
+            "mcp",
+            "init",
+            "--notes",
+            notes.to_str().unwrap(),
+            "--config",
+            config.to_str().unwrap(),
+            "--packs",
+            packs.to_str().unwrap(),
+        ],
+    );
+    assert!(notes_only.status.success(), "{notes_only:?}");
+    let mut text = std::fs::read_to_string(&config).unwrap();
+    assert!(text.contains("name = \"notes\""));
+    assert!(!text.contains("name = \"calendar\""));
+    text.push_str("\n# custom marker\n");
+    std::fs::write(&config, &text).unwrap();
+
+    let calendar_only = run(
+        &home,
+        &[
+            "mcp",
+            "init",
+            "--calendar",
+            calendar.to_str().unwrap(),
+            "--config",
+            config.to_str().unwrap(),
+            "--packs",
+            packs.to_str().unwrap(),
+        ],
+    );
+    assert!(calendar_only.status.success(), "{calendar_only:?}");
+    let merged = std::fs::read_to_string(&config).unwrap();
+    assert!(merged.contains("# custom marker"));
+    assert!(merged.contains("name = \"notes\""));
+    assert!(merged.contains("name = \"calendar\""));
+    assert_eq!(merged.matches("read_only = true").count(), 2);
+
+    std::fs::write(&config, "not = [valid").unwrap();
+    let invalid = run(
+        &home,
+        &[
+            "mcp",
+            "init",
+            "--notes",
+            notes.to_str().unwrap(),
+            "--config",
+            config.to_str().unwrap(),
+            "--packs",
+            packs.to_str().unwrap(),
+        ],
+    );
+    assert!(!invalid.status.success());
+    assert!(String::from_utf8_lossy(&invalid.stderr).contains("invalid"));
+    assert_eq!(std::fs::read_to_string(&config).unwrap(), "not = [valid");
 }
 
 #[test]

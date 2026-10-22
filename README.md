@@ -199,9 +199,10 @@ niuse tui
 ```
 
 `mcp init` copies the bundled servers to `~/.niuse/packs/`, resolves an
-absolute `python3`, and writes only `read_only = true` entries. Pass `--force`
-to replace an existing manifest (it does not merge). You can also write the
-manifest by hand; tools appear as `mcp__<server>__<tool>`, and the TUI accepts
+absolute `python3`, and writes only `read_only = true` entries. It merges by
+server name, preserves existing text and comments, and refuses to touch an
+invalid manifest; `--force` replaces the file. You can also write the manifest
+by hand; tools appear as `mcp__<server>__<tool>`, and the TUI accepts
 `--mcp-config`.
 
 A broken manifest or a server that fails to start prints a warning and disables
