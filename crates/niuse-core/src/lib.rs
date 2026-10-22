@@ -6,6 +6,7 @@
 
 #![forbid(unsafe_code)]
 
+pub mod brief;
 pub mod candidate;
 pub mod date;
 pub mod model;
@@ -13,6 +14,7 @@ pub mod policy;
 pub mod prompt;
 pub mod store;
 
+pub use brief::Brief;
 pub use candidate::{parse, Block, Parsed, StreamFilter};
 pub use date::Date;
 pub use model::{JournalDay, LoopItem, MemoryEntry, MemoryKind};

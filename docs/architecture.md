@@ -40,6 +40,7 @@ Terminal input uses `rustyline` only when stdin is a TTY; pipes keep the plain r
 | `cli` | Interface | flags, subcommands, offline commands, wiring |
 | `repl` | Interface | conversation, slash commands, candidate confirmation, rendering |
 | `prompt` | Engine | stable-prefix system prompt and budgets |
+| `brief` | Engine | read-only "what needs attention" view over the stores |
 | `protocol` | Engine | in-band block parsing and streaming stripping |
 | `policy` | Engine | soft expiry, conflicts, secret scanning |
 | `driver` | Adapters | niucode boundary, sessions, per-turn cwd |
@@ -53,6 +54,7 @@ Terminal input uses `rustyline` only when stdin is a TTY; pipes keep the plain r
 startup
   ├─ read identity / user / memory / loops / journal
   ├─ compose() assembles the system prompt (once per session)
+  ├─ brief: overdue loops, inbox, stale/expired memory (read-only)
   └─ project_history(thread.jsonl) restores history
 
 user input
@@ -144,6 +146,6 @@ At most one `memory` block per turn; after a rejection, the same tags are not pr
 
 ## Explicit non-goals
 
-A daemon, a web UI, WeChat / Feishu bridges, scheduled push notifications, vector search, full session indexing, automatic repo edits, multi-user support, a TUI (for now), or a general agent framework.
+A daemon, a web UI, WeChat / Feishu bridges, scheduled push notifications, vector search, full session indexing, automatic repo edits, and multi-user support. The TUI is opt-in until ADR-0004's gate.
 
-There is one test for every proposal: **does this shape an identity, or is it just another capability?**
+[ADR-0005](adr/0005-working-companion.md) widens the product scope: project awareness, briefs, goals, delegation, and connectors are allowed when they serve one person and stay terminal-first. The test for every proposal is still: **does this help the companion finish real work without making the system harder to trust?**

@@ -105,6 +105,37 @@ fn status_json_has_nested_sections() {
 }
 
 #[test]
+fn brief_json_reports_actionable_context() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+
+    let add = run(&home, &["mem", "add", "prefer short paragraphs"]);
+    assert!(add.status.success(), "{add:?}");
+    let promise = run(
+        &home,
+        &["loops", "add", "ship the brief", "--due", "2020-01-01"],
+    );
+    assert!(promise.status.success(), "{promise:?}");
+
+    let output = run(&home, &["brief", "--json"]);
+    assert!(output.status.success(), "{output:?}");
+    let brief: serde_json::Value = serde_json::from_slice(&output.stdout).expect("valid JSON");
+    assert_eq!(brief["memory"]["total"], 1);
+    assert_eq!(brief["loops"]["open"], 1);
+    assert_eq!(brief["loops"]["overdue"].as_array().unwrap().len(), 1);
+    assert_eq!(brief["loops"]["overdue"][0]["text"], "ship the brief");
+    assert!(brief["project"]
+        .as_str()
+        .is_some_and(|project| !project.is_empty()));
+
+    let text = run(&home, &["brief"]);
+    assert!(text.status.success(), "{text:?}");
+    let stdout = String::from_utf8_lossy(&text.stdout);
+    assert!(stdout.contains("niuse brief"));
+    assert!(stdout.contains("ship the brief"));
+}
+
+#[test]
 fn loops_json_round_trip() {
     let directory = tempfile::tempdir().unwrap();
     let home = directory.path().join(".niuse");

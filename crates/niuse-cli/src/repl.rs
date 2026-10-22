@@ -52,6 +52,7 @@ const SLASH_COMMANDS: &[&str] = &[
     "/new",
     "/cd",
     "/status",
+    "/brief",
     "/prompt",
     "/model",
     "/cost",
@@ -369,6 +370,13 @@ impl App {
         let mut thread = driver::open_thread(&path, &meta)?;
         let mut history = driver::history(&thread.path)?;
         self.banner();
+        if startup_brief_enabled() {
+            if let Ok(lines) = commands::brief_startup(&self.store, &self.cwd) {
+                for line in lines {
+                    println!("{line}");
+                }
+            }
+        }
 
         let history_path = self.store.history_path();
         let mut editor = if io::stdin().is_terminal() {
@@ -749,6 +757,7 @@ impl App {
                     }
                 }
             }
+            "/brief" => print!("{}", commands::brief_text(&self.store, &self.cwd)?),
             "/status" => {
                 commands::status(&self.store, &thread.path, false)?;
                 let events = load(&thread.path)
@@ -1165,6 +1174,7 @@ const HELP: &str = r#"对话
   /journal add <text>     追加一条今天的日记
 
 会话
+  /brief                  今天需要处理什么（逾期/审查/过期）
   /export [path]          导出当前主线为 Markdown
   /new                    归档当前主线并开始一条新的
   /cd <path>              切换工作目录（下一个 turn 生效）
@@ -1190,6 +1200,16 @@ fn print_help() {
     print!("{HELP}");
 }
 
+fn startup_brief_enabled() -> bool {
+    brief_enabled(std::env::var("NIUSE_BRIEF").ok().as_deref())
+}
+
+fn brief_enabled(value: Option<&str>) -> bool {
+    value
+        .map(|value| value.trim().to_lowercase() != "off")
+        .unwrap_or(true)
+}
+
 #[cfg(all(test, unix))]
 mod tests {
     use super::*;
@@ -1203,6 +1223,14 @@ mod tests {
         assert_eq!(slash_candidates("/zzz"), Vec::<&str>::new());
         assert_eq!(slash_candidates("hello"), Vec::<&str>::new());
         assert_eq!(slash_candidates("/mem "), Vec::<&str>::new());
+    }
+
+    #[test]
+    fn brief_can_be_disabled_at_startup() {
+        assert!(brief_enabled(None));
+        assert!(brief_enabled(Some("on")));
+        assert!(!brief_enabled(Some("off")));
+        assert!(!brief_enabled(Some(" OFF ")));
     }
 
     #[test]

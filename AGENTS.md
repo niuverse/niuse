@@ -6,10 +6,11 @@ This repository is `niuse`, a personal engineering companion built on top of
 ## Read first
 
 1. `docs/status.md` — current snapshot and the decisions waiting on a human.
-2. `docs/architecture.md` — boundaries, stores, turn flow, non-goals.
-3. `docs/plan.md` — decisions, milestones, acceptance.
-4. `docs/compat.md` — pinned niucode revision and the weekly bump ritual.
-5. `docs/dashboard/project.json` and `docs/board/` — current work and decisions.
+2. `docs/roadmap.md` — the long-running goal, phases, and current sprint.
+3. `docs/architecture.md` — boundaries, stores, turn flow, non-goals.
+4. `docs/plan.md` — decisions, milestones, acceptance.
+5. `docs/compat.md` — pinned niucode revision and the weekly bump ritual.
+6. `docs/dashboard/project.json` and `docs/board/` — current work and decisions.
 
 ## Commands
 

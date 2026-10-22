@@ -4,8 +4,8 @@
     "name": "niuse",
     "title": "niuse",
     "tagline": "personal engineering companion on niucode",
-    "summary": "A personal engineering companion on top of niucode: five Markdown stores for identity and memory, an in-band protocol, soft expiry, and a resumable thread. The board records architecture, decisions, and iteration; it is not runtime monitoring.",
-    "status": "M2 · Dogfood pending",
+    "summary": "A personal engineering companion on top of niucode: five Markdown stores for identity and memory, an opt-in shared TUI, project context, and a long-horizon roadmap. The board records architecture, decisions, and iteration; it is not runtime monitoring.",
+    "status": "M2 · Dogfood gate · M6 context track",
     "repo": "niuverse/niuse",
     "language": "Rust"
   },
@@ -63,6 +63,61 @@
         "niucode-cli exports a library plus turn hooks",
         "niuse deletes its renderer and runs the shared TUI",
         "the product-only layer stays below roughly 1k lines"
+      ]
+    },
+    {
+      "id": "M5",
+      "title": "Harness-native companion",
+      "status": "planned",
+      "goal": "Make the existing niucode harness the companion's default working surface instead of a parallel front end.",
+      "exit": [
+        "TUI approval and usage parity with the REPL contract",
+        "ten real TUI dogfood days are recorded",
+        "the renderer is retired only after that gate"
+      ]
+    },
+    {
+      "id": "M6",
+      "title": "Compounding context",
+      "status": "planned",
+      "goal": "Make what the companion knows visible and useful at the moment work starts, without adding a database.",
+      "exit": [
+        "startup brief surfaces overdue promises and review queues",
+        "project registry answers where the work was",
+        "session digest and on-demand recall are proven in real use"
+      ]
+    },
+    {
+      "id": "M7",
+      "title": "Long-horizon work",
+      "status": "planned",
+      "goal": "Let one request become a checked sequence of work that survives a session boundary.",
+      "exit": [
+        "persistent product goals survive resume",
+        "plan → execute → verify records evidence for each step",
+        "a three-day goal completes without re-explaining the task"
+      ]
+    },
+    {
+      "id": "M8",
+      "title": "Connected agent",
+      "status": "planned",
+      "goal": "Reach personal tools and data through a standard, trust-bounded connector.",
+      "exit": [
+        "niucode ships a stdio MCP client with trust and timeouts",
+        "niuse ships one personal pack behind least privilege",
+        "a connector cannot escape its declared roots"
+      ]
+    },
+    {
+      "id": "M9",
+      "title": "Proof",
+      "status": "planned",
+      "goal": "Measure whether the companion is actually more useful, and keep it that way.",
+      "exit": [
+        "offline personal-agent suite covers recall, briefs, goals, and delegation",
+        "memory-on/off A/B shows a behavioural difference",
+        "dogfood regressions block a release"
       ]
     }
   ],
@@ -378,6 +433,18 @@
       "refs": [
         "adr-0003",
         "M4-001"
+      ]
+    },
+    {
+      "date": "2026-10-22",
+      "kind": "decision",
+      "title": "Grow from memory layer to working companion",
+      "detail": "niuse adds project context, briefs, goals, and delegation while generic capability lands in niucode first. No daemon, no second store; every phase exits on real use.",
+      "refs": [
+        "adr-0005",
+        "roadmap",
+        "M5-001",
+        "M6-001"
       ]
     }
   ]

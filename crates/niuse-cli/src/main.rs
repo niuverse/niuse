@@ -175,6 +175,12 @@ enum Command {
         #[arg(long)]
         json: bool,
     },
+    /// Show what needs attention today
+    Brief {
+        /// Emit JSON
+        #[arg(long)]
+        json: bool,
+    },
     /// Show store and prompt status
     Status {
         /// Emit JSON
@@ -520,6 +526,10 @@ async fn main() -> Result<()> {
             }
         },
         Some(Command::Stats { days, trend, json }) => commands::stats(&store, days, trend, json),
+        Some(Command::Brief { json }) => {
+            let cwd = config::resolve_cwd(cli.cwd.clone())?;
+            commands::brief(&store, &cwd, json)
+        }
         Some(Command::Status { json }) => {
             let thread = config::resolve_thread(cli.thread.clone(), &store)?;
             commands::status(&store, &thread, json)
@@ -547,7 +557,8 @@ async fn run_tui(cli: &Cli, store: &Store, replay: Option<PathBuf>) -> Result<()
     };
     drop(driver::open_thread(&thread, &meta)?);
 
-    let hooks = tui_hook::CompanionHooks::new_with_thread(store, thread.clone())?;
+    let hooks =
+        tui_hook::CompanionHooks::new_with_thread(store, thread.clone())?.with_cwd(cwd.clone());
     let options = niucode::TuiOptions {
         preset: settings.provider,
         model: Some(model),

@@ -9,9 +9,9 @@ summary = "Entry point after the autonomous iteration: what works, what is pinne
 
 ## Snapshot · 2026-10-22
 
-niuse is runnable end to end: five Markdown stores, an interactive REPL with line editing, history, completion, multi-line input, confirmation and conflict handling, the in-band protocol, bootstrap from history (memory candidates and a user profile), JSON views for every store, one-shot session listing, colored approval diffs, `doctor`, and acceptance metrics. The declared MSRV is 1.88; the full test suite and the optional `tui` feature pass under it, and a weekly workflow checks both.
+niuse is runnable end to end: five Markdown stores, an interactive REPL with line editing, history, completion, multi-line input, confirmation and conflict handling, the in-band protocol, a read-only startup brief, bootstrap from history (memory candidates and a user profile), JSON views for every store, one-shot session listing, colored approval diffs, `doctor`, and acceptance metrics. The declared MSRV is 1.88; the full test suite and the optional `tui` feature pass under it, and a weekly workflow checks both.
 
-Both repositories are green. The board at <https://niuverse.github.io/niuse/> is deployed from a single generated file; source docs are not published. niuse builds against the niucode revision in `niucode.rev`.
+Both repositories are green. The board at <https://niuverse.github.io/niuse/> is deployed from a single generated file; source docs are not published. niuse builds against the niucode revision in `niucode.rev`. The long-running direction is in [roadmap](roadmap.md): harness-native companion, compounding context, long-horizon work, connected tools, and proof.
 
 ## Verify
 
@@ -24,8 +24,9 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 
 ## Works
 
-- `niuse` REPL: streaming, slash commands, line editing and history, Tab completion for commands/ids/paths, backslash continuation, `/new` chapters, `/cd`, `/model`, `/cost`, `/threads`, `/sessions`, `/resume`, `/export`, candidate confirm/edit/skip, conflict replace/keep.
-- `niuse tui` (optional feature): niucode's TUI with `CompanionHooks`; protocol stripping, journal/loops, memory accept/edit/replace/keep, read-only commands, `/export`, approval path.
+- `niuse` REPL: streaming, slash commands, line editing and history, Tab completion for commands/ids/paths, backslash continuation, `/new` chapters, `/cd`, `/model`, `/cost`, `/threads`, `/sessions`, `/resume`, `/export`, `/brief`, candidate confirm/edit/skip, conflict replace/keep.
+- Brief: `niuse brief [--json]`, `/brief` in the REPL and TUI, and a compact actionable block after the banner; no provider call and `NIUSE_BRIEF=off` restores the quiet start.
+- `niuse tui` (optional feature): niucode's TUI with `CompanionHooks`; protocol stripping, journal/loops, memory accept/edit/replace/keep, read-only commands, `/brief`, `/export`, approval path.
 - Memory: search including expired entries, kind filter, kind counts, show/edit, review with metrics, prune with backup and freed-byte report, duplicate guard, secret scan, soft expiry.
 - Dates: journal, memory, and stats day labels follow the local calendar; event timestamps stay UTC.
 - Journal and loops: model-written blocks plus manual entry and manual promises.
@@ -38,11 +39,14 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 ## Waiting on you
 
 1. **Dogfood** — ten working days recorded in [dogfood](dogfood.md). `./scripts/dogfood.sh "note"` writes the day's row from `stats --days 1 --json`; only real use can close M2.
+2. **TUI dogfood** — ten real days on `niuse tui` for M5-002; this is also the ADR-0004 gate for retiring the REPL renderer.
 
 ## In progress
 
-- **ADR-0032 step 3** — hooks cover prompt, event, turn-end, and `filter_text`, the embedder command hook, and post-turn prompts; the TUI shares an `Rc<RefCell<Box<dyn TurnHooks>>>` so no borrow crosses an await. Renderer migration is gated on candidate confirmation and command registration, not on moving files: [renderer-migration](renderer-migration.md).
+- **M5 · Harness-native companion** — approval and usage parity are the next card (M5-001), followed by the TUI dogfood gate (M5-002).
+- **M6 · Compounding context** — M6-001 lands the startup brief; the project registry, session digest, and on-demand recall follow in [roadmap](roadmap.md).
+- **M2 dogfood** continues in parallel; it is not a blocker for product work, but it still decides whether the memory layer pays for itself.
 
 ## Not built
 
-Daemon, web UI, messaging bridges, scheduled push, vector search, full session indexing, automatic repo edits, multi-user support, a TUI (until the upstream seam lands).
+Daemon, web UI, messaging bridges, scheduled push, vector search, full session indexing, automatic repo edits, and multi-user support remain out until a new ADR. The TUI is opt-in, not the default; see [roadmap](roadmap.md) for the order.

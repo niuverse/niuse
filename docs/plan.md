@@ -288,7 +288,9 @@ The last item is the anti-placebo check: if turning memory off changes nothing, 
 
 ## 12. Non-goals
 
-Daemon, web UI, WeChat / Feishu bridges, scheduled push, vector search, full session indexing, automatic repo edits, multi-user support, a TUI (for now), a general agent framework.
+Daemon, web UI, WeChat / Feishu bridges, scheduled push, vector search, full session indexing, automatic repo edits, multi-user support, and a general agent framework.
+
+*Update 2026-10-22:* [ADR-0005](adr/0005-working-companion.md) revises this list. A terminal-first working companion — project awareness, briefs, goals, delegation, and connectors — is now in scope. Daemon, web UI, scheduled push, vector search, automatic repo edits, and multi-user support still require a new ADR; the TUI is opt-in until ADR-0004's gate.
 
 ## 13. Risks
 

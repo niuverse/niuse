@@ -34,6 +34,7 @@ struct PendingMemory {
 pub struct CompanionHooks {
     root: PathBuf,
     thread: PathBuf,
+    cwd: PathBuf,
     prompt: String,
     filter: StreamFilter,
     raw: String,
@@ -79,6 +80,7 @@ impl CompanionHooks {
         Ok(Self {
             root: store.root().to_path_buf(),
             thread,
+            cwd: std::env::current_dir().unwrap_or_default(),
             prompt: composition.system,
             filter: StreamFilter::new(),
             raw: String::new(),
@@ -93,6 +95,11 @@ impl CompanionHooks {
 
     fn store(&self) -> Store {
         Store::at(self.root.clone())
+    }
+
+    pub fn with_cwd(mut self, cwd: PathBuf) -> Self {
+        self.cwd = cwd;
+        self
     }
 }
 
@@ -256,6 +263,7 @@ impl TurnHooks for CompanionHooks {
 
     fn commands(&self) -> Vec<(String, String)> {
         vec![
+            ("/brief".into(), "what needs attention today".into()),
             ("/mem".into(), "list memory; /mem show <id>".into()),
             ("/loops".into(), "list open promises".into()),
             ("/journal".into(), "show the last three journal days".into()),
@@ -275,6 +283,7 @@ impl TurnHooks for CompanionHooks {
         let mut parts = input.split_whitespace();
         let name = parts.next()?;
         match name {
+            "/brief" => crate::commands::brief_text(&store, &self.cwd).ok(),
             "/mem" => match parts.next() {
                 None | Some("list") => {
                     let memories = store.memories().ok()?;
@@ -537,9 +546,12 @@ mod tests {
         assert!(shown.contains("Rust projects use cargo test"));
         let status = hooks.command("/status").unwrap();
         assert!(status.contains("memory: 1"));
+        let brief = hooks.command("/brief").unwrap();
+        assert!(brief.contains("niuse brief"));
         assert!(hooks.command("/nope").is_none());
         let commands = hooks.commands();
         assert!(commands.iter().any(|(name, _)| name == "/mem"));
+        assert!(commands.iter().any(|(name, _)| name == "/brief"));
 
         let mut usage = outcome();
         usage.turns = 2;

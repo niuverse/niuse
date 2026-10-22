@@ -23,7 +23,7 @@ pub use session::{export, sessions, thread_at, threads};
 
 use anyhow::Result;
 use niuse_core::prompt::compose;
-use niuse_core::{Date, MemoryKind, Store};
+use niuse_core::{Brief, Date, MemoryKind, Store};
 use std::collections::BTreeMap;
 use std::path::Path;
 
@@ -124,6 +124,57 @@ pub fn status(store: &Store, thread: &Path, json: bool) -> Result<()> {
         composition.tokens, composition.memory_injected, composition.memory_dropped
     );
     Ok(())
+}
+
+/// Print what needs attention today. Store-only; no provider.
+pub fn brief(store: &Store, cwd: &Path, json: bool) -> Result<()> {
+    let view = Brief::build(store, Date::today(), project_name(cwd))?;
+    if json {
+        let payload = serde_json::json!({
+            "today": view.today.to_string(),
+            "project": view.project,
+            "identity": view.has_identity,
+            "user": view.has_user,
+            "memory": {
+                "total": view.memories,
+                "stale": view.stale,
+                "expired": view.expired,
+            },
+            "loops": {
+                "open": view.open_loops,
+                "overdue": view.overdue.iter().map(|item| serde_json::json!({
+                    "id": item.id,
+                    "text": item.text,
+                    "due": item.due.map(|due| due.to_string()),
+                })).collect::<Vec<_>>(),
+            },
+            "inbox": view.inbox,
+            "journal": {
+                "last": view.journal_last.map(|day| day.to_string()),
+                "days_since": view.journal_last.map(|day| day.age_days(view.today)),
+            },
+        });
+        println!("{}", serde_json::to_string_pretty(&payload)?);
+        return Ok(());
+    }
+    print!("{}", view.render());
+    Ok(())
+}
+
+/// Render the brief for the TUI, where the host owns the screen.
+pub fn brief_text(store: &Store, cwd: &Path) -> Result<String> {
+    Ok(Brief::build(store, Date::today(), project_name(cwd))?.render())
+}
+
+/// Only the actionable lines for the interactive startup banner.
+pub fn brief_startup(store: &Store, cwd: &Path) -> Result<Vec<String>> {
+    Ok(Brief::build(store, Date::today(), project_name(cwd))?.startup_lines())
+}
+
+fn project_name(cwd: &Path) -> String {
+    cwd.file_name()
+        .map(|name| name.to_string_lossy().into_owned())
+        .unwrap_or_else(|| cwd.display().to_string())
 }
 
 fn normalize_id(id: &str) -> String {

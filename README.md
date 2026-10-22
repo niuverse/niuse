@@ -19,6 +19,7 @@ cargo install niuse --version 0.1.11 --locked
 niuse                     # enter the REPL
 niuse identity init       # eight questions, writes ~/.niuse/identity.md
 niuse status              # inspect prompt size and store counts
+niuse brief               # overdue promises, review queue, stale memory
 niuse bootstrap --limit 5 # mine old niucode sessions for candidates
 niuse review              # accept or discard them one by one
 ```
@@ -98,6 +99,7 @@ niuse review
 niuse doctor [--json]            check home, identity, credentials, sandbox, pin
 niuse config init|show|effective
 niuse stats [--days N] [--trend] [--json] local acceptance counters
+niuse brief [--json]            what needs attention today
 niuse status
 ```
 

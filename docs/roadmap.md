@@ -1,0 +1,169 @@
++++
+id = "roadmap"
+title = "Roadmap: from memory layer to working companion"
+kind = "plan"
+status = "active"
+order = 11
+summary = "M5–M9: a harness-native companion, compounding context, long-horizon work, connected tools, and proof."
++++
+
+## North star
+
+A personal engineering agent that knows the person, the projects, and the work in
+flight; it can plan, act, delegate, and return evidence. It still runs in the
+terminal, stores what it knows as files, and keeps the kernel generic.
+
+The test for a feature is no longer only "does it shape an identity?". It is
+also: **does it help the companion finish real work without making the system
+harder to trust?**
+
+## Where we are
+
+- Identity, memory, loops, journal, soft expiry, conflicts, secret scanning, and
+  a resumable thread work end to end.
+- The REPL is the default. `niuse tui` exists behind the `tui` feature and
+  already runs niucode's goals, plans, subagents, skills, resume picker, and
+  permission commands through `CompanionHooks`.
+- niucode 0.1.5 exposes the library, the hook surface, the command registry,
+  `/plan` and `/goal`, subagents, skills, and the extension host.
+- The product gate is still dogfood; the old front end is still the default
+  until ADR-0004's ten-day TUI gate is met.
+
+## The split
+
+| Layer | Owns | Does not own |
+|---|---|---|
+| niucode | loop, event log, providers, tools, sandbox, approvals, goals runtime, subagents, extension/MCP seams | personal memory, identity, product commands, personal data |
+| niuse | identity, user model, memory, journal, loops, project context, product UX, personal tool packs | a second loop, a second event log, a second durable store |
+
+When a capability is generic, build it in niucode first and consume it through
+the pinned revision. When it is personal, keep it in niuse and test it offline.
+
+## Phases
+
+The board allows one active milestone, and that slot stays with **M2 · Dogfood**
+until the memory layer proves itself. M5–M9 are implementation tracks: their
+cards can be `ready` or `done` while the gate is open. This is deliberate — the
+product keeps moving, but the board does not pretend the proof is finished.
+
+### M5 · Harness-native companion (next)
+
+**Goal:** make the existing harness the companion's default working surface
+instead of maintaining a parallel front end.
+
+**Exit**
+
+- `niuse tui` reaches approval-preview and usage parity with the REPL contract.
+- The product commands, `/brief`, `/goal`, `/plan`, and skills are discoverable
+  in the TUI and covered by tests.
+- Ten real TUI dogfood days are recorded, one real task per day.
+- The renderer is retired only after that gate, per ADR-0004.
+
+**Cards:** M5-001, M5-002.
+
+### M6 · Compounding context (current track)
+
+**Goal:** make what the companion knows visible and useful at the moment work
+starts, without adding a database.
+
+**Exit**
+
+- A startup brief surfaces overdue promises, review queues, and stale memory.
+- A project registry answers "what was I doing, and where?" across repositories.
+- A session digest turns a finished thread into a journal entry with evidence.
+- Memory has an explicit on-demand recall path beyond the injected budget.
+
+**Cards:** M6-001, M6-002, M6-003, M6-004.
+
+### M7 · Long-horizon work (planned)
+
+**Goal:** let one request become a checked sequence of work that survives a
+session boundary.
+
+**Exit**
+
+- Product-level goals persist across sessions and are injected with their state.
+- A plan → execute → verify loop records each step and its evidence.
+- Delegation to subagents has a budget, a scope, and a summary the parent can
+  audit.
+- A three-day goal completes without re-explaining the task.
+
+**Cards:** to be written when M6 exits.
+
+### M8 · Connected agent (planned)
+
+**Goal:** reach personal tools and data through a standard, trust-bounded
+connector instead of one-off shell commands.
+
+**Exit**
+
+- niucode ships a stdio MCP client with trust, timeouts, and tool metadata.
+- niuse ships at least one personal pack (for example notes or calendar) behind
+  least privilege.
+- A connector cannot read credentials, escape its declared roots, or write
+  without approval.
+
+**Cards:** to be written in niucode first, then consumed here.
+
+### M9 · Proof (planned)
+
+**Goal:** measure whether the companion is actually more useful, and keep it
+that way.
+
+**Exit**
+
+- An offline personal-agent suite covers memory recall, briefs, goals, and
+  delegation.
+- A memory-on/off A/B case shows a behavioural difference.
+- Regressions in dogfood metrics block a release.
+
+**Cards:** to be written when M7 lands.
+
+## Current sprint
+
+One card at a time; a round is not done until the card, docs, dashboard, tests,
+and commit agree.
+
+| Order | Card | Status | Why now |
+|---|---|---|---|
+| 1 | M6-001 startup brief | done | Makes existing context actionable without new architecture |
+| 2 | M6-002 project registry | ready | Answers "where was I?" before planning work |
+| 3 | M5-001 TUI parity | ready | Unblocks the default front end and renderer retirement |
+| 4 | M5-002 TUI dogfood | ready | Product proof for the new default |
+| 5 | M6-003 session digest | backlog | Turns finished work into reusable experience |
+| 6 | M6-004 memory recall | backlog | Deep recall beyond the prompt budget |
+| 7 | M7-001 persistent goals | backlog | First long-horizon primitive |
+
+## The round ritual
+
+1. Read this file, `status`, and the chosen card.
+2. Implement the smallest complete behaviour; prefer a pure core function and a
+   thin CLI/TUI adapter.
+3. Add the focused test the card promises; keep all tests offline.
+4. Update the card's status, `updated`, and `completed`; update `status` when the
+   phase or the next action changes.
+5. Run `cargo xtask dashboard` and include the regenerated board.
+6. Run `./scripts/check.sh`; commit and push only when it is green.
+7. Leave the next card and the next concrete action in `status` for the next
+   round.
+
+A round that only rewrites the plan does not count as progress unless it
+unblocks a card.
+
+## Guardrails
+
+- No daemon, web UI, scheduled push, vector index, or automatic repository edit
+  without a new ADR.
+- No second durable store. The event log and the Markdown stores stay the truth.
+- No capability without a permission story: approval, sandbox, secret scan, or
+  declared roots.
+- No silent memory write and no silent external write.
+- Kernel changes are generic and tested in niucode first; niuse never forks
+  niucode files.
+- If the same blocker survives three rounds, mark it blocked with the concrete
+  condition instead of looping.
+
+## Later, with an ADR
+
+Background scheduling and notifications; a local web surface; vector or
+embedding recall; multi-user support; automatic edits to user repositories.
