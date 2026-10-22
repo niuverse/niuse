@@ -24,7 +24,7 @@ docs = ["plan", "dogfood"]
 - [ ] Candidate acceptance rate ≥ 60%.
 - [ ] At least 3 correct citations of a past judgement.
 - [ ] At least 1 case of being persuaded.
-- [ ] At least 1 A/B case where `NIUSE_MEMORY=off` changes the answer.
+- [x] At least 1 A/B case where `NIUSE_MEMORY=off` changes the answer.
 
 ## Notes
 
@@ -37,7 +37,9 @@ replied `391` (13k input, 2 output, 0 cached), confirming the TUI path works
 against the real provider. A real write task used `--approval ask`: the diff
 was shown, the write was approved, `hello.txt` contained `real write ok`, and
 the answer surfaced a due loop from `loops.md` (3 steps, 7.1k input, 279 output,
-6.3k cached). The dogfood table still has 1/10 days; ten days and the acceptance
-criteria remain open.
+6.3k cached). A real memory A/B used the same prompt twice: with memory on the
+answer cited `m-3d0b`; with `NIUSE_MEMORY=off` it replied `NO_INJECTED_MEMORY`
+(1 step each, 3.5k / 3.4k input). The dogfood table still has 1/10 days; ten
+days, three cited ids, and one disagreement remain open.
 
 Record one row per day in [the dogfood log](../dogfood.md). This card writes no code. Its job is to stop new features before the current ones are validated.

@@ -39,7 +39,7 @@ The script runs `niuse stats --days 1 --json`, uses the local calendar date, and
 
 | date | turns | proposed | accepted | note |
 |---|---|---|---|---|
-| 2026-10-22 | 14 | 1 | 1 | identity bug fixed; real exec cited README:106; real MCP found launch.md; real TUI replied 391; real write approved (hello.txt, 3 steps, 7.1k in, 279 out, 6.3k cached) and surfaced a due loop |
+| 2026-10-22 | 16 | 1 | 1 | real exec/MCP/TUI/write all verified; real memory A/B: ON cited m-3d0b, OFF replied NO_INJECTED_MEMORY (1 step each, 3.5k/3.4k in) |
 
 ## Rules
 
