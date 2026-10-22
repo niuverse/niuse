@@ -185,6 +185,7 @@ and commit agree.
 | 51 | niucode M8-003 MCP preflight | ready | Missing crate is packageable; upload awaits human |
 | 52 | M5-004 TUI clear session | done | /new archives and resets thread.jsonl |
 | 53 | M5-005 TUI reset session | done | /reset gets the same isolation proof |
+| 54 | niucode M6-028 session notify | done | /resume and /fork update the hook pointer |
 
 ## The round ritual
 
