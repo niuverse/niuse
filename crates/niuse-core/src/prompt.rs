@@ -5,11 +5,12 @@
 //! journal) come last. The whole prompt is built once per session.
 
 use crate::date::Date;
-use crate::model::{Goal, JournalDay, LoopItem, MemoryEntry};
+use crate::model::{Goal, JournalDay, LoopItem, MemoryEntry, PlanStep};
 
 pub const IDENTITY_BUDGET: usize = 600;
 pub const USER_BUDGET: usize = 600;
 pub const GOAL_BUDGET: usize = 300;
+pub const PLAN_BUDGET: usize = 300;
 pub const MEMORY_BUDGET: usize = 2_000;
 pub const LOOP_BUDGET: usize = 300;
 pub const JOURNAL_BUDGET: usize = 600;
@@ -74,13 +75,27 @@ pub fn compose(
     journal: &[JournalDay],
     today: Date,
 ) -> Composition {
-    compose_with_goals(identity, user, &[], memories, loops, journal, today)
+    compose_with_plan(identity, user, &[], &[], memories, loops, journal, today)
 }
 
 pub fn compose_with_goals(
     identity: Option<&str>,
     user: Option<&str>,
     goals: &[Goal],
+    memories: &[MemoryEntry],
+    loops: &[LoopItem],
+    journal: &[JournalDay],
+    today: Date,
+) -> Composition {
+    compose_with_plan(identity, user, goals, &[], memories, loops, journal, today)
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn compose_with_plan(
+    identity: Option<&str>,
+    user: Option<&str>,
+    goals: &[Goal],
+    plan: &[PlanStep],
     memories: &[MemoryEntry],
     loops: &[LoopItem],
     journal: &[JournalDay],
@@ -108,6 +123,11 @@ pub fn compose_with_goals(
     let goal_text = goal_section(goals);
     if !goal_text.is_empty() {
         sections.push(("当前目标", goal_text));
+    }
+
+    let plan_text = plan_section(plan);
+    if !plan_text.is_empty() {
+        sections.push(("当前计划", plan_text));
     }
 
     let (memory_text, memory_injected, memory_dropped) = memory_section(memories, today);
@@ -149,6 +169,23 @@ pub fn compose_with_goals(
         memory_injected,
         memory_dropped,
     }
+}
+
+fn plan_section(steps: &[PlanStep]) -> String {
+    let open: Vec<&PlanStep> = steps.iter().filter(|step| !step.done).take(6).collect();
+    if open.is_empty() {
+        return String::new();
+    }
+    let mut text = String::from(
+        "以下步骤由用户维护。按顺序推进；每步完成前先运行验证，并用 `niuse verify --step p-N -- <command>` 记录证据；没有通过的验证不要声称完成。\n\n",
+    );
+    for step in open {
+        text.push_str(&format!("- [ ] {} {}\n", step.label(), step.text));
+    }
+    if steps.iter().filter(|step| !step.done).count() > 6 {
+        text.push_str("- （其余步骤省略）\n");
+    }
+    truncate_to_tokens(&text, PLAN_BUDGET)
 }
 
 fn goal_section(goals: &[Goal]) -> String {
@@ -354,6 +391,24 @@ mod tests {
         assert!(goals < memory);
         assert!(system.contains("g-"));
         assert!(system.contains("ship the recall path"));
+    }
+
+    #[test]
+    fn open_plan_steps_are_injected_and_done_steps_are_skipped() {
+        let today = date("2026-10-22");
+        let open = PlanStep::new(1, "write the tests", today);
+        let mut done = PlanStep::new(2, "delete the old path", today);
+        done.done = true;
+        let composition =
+            compose_with_plan(None, None, &[], &[open.clone(), done], &[], &[], &[], today);
+        assert!(composition.system.contains("当前计划"));
+        assert!(composition.system.contains("p-1 write the tests"));
+        assert!(!composition.system.contains("p-2"));
+        assert!(composition.system.contains("niuse verify --step p-N"));
+
+        let all_done = PlanStep { done: true, ..open };
+        let composition = compose_with_plan(None, None, &[], &[all_done], &[], &[], &[], today);
+        assert!(!composition.system.contains("当前计划"));
     }
 
     #[test]

@@ -81,7 +81,7 @@ There is no second copy of the conversation. `niuse export` renders the event lo
   journal/         experience: one file per month, merged per day (automatic)
   loops.md         promises (automatic, optional due date)
   goals.md         human-owned outcomes (injected, at most seven open)
-  plan.md          human-owned steps (not injected; closed only with verification)
+  plan.md          human-owned steps (open ones injected; closed only with verification)
   thread.jsonl     the relationship thread
   threads/         archived chapters from `/new`
   sessions/        one-shot `exec` logs (`niuse sessions`)

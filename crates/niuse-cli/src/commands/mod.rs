@@ -36,7 +36,7 @@ pub use session::{export, sessions, thread_at, threads};
 pub use verify::{verify_shell, verify_with_step};
 
 use anyhow::Result;
-use niuse_core::prompt::compose_with_goals;
+use niuse_core::prompt::compose_with_plan;
 use niuse_core::{Brief, Date, MemoryKind, Store};
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -55,10 +55,12 @@ pub fn status(store: &Store, thread: &Path, cwd: &Path, json: bool) -> Result<()
         .ok()
         .map(|root| crate::projects::Registry::discover(&root));
     let current = registry.as_ref().and_then(|registry| registry.current(cwd));
-    let composition = compose_with_goals(
+    let plan = store.plan()?;
+    let composition = compose_with_plan(
         identity.as_deref(),
         user.as_deref(),
         &goals,
+        &plan,
         &memories,
         &loops,
         &journal,

@@ -88,7 +88,7 @@ session boundary.
   audit.
 - A three-day goal completes without re-explaining the task.
 
-**Cards:** M7-001 through M7-005; plan prompt injection and delegation are next.
+**Cards:** M7-001 through M7-006; delegation is next.
 
 ### M8 · Connected agent (planned)
 
@@ -142,6 +142,7 @@ and commit agree.
 | 12 | M7-003 thread evidence | done | Shows what ran, not just what was claimed |
 | 13 | M7-004 recorded verification | done | Human-run check becomes durable evidence |
 | 14 | M7-005 plan ledger | done | Steps close only after step-scoped verification |
+| 15 | M7-006 plan prompt | done | Agent sees only open steps and the verify rule |
 
 ## The round ritual
 

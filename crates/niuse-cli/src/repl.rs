@@ -13,7 +13,7 @@ use niucode_mcp::McpHost;
 use niucode_provider::Provider;
 use niucode_tools::SandboxPolicy;
 use niuse_core::policy::{conflicts, secret_reason};
-use niuse_core::prompt::compose_with_goals;
+use niuse_core::prompt::compose_with_plan;
 use niuse_core::{Block, Date, LoopItem, MemoryEntry, MemoryKind, Store};
 use rustyline::completion::{Completer, Pair};
 use rustyline::config::Config;
@@ -357,11 +357,13 @@ impl App {
         };
         let loops = self.store.loops()?;
         let goals = self.store.goals()?;
+        let plan = self.store.plan()?;
         let journal = self.store.recent_journal(3)?;
-        let composition = compose_with_goals(
+        let composition = compose_with_plan(
             identity.as_deref(),
             user.as_deref(),
             &goals,
+            &plan,
             &memories,
             &loops,
             &journal,

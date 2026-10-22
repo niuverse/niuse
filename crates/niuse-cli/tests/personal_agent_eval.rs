@@ -13,7 +13,10 @@ use niucode_provider::{
     ChatMessage, CompletionRequest, EventStream, Provider, ProviderError, StreamEvent,
 };
 use niucode_tools::{NetworkMode, SandboxMode, SandboxPolicy};
-use niuse_core::{compose_with_goals, Brief, Date, Goal, LoopItem, MemoryEntry, MemoryKind, Store};
+use niuse_core::{
+    compose_with_goals, compose_with_plan, Brief, Date, Goal, LoopItem, MemoryEntry, MemoryKind,
+    PlanStep, Store,
+};
 
 /// Answers differently depending on whether the injected prompt contains a
 /// remembered judgement. This makes the A/B a behavioural test, not a string
@@ -112,6 +115,19 @@ fn goal_injection_survives_only_while_open() {
 
     let off = compose_with_goals(None, None, &[closed], &[], &[], &[], today);
     assert!(!off.system.contains("当前目标"));
+}
+
+#[test]
+fn plan_prompt_injects_open_steps_and_skips_done_ones() {
+    let today = Date::today();
+    let open = PlanStep::new(1, "write the eval", today);
+    let mut done = PlanStep::new(2, "old step", today);
+    done.done = true;
+    let composition = compose_with_plan(None, None, &[], &[open, done], &[], &[], &[], today);
+    assert!(composition.system.contains("当前计划"));
+    assert!(composition.system.contains("p-1 write the eval"));
+    assert!(!composition.system.contains("p-2"));
+    assert!(composition.system.contains("niuse verify --step p-N"));
 }
 
 #[test]

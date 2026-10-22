@@ -35,7 +35,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 - Recall: `niuse recall <query> [--json]` and `/recall` search memory (including expired), journal, loops, and goals together; the agent can also call the read-only `memory_search` tool during a turn, and the protocol tells it to request `/recall` when no tool is available.
 - Dates: journal, memory, and stats day labels follow the local calendar; event timestamps stay UTC.
 - Journal and loops: model-written blocks plus manual entry and manual promises.
-- Plan: `plan.md` holds human-owned steps with `p-N` labels; `niuse plan list|add|done` edits them, and `done` refuses without a passing `verification` event tagged with that step. `niuse evidence` shows each step's verification status.
+- Plan: `plan.md` holds human-owned steps with `p-N` labels; open steps are injected after goals and before memory. `niuse plan list|add|done` edits them, and `done` refuses without a passing `verification` event tagged with that step. `niuse evidence` shows each step's verification status.
 - Goals: `goals.md` holds human-owned outcomes with `g-` ids; `niuse goals list|add|done` and `/goals` edit them, at most seven open, secret-scanned, and injected after user and before memory.
 - Bootstrap: dry-run preview, candidate merge into the inbox, optional `user.md` draft.
 - Sessions: derived thread titles, `threads` and `sessions` listings, Markdown export with a title, JSON output.
@@ -53,7 +53,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 
 - **M5 · Harness-native companion** — M5-001 is done: configurable `y`/`n`/`s` approval keys, an offline PTY deny/allow test, product commands in TUI help/completion, and `/cost` computed from the thread event log. M5-002 starts the ten-day TUI dogfood gate.
 - **M6 · Compounding context** — startup brief (M6-001), project registry (M6-002), session digest (M6-003, in review), unified recall (M6-004), and agent-invoked `memory_search` (M6-005) landed. The remaining M6 item is real digest review.
-- **M7 · Long-horizon work** — goals (M7-001), plan mode (M7-002), evidence (M7-003), recorded verification (M7-004), and verification-gated plan steps (M7-005) landed. Prompt injection of the plan and delegation are next.
+- **M7 · Long-horizon work** — goals (M7-001), plan mode (M7-002), evidence (M7-003), recorded verification (M7-004), verification-gated plan steps (M7-005), and open-plan prompt injection (M7-006) landed. Delegation is next.
 - **M8 · Connected agent** — niucode M8-001 (read-only stdio MCP with explicit trust) is done; niuse mounts it in the TUI, REPL, and `exec`, and ships a read-only notes pack. The next step is evaluation and, later, a mutating capability with approval.
 - **M9 · Proof** — `./scripts/eval.sh` covers memory-on/off A/B, goal injection, the startup brief, agent recall (fresh + expired), the notes MCP pack, and MCP timeout/read-only refusal. `scripts/dogfood-trend.sh` compares two weeks of real use and blocks `publish-niuse.sh` on a regression.
 - **M2 dogfood** continues in parallel; it is not a blocker for product work, but it still decides whether the memory layer pays for itself.

@@ -64,7 +64,7 @@ Anything else is rejected. This is what keeps "index every session" and "environ
     2026-10.md         experience, one file per month
   loops.md             promises: things it said it would do
   goals.md             human-owned outcomes (ADR-0006)
-  plan.md              human-owned steps; verification-gated completion
+  plan.md              human-owned steps; open ones injected, verification-gated completion
 ```
 
 - UTF-8 Markdown only; directories `0700`, files `0600`.

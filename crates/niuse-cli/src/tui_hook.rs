@@ -12,7 +12,7 @@ use niuse_core::candidate::{parse, Block, StreamFilter};
 use niuse_core::date::Date;
 use niuse_core::model::{LoopItem, MemoryEntry, MemoryKind};
 use niuse_core::policy::secret_reason;
-use niuse_core::prompt::compose_with_goals;
+use niuse_core::prompt::compose_with_plan;
 use niuse_core::Store;
 
 #[derive(Clone)]
@@ -63,13 +63,15 @@ impl CompanionHooks {
         };
         let loops = store.loops()?;
         let goals = store.goals()?;
+        let plan = store.plan()?;
         let journal = store.recent_journal(3)?;
         let identity = store.identity()?;
         let user = store.user()?;
-        let composition = compose_with_goals(
+        let composition = compose_with_plan(
             identity.as_deref(),
             user.as_deref(),
             &goals,
+            &plan,
             &memories,
             &loops,
             &journal,

@@ -18,5 +18,7 @@ pub use brief::Brief;
 pub use candidate::{parse, Block, Parsed, StreamFilter};
 pub use date::Date;
 pub use model::{Goal, JournalDay, LoopItem, MemoryEntry, MemoryKind, PlanStep};
-pub use prompt::{compose, compose_with_goals, estimate_text_tokens, Composition};
+pub use prompt::{
+    compose, compose_with_goals, compose_with_plan, estimate_text_tokens, Composition,
+};
 pub use store::Store;

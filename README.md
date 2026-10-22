@@ -68,7 +68,7 @@ max_steps = 0
   metrics.jsonl    local acceptance counters (no memory text)
 ```
 
-Injection order is stable-to-volatile: `identity → user → memory → protocol → today → loops → journal`. The system prompt is assembled once per session so the provider's prompt cache survives every turn.
+Injection order is stable-to-volatile: `identity → user → goals → plan → memory → protocol → today → loops → journal`. Only open plan steps are injected. The system prompt is assembled once per session so the provider's prompt cache survives every turn.
 
 **Write thresholds are graded:**
 
