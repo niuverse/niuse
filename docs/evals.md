@@ -26,6 +26,9 @@ agent-dispatch tests. No API key, network, or model call is involved.
 | `brief_surfaces_overdue_promises_and_stale_memory` | The startup brief reports overdue promises, stale memory, and the review queue |
 | `reports_files_checks_failures_and_denials` | Includes a completed delegation's task and summary |
 | `an_unfinished_delegation_is_not_reported_as_success` | A spawn without a result is `?`, not ✓ |
+| `a_fat_store_stays_under_the_prompt_budget` | A 200-memory store stays under 4.2k tokens |
+| `plan_injection_caps_at_six_steps` | A 50-step plan injects six, not all |
+| `memory_is_truncated_before_it_can_dominate_the_prompt` | 500 memories are dropped, not appended |
 | `plan_prompt_injects_open_steps_and_skips_done_ones` | Open steps reach the prompt; done steps do not |
 | `plan_steps_close_only_after_step_verification` | A step is refused until `verify --step` passes, then closes and shows in evidence |
 | `verify_records_and_evidence_reports_it` | A passing and a failing `niuse verify` append events and appear in evidence |

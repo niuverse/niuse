@@ -18,6 +18,9 @@ cargo test -p niuse --test cli verify -- --nocapture
 echo "== plan verification gate =="
 cargo test -p niuse --test cli plan_steps -- --nocapture
 
+echo "== prompt budget =="
+cargo test -p niuse --test prompt_budget -- --nocapture
+
 echo "== agent recall =="
 cargo test -p niuse --bin niuse memory_tool::tests -- --nocapture
 
