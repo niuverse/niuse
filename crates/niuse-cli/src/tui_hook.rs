@@ -606,6 +606,27 @@ mod tests {
     }
 
     #[test]
+    fn multiple_candidates_keep_their_indices() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        let mut hooks = CompanionHooks::new(&store).unwrap();
+        let mut text = "<<niuse:memory kind=preference tags=rust>>\nfirst\n<</niuse:memory>>\n\
+            <<niuse:memory kind=lesson tags=rust>>\nsecond\n<</niuse:memory>>"
+            .to_string();
+        hooks.filter_text(&mut text);
+        let prompts = hooks.after_turn(&outcome());
+        assert_eq!(prompts.len(), 2);
+        hooks.on_answer(&prompts[1].id, 0);
+        hooks.on_answer(&prompts[0].id, 0);
+        let memories = store.memories().unwrap();
+        assert_eq!(memories.len(), 2);
+        let texts: Vec<&str> = memories.iter().map(|entry| entry.text.as_str()).collect();
+        assert!(texts.contains(&"first"));
+        assert!(texts.contains(&"second"));
+    }
+
+    #[test]
     fn discard_writes_no_memory() {
         let directory = tempfile::tempdir().unwrap();
         let store = Store::at(directory.path().join(".niuse"));
