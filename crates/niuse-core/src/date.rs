@@ -35,15 +35,18 @@ impl Date {
         let Some(date) = chrono::NaiveDate::from_ymd_opt(year as i32, month, day) else {
             return 0;
         };
-        let Some(naive) = date.and_hms_opt(0, 0, 0) else {
-            return 0;
-        };
-        Local
-            .from_local_datetime(&naive)
-            .earliest()
-            .or_else(|| Local.from_local_datetime(&naive).latest())
-            .map(|datetime| datetime.timestamp_millis().max(0) as u64)
-            .unwrap_or(0)
+        // Some zones skip 00:00 on a DST transition. Take the first valid
+        // instant of the day instead of falling back to zero (all time).
+        for hour in 0..=3 {
+            let Some(naive) = date.and_hms_opt(hour, 0, 0) else {
+                continue;
+            };
+            let local = Local.from_local_datetime(&naive);
+            if let Some(datetime) = local.earliest().or_else(|| local.latest()) {
+                return datetime.timestamp_millis().max(0) as u64;
+            }
+        }
+        0
     }
 
     /// Local calendar day for an epoch-millisecond timestamp. Used by metrics
