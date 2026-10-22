@@ -22,8 +22,14 @@ Append one row below. `proposed` / `accepted` come from the JSON; `note` is a co
 Or record it from the repo root:
 
 ```sh
-./scripts/dogfood.sh "one concrete memory win, disagreement, or -"
+niuse dogfood --file docs/dogfood.md --note "one concrete memory win, disagreement, or -"
+# or the wrapper: ./scripts/dogfood.sh "note"
 ```
+
+`niuse dogfood` reads today's `turn` / `propose` / `accept` metrics, replaces an
+existing row for the same date, and only writes a new file private. It refuses
+to write what looks like a secret. The wrapper calls the binary so there is one
+implementation of the table update.
 
 The script runs `niuse stats --days 1 --json`, uses the local calendar date, and inserts or replaces today's row in this table. Run it at the end of a real working day, not to fill a gap.
 

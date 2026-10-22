@@ -8,6 +8,7 @@ use std::process::Command;
 use std::time::Duration;
 
 use niucode_mcp::{McpConfig, McpHost};
+use niuse_core::Date;
 use serde_json::json;
 
 fn run(home: &std::path::Path, args: &[&str]) -> std::process::Output {
@@ -481,6 +482,63 @@ fn mcp_init_merges_new_servers_and_keeps_existing_text() {
     assert!(!invalid.status.success());
     assert!(String::from_utf8_lossy(&invalid.stderr).contains("invalid"));
     assert_eq!(std::fs::read_to_string(&config).unwrap(), "not = [valid");
+}
+
+#[test]
+fn dogfood_writes_and_replaces_todays_row_from_metrics() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    std::fs::create_dir_all(&home).unwrap();
+    let now = Date::today().start_millis_local() + 1;
+    std::fs::write(
+        home.join("metrics.jsonl"),
+        format!("{now}\tturn\tok\n{now}\tpropose\tx\n{now}\taccept\tm-1\n"),
+    )
+    .unwrap();
+    let file = directory.path().join("dogfood.md");
+    std::fs::write(
+        &file,
+        "| date | turns | proposed | accepted | note |\n|---|---|---|---|---|\n| 2026-10-21 | 1 | 0 | 0 | old |\n",
+    )
+    .unwrap();
+
+    let first = run(
+        &home,
+        &[
+            "dogfood",
+            "--file",
+            file.to_str().unwrap(),
+            "--note",
+            "first note",
+        ],
+    );
+    assert!(first.status.success(), "{first:?}");
+    let text = std::fs::read_to_string(&file).unwrap();
+    let today = Date::today().to_string();
+    assert!(text.contains(&format!("| {today} | 1 | 1 | 1 | first note |")));
+    assert!(text.contains("| 2026-10-21 | 1 | 0 | 0 | old |"));
+
+    let second = run(
+        &home,
+        &[
+            "dogfood",
+            "--file",
+            file.to_str().unwrap(),
+            "--note",
+            "second note",
+            "--json",
+        ],
+    );
+    assert!(second.status.success(), "{second:?}");
+    let report: serde_json::Value = serde_json::from_slice(&second.stdout).unwrap();
+    assert_eq!(report["turns"], 1);
+    assert_eq!(report["proposed"], 1);
+    assert_eq!(report["accepted"], 1);
+    assert_eq!(report["note"], "second note");
+    let text = std::fs::read_to_string(&file).unwrap();
+    assert_eq!(text.matches(&format!("| {today} |")).count(), 1);
+    assert!(text.contains("second note"));
+    assert!(!text.contains("first note"));
 }
 
 #[test]

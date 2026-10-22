@@ -116,6 +116,18 @@ enum Command {
         #[command(subcommand)]
         command: MemCommand,
     },
+    /// Record today's dogfood row from local metrics
+    Dogfood {
+        /// Markdown file with the dogfood table (defaults to ~/.niuse/dogfood.md)
+        #[arg(long)]
+        file: Option<PathBuf>,
+        /// One concrete note for the day
+        #[arg(long)]
+        note: Option<String>,
+        /// Emit JSON
+        #[arg(long)]
+        json: bool,
+    },
     /// Inspect and close open loops
     Loops {
         #[command(subcommand)]
@@ -551,6 +563,7 @@ async fn main() -> Result<()> {
             MemCommand::Review => commands::mem_review(&store),
             MemCommand::Prune { apply } => commands::mem_prune(&store, apply),
         },
+        Some(Command::Dogfood { file, note, json }) => commands::dogfood(&store, file, note, json),
         Some(Command::Loops { command }) => match command {
             LoopsCommand::List { all, json, overdue } => {
                 commands::loops_list(&store, all, json, overdue)

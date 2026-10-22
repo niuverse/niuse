@@ -161,6 +161,7 @@ and commit agree.
 | 27 | M7-009 TUI plan PTY | done | The full TUI gate runs in a real terminal |
 | 28 | M2-094 doctor dogfood | done | The ten-day gate is visible while using the product |
 | 29 | M2-095 dogfood checker | done | The gate cannot be claimed from a malformed table |
+| 30 | M2-096 dogfood command | done | The row comes from metrics, not hand arithmetic |
 
 ## The round ritual
 

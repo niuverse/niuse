@@ -2,6 +2,7 @@
 //! offline and without credentials.
 
 mod doctor;
+mod dogfood;
 mod editor;
 mod evidence;
 mod goals;
@@ -16,6 +17,7 @@ mod recall;
 mod session;
 mod verify;
 pub use doctor::doctor;
+pub use dogfood::dogfood;
 pub(crate) use editor::{edit_markdown, edit_text};
 pub use evidence::evidence;
 pub use goals::{goals_add, goals_done, goals_list};
