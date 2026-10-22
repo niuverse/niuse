@@ -260,6 +260,7 @@ impl TurnHooks for CompanionHooks {
                 }
                 Some("show") => {
                     let id = parts.next()?;
+                    let id = id.strip_prefix("m-").unwrap_or(id);
                     let memories = store.memories().ok()?;
                     let entry = memories.iter().find(|entry| entry.id == id)?;
                     let tag_text = entry.tags.join(",");
@@ -421,7 +422,7 @@ mod tests {
         let listed = hooks.command("/mem").unwrap();
         assert!(listed.contains("Rust projects use cargo test"));
         let id = store.memories().unwrap()[0].id.clone();
-        let shown = hooks.command(&format!("/mem show {id}")).unwrap();
+        let shown = hooks.command(&format!("/mem show m-{id}")).unwrap();
         assert!(shown.contains("Rust projects use cargo test"));
         let status = hooks.command("/status").unwrap();
         assert!(status.contains("memory: 1"));
