@@ -39,7 +39,7 @@ The script runs `niuse stats --days 1 --json`, uses the local calendar date, and
 
 | date | turns | proposed | accepted | note |
 |---|---|---|---|---|
-| 2026-10-22 | 19 | 1 | 1 | real exec/MCP/TUI/write; A/B cited m-3d0b; disagreement dropped RSS; 4 digests reviewed; gate: trivial NO, old-loop reminder NO, RSS decision YES (3 bullets) |
+| 2026-10-22 | 19 | 1 | 1 | real exec/MCP/TUI/write; A/B cited m-3d0b; disagreement dropped RSS; 4 digests reviewed; gate reasons: RSS YES, trivial NO |
 
 ## Rules
 

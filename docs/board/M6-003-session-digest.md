@@ -58,6 +58,9 @@ a memory strategy.
   because the only "unresolved" item was a pre-existing loop reminder.
 - RSS decision session, re-run: YES, 3 bullets (down from 5, more concise).
 
+The gate now prints a one-line reason with every verdict. Real validation:
+RSS → `YES · 助手明确反对...`; trivial → `NO · 用户仅要求回复数字391...`.
+
 That is 4/10 real reviews; the path stays opt-in. Activity-only digests are a
 known limitation, not a reason to auto-write.
 

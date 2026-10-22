@@ -32,12 +32,39 @@ const DIGEST_SYSTEM: &str =
 只输出以 \"- \" 开头的条目，不要解释，不要代码围栏。";
 
 const DIGEST_GATE: &str =
-    "只回答 YES 或 NO。下面这段 coding agent 与用户的会话，是否包含一个**新出现**的决定、\n\
-转折点、新出现的未解决问题、被说服、或判断/情绪的变化？\n\
+    "判断下面这段 coding agent 与用户的会话，是否包含一个**新出现**的决定、\n\
+转折点、新出现的未解决问题、被说服、或判断/情绪的变化。\n\
 只算本会话中新出现的、或在本会话中被推进/改变的内容。\n\
 如果只是任务完成、工具调用、确认结果，或只是重复/提醒会话开始前就存在的旧事项\n\
-（例如一个早就记下的到期 loop），回答 NO。\n\
-只输出 YES 或 NO。";
+（例如一个早就记下的到期 loop），判断为 NO。\n\
+只输出一行：`YES: 一句话理由` 或 `NO: 一句话理由`。不要输出其他内容。";
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Gate {
+    Yes,
+    No,
+}
+
+fn parse_gate(raw: &str) -> Option<(Gate, String)> {
+    let line = raw.trim().lines().next()?.trim();
+    let (verdict, reason) = match line.split_once(':') {
+        Some((verdict, reason)) => (verdict.trim(), reason.trim()),
+        None => (line, ""),
+    };
+    let gate = match verdict.to_ascii_uppercase().as_str() {
+        "YES" => Gate::Yes,
+        "NO" => Gate::No,
+        _ => return None,
+    };
+    Some((
+        gate,
+        if reason.is_empty() {
+            "模型未给出理由".to_string()
+        } else {
+            reason.to_string()
+        },
+    ))
+}
 
 #[derive(Debug, Clone, Copy)]
 pub struct DigestOptions {
@@ -57,18 +84,22 @@ pub async fn run(
         bail!("会话没有可压缩的用户或助手文本：{}", thread.display());
     };
     let input = format!("# 项目：{project}\n\n{transcript}");
-    let gate = complete(provider, model, DIGEST_GATE, &input, 8).await?;
-    match gate.trim().to_ascii_uppercase().as_str() {
-        "NO" => {
+    let gate = complete(provider, model, DIGEST_GATE, &input, 80).await?;
+    let (verdict, reason) = parse_gate(&gate).ok_or_else(|| {
+        anyhow::anyhow!("digest 预检没有返回 YES/NO（{}）；没有写入", gate.trim())
+    })?;
+    match verdict {
+        Gate::No => {
             if options.dry_run {
-                println!("digest dry run：没有可提炼的变化，不写入");
+                println!("digest dry run：没有可提炼的变化（{reason}），不写入");
             } else {
-                println!("digest：没有可提炼的变化，journal 未变");
+                println!("digest：没有可提炼的变化（{reason}），journal 未变");
             }
             return Ok(());
         }
-        "YES" => {}
-        other => bail!("digest 预检没有返回 YES/NO（{other}）；没有写入"),
+        Gate::Yes => {
+            println!("digest gate：YES · {reason}");
+        }
     }
     let raw = complete(provider, model, DIGEST_SYSTEM, &input, 800).await?;
     let bullets = parse_bullets(&raw);
@@ -177,7 +208,7 @@ mod tests {
     }
 
     fn scripted(text: &str) -> ScriptedProvider {
-        ScriptedProvider::from_turns(vec![turn("YES"), turn(text)])
+        ScriptedProvider::from_turns(vec![turn("YES: decision"), turn(text)])
     }
 
     fn thread_with(messages: &[&str]) -> (tempfile::TempDir, PathBuf) {
@@ -206,6 +237,24 @@ mod tests {
         let store = Store::at(directory.join(".niuse"));
         store.init().unwrap();
         store
+    }
+
+    #[test]
+    fn parses_gate_verdict_and_reason() {
+        assert_eq!(
+            parse_gate("YES: a decision"),
+            Some((Gate::Yes, "a decision".into()))
+        );
+        assert_eq!(
+            parse_gate("no: old reminder"),
+            Some((Gate::No, "old reminder".into()))
+        );
+        assert_eq!(
+            parse_gate("YES"),
+            Some((Gate::Yes, "模型未给出理由".into()))
+        );
+        assert_eq!(parse_gate("MAYBE: x"), None);
+        assert_eq!(parse_gate(""), None);
     }
 
     #[test]
@@ -333,7 +382,7 @@ mod tests {
     async fn gate_no_skips_the_digest_call() {
         let (directory, thread) = thread_with(&["routine task"]);
         let store = store(directory.path());
-        let provider = ScriptedProvider::from_turns(vec![turn("NO")]);
+        let provider = ScriptedProvider::from_turns(vec![turn("NO: no durable change")]);
         run(
             &store,
             &provider,

@@ -174,6 +174,7 @@ and commit agree.
 | 40 | M6-006 digest no-change | done | NONE exits cleanly; malformed still fails |
 | 41 | M6-007 digest gate | done | YES/NO pre-check stops activity summaries |
 | 42 | M6-008 gate old loops | done | Old-loop reminders are not new issues |
+| 43 | M6-009 gate reasons | done | Every YES/NO gate verdict is explained |
 
 ## The round ritual
 
