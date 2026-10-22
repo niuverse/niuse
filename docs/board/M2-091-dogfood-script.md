@@ -25,6 +25,7 @@ docs = ["dogfood"]
 - [x] First run inserts one row and removes the placeholder.
 - [x] Second run replaces the same-day row; the count stays one.
 - [x] Notes are pipe-escaped.
+- [x] An end-to-end shell test in `scripts/check.sh` covers one row, replacement, and no duplicate.
 - [x] The script fails clearly when `niuse` is missing or the table is not found.
 
 ## Notes

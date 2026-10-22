@@ -17,6 +17,10 @@ RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps
 echo "== tests =="
 cargo test --workspace
 
+echo "== dogfood =="
+cargo build -p niuse
+bash scripts/dogfood_test.sh
+
 echo "== package =="
 cargo package -p niuse-core --allow-dirty --offline
 
