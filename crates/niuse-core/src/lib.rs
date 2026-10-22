@@ -1,4 +1,4 @@
-//! Domain layer for niuse: the six durable stores, prompt assembly, the
+//! Domain layer for niuse: the seven durable stores, prompt assembly, the
 //! in-band protocol, and write-time policy.
 //!
 //! No runtime, no provider, no terminal. `niuse-core` is pure enough to test
@@ -17,6 +17,6 @@ pub mod store;
 pub use brief::Brief;
 pub use candidate::{parse, Block, Parsed, StreamFilter};
 pub use date::Date;
-pub use model::{Goal, JournalDay, LoopItem, MemoryEntry, MemoryKind};
+pub use model::{Goal, JournalDay, LoopItem, MemoryEntry, MemoryKind, PlanStep};
 pub use prompt::{compose, compose_with_goals, estimate_text_tokens, Composition};
 pub use store::Store;

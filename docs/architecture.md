@@ -4,7 +4,7 @@ title = "Architecture"
 kind = "doc"
 status = "living"
 order = 5
-summary = "niuse boundaries, the six stores, turn data flow, write thresholds, and explicit non-goals."
+summary = "niuse boundaries, the seven stores, turn data flow, write thresholds, and explicit non-goals."
 +++
 
 ## In one sentence
@@ -71,7 +71,7 @@ user input
 
 There is no second copy of the conversation. `niuse export` renders the event log as Markdown without changing it. `history` is projected from the event log by niucode's `project_history`, so compaction, replay, and fork behave exactly as they do in niucode.
 
-## The six stores and injection
+## The seven stores and injection
 
 ```text
 ~/.niuse/
@@ -81,6 +81,7 @@ There is no second copy of the conversation. `niuse export` renders the event lo
   journal/         experience: one file per month, merged per day (automatic)
   loops.md         promises (automatic, optional due date)
   goals.md         human-owned outcomes (injected, at most seven open)
+  plan.md          human-owned steps (not injected; closed only with verification)
   thread.jsonl     the relationship thread
   threads/         archived chapters from `/new`
   sessions/        one-shot `exec` logs (`niuse sessions`)

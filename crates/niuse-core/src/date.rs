@@ -93,6 +93,12 @@ impl Date {
     }
 }
 
+impl serde::Serialize for Date {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
 impl std::fmt::Display for Date {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         formatter.write_str(&self.format())

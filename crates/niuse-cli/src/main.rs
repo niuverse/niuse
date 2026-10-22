@@ -66,6 +66,26 @@ struct Cli {
 }
 
 #[derive(Subcommand, Debug, Clone)]
+enum PlanCommand {
+    /// List open steps (or all with --all)
+    List {
+        #[arg(long)]
+        all: bool,
+        #[arg(long)]
+        json: bool,
+    },
+    /// Add one step
+    Add { text: String },
+    /// Close a step; requires a passing verification for p-N
+    Done {
+        id: u32,
+        /// Thread containing the verification (defaults to the main thread)
+        #[arg(long)]
+        thread: Option<PathBuf>,
+    },
+}
+
+#[derive(Subcommand, Debug, Clone)]
 enum Command {
     /// Run one prompt through the agent, then exit
     Exec { prompt: String },
@@ -199,6 +219,11 @@ enum Command {
         #[arg(long)]
         json: bool,
     },
+    /// Human-owned plan steps, with a verification gate for closing
+    Plan {
+        #[command(subcommand)]
+        command: PlanCommand,
+    },
     /// Run a verification command and append its result to the thread
     Verify {
         /// Thread JSONL to append to (defaults to the main thread)
@@ -207,6 +232,9 @@ enum Command {
         /// Emit JSON
         #[arg(long)]
         json: bool,
+        /// Plan step this check verifies, for example p-2
+        #[arg(long)]
+        step: Option<String>,
         /// Command and arguments, after `--`
         #[arg(last = true, required = true)]
         command: Vec<String>,
@@ -639,18 +667,33 @@ async fn main() -> Result<()> {
             }
         },
         Some(Command::Stats { days, trend, json }) => commands::stats(&store, days, trend, json),
+        Some(Command::Plan { command }) => match command {
+            PlanCommand::List { all, json } => commands::plan_list(&store, all, json),
+            PlanCommand::Add { text } => {
+                let step = commands::plan_add(&store, &text)?;
+                println!("added {}", step.label());
+                Ok(())
+            }
+            PlanCommand::Done { id, thread } => {
+                let thread = config::resolve_thread(thread.or(cli.thread.clone()), &store)?;
+                let step = commands::plan_done(&store, &thread, id)?;
+                println!("done {}", step.label());
+                Ok(())
+            }
+        },
         Some(Command::Verify {
             thread,
             json,
+            step,
             command,
         }) => {
             let thread = config::resolve_thread(thread.or(cli.thread.clone()), &store)?;
-            let outcome = commands::verify(&thread, &command, json)?;
+            let outcome = commands::verify_with_step(&thread, &command, step.as_deref(), json)?;
             std::process::exit(outcome.code);
         }
         Some(Command::Evidence { thread, json }) => {
             let thread = config::resolve_thread(thread.or(cli.thread.clone()), &store)?;
-            commands::evidence(&thread, json)
+            commands::evidence(&thread, &store, json)
         }
         Some(Command::Brief { json }) => {
             let cwd = config::resolve_cwd(cli.cwd.clone())?;

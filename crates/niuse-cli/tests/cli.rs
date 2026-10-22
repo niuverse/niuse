@@ -287,6 +287,44 @@ fn verify_records_and_evidence_reports_it() {
 }
 
 #[test]
+fn plan_steps_close_only_after_step_verification() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    let thread = directory.path().join("thread.jsonl");
+    std::fs::write(&thread, "").unwrap();
+    let thread_arg = thread.to_str().unwrap();
+
+    let added = run(&home, &["plan", "add", "write the tests"]);
+    assert!(added.status.success(), "{added:?}");
+    assert!(String::from_utf8_lossy(&added.stdout).contains("p-1"));
+
+    let list = run(&home, &["plan", "list", "--json"]);
+    let steps: serde_json::Value = serde_json::from_slice(&list.stdout).unwrap();
+    assert_eq!(steps[0]["id"], "p-1");
+    assert_eq!(steps[0]["done"], false);
+
+    let refused = run(&home, &["plan", "done", "1", "--thread", thread_arg]);
+    assert!(!refused.status.success());
+    assert!(String::from_utf8_lossy(&refused.stderr).contains("no passing verification"));
+
+    let verified = run(
+        &home,
+        &[
+            "verify", "--step", "p-1", "--thread", thread_arg, "--", "true",
+        ],
+    );
+    assert!(verified.status.success(), "{verified:?}");
+
+    let closed = run(&home, &["plan", "done", "1", "--thread", thread_arg]);
+    assert!(closed.status.success(), "{closed:?}");
+
+    let evidence = run(&home, &["evidence", "--thread", thread_arg, "--json"]);
+    let report: serde_json::Value = serde_json::from_slice(&evidence.stdout).unwrap();
+    assert_eq!(report["plan"][0]["done"], true);
+    assert_eq!(report["verifications"][0]["step"], "p-1");
+}
+
+#[test]
 fn projects_json_filters_and_limits() {
     let directory = tempfile::tempdir().unwrap();
     let niucode = directory.path().join("niucode-home");

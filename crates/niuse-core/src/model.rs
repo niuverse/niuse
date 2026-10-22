@@ -8,6 +8,8 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use serde::Serialize;
+
 use crate::date::Date;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -262,6 +264,73 @@ impl Goal {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct PlanStep {
+    pub id: u32,
+    pub text: String,
+    pub created: Date,
+    pub done: bool,
+}
+
+impl PlanStep {
+    pub fn new(id: u32, text: impl Into<String>, created: Date) -> Self {
+        Self {
+            id,
+            text: one_line(text.into()),
+            created,
+            done: false,
+        }
+    }
+
+    pub fn label(&self) -> String {
+        format!("p-{}", self.id)
+    }
+
+    pub fn render(&self) -> String {
+        let mark = if self.done { "x" } else { " " };
+        format!(
+            "- [{mark}] p-{} {}（创建 {}）",
+            self.id, self.text, self.created
+        )
+    }
+}
+
+pub fn parse_plan_line(line: &str) -> Option<PlanStep> {
+    let rest = line.strip_prefix("- [")?;
+    let mut chars = rest.chars();
+    let mark = chars.next()?;
+    if mark != ' ' && mark != 'x' {
+        return None;
+    }
+    let rest = chars.as_str().strip_prefix("] p-")?;
+    let (id, rest) = rest.split_once(char::is_whitespace)?;
+    let id: u32 = id.parse().ok()?;
+    let rest = rest.trim();
+
+    let mut text = rest.trim();
+    let mut created = Date::from_days(0);
+    if let Some(open) = rest.rfind("（创建 ") {
+        let tail = &rest[open + "（创建 ".len()..];
+        if let Some(close) = tail.rfind('）') {
+            if let Some(date) = Date::parse(&tail[..close]) {
+                created = date;
+                text = rest[..open].trim();
+            }
+        }
+    }
+
+    Some(PlanStep {
+        id,
+        text: text.to_string(),
+        created,
+        done: mark == 'x',
+    })
+}
+
+pub fn parse_plan(text: &str) -> Vec<PlanStep> {
+    text.lines().filter_map(parse_plan_line).collect()
+}
+
 pub fn parse_goal_line(line: &str) -> Option<Goal> {
     let rest = line.strip_prefix("- [")?;
     let mut chars = rest.chars();
@@ -433,6 +502,20 @@ mod tests {
         item.done = true;
         let parsed = parse_loop_line(&item.render()).expect("loop parses");
         assert!(parsed.done);
+    }
+
+    #[test]
+    fn plan_steps_parse_and_render() {
+        let step = PlanStep::new(2, "write tests", Date::from_days(20_000));
+        let line = step.render();
+        assert!(line.starts_with("- [ ] p-2 write tests"));
+        let parsed = parse_plan_line(&line).expect("step parses");
+        assert_eq!(parsed, step);
+        let mut done = parsed;
+        done.done = true;
+        let parsed = parse_plan_line(&done.render()).expect("done step parses");
+        assert!(parsed.done);
+        assert_eq!(parse_plan("header\n- [ ] p-1 a\n- [x] p-2 b\n").len(), 2);
     }
 
     #[test]

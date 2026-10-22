@@ -9,12 +9,15 @@ use std::path::Path;
 
 use anyhow::Result;
 use niucode_core::{load, Event};
+use niuse_core::PlanStep;
 use serde::Serialize;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Check {
     pub command: String,
     pub ok: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub step: Option<String>,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize)]
@@ -25,6 +28,8 @@ pub struct Evidence {
     pub files: Vec<String>,
     pub checks: Vec<Check>,
     pub verifications: Vec<Check>,
+    #[serde(default)]
+    pub plan: Vec<PlanStep>,
 }
 
 pub fn from_thread(path: &Path) -> Result<Evidence> {
@@ -68,13 +73,20 @@ pub fn from_events(events: &[Event]) -> Evidence {
                     evidence.failures += 1;
                 }
                 if name == "bash" && looks_like_check(&command) {
-                    evidence.checks.push(Check { command, ok: *ok });
+                    evidence.checks.push(Check {
+                        command,
+                        ok: *ok,
+                        step: None,
+                    });
                 }
             }
-            Event::Verification { command, ok, .. } => {
+            Event::Verification {
+                command, ok, step, ..
+            } => {
                 evidence.verifications.push(Check {
                     command: command.clone(),
                     ok: *ok,
+                    step: step.clone(),
                 });
             }
             Event::Approval { allowed, .. } if !allowed => {
@@ -94,6 +106,7 @@ impl Evidence {
             && self.files.is_empty()
             && self.checks.is_empty()
             && self.verifications.is_empty()
+            && self.plan.is_empty()
             && self.denied == 0
     }
 
@@ -127,12 +140,38 @@ impl Evidence {
                 ));
             }
         }
+        if !self.plan.is_empty() {
+            out.push_str("plan\n");
+            for step in &self.plan {
+                let label = step.label();
+                let verified = self
+                    .verifications
+                    .iter()
+                    .any(|check| check.step.as_deref() == Some(label.as_str()) && check.ok);
+                out.push_str(&format!(
+                    "  [{}] {} {} — {}\n",
+                    if step.done { "x" } else { " " },
+                    label,
+                    step.text,
+                    if verified {
+                        "verified"
+                    } else {
+                        "no recorded verification"
+                    }
+                ));
+            }
+        }
         if !self.verifications.is_empty() {
             out.push_str("verification\n");
             for check in &self.verifications {
                 out.push_str(&format!(
-                    "  {} {}\n",
+                    "  {} {}{}\n",
                     if check.ok { "✓" } else { "✗" },
+                    check
+                        .step
+                        .as_deref()
+                        .map(|step| format!("[{step}] "))
+                        .unwrap_or_default(),
                     check.command
                 ));
             }
@@ -204,6 +243,25 @@ mod tests {
         assert!(rendered.contains("cargo test"));
         assert!(rendered.contains("denied"));
         assert!(rendered.contains("verification"));
+    }
+
+    #[test]
+    fn plan_steps_show_their_verification_status() {
+        let evidence = Evidence {
+            plan: vec![
+                PlanStep::new(1, "write tests", niuse_core::Date::from_days(20_000)),
+                PlanStep::new(2, "ship", niuse_core::Date::from_days(20_000)),
+            ],
+            verifications: vec![Check {
+                command: "cargo test".into(),
+                ok: true,
+                step: Some("p-1".into()),
+            }],
+            ..Evidence::default()
+        };
+        let rendered = evidence.render();
+        assert!(rendered.contains("p-1 write tests — verified"));
+        assert!(rendered.contains("p-2 ship — no recorded verification"));
     }
 
     #[test]

@@ -15,14 +15,29 @@ pub struct VerifyOutcome {
     pub code: i32,
 }
 
-pub fn verify(thread: &Path, command: &[String], json: bool) -> Result<VerifyOutcome> {
+pub fn verify_with_step(
+    thread: &Path,
+    command: &[String],
+    step: Option<&str>,
+    json: bool,
+) -> Result<VerifyOutcome> {
     if command.is_empty() {
         bail!("verify needs a command, for example: niuse verify -- cargo test");
     }
-    verify_shell(thread, &command.join(" "), json)
+    verify_shell_with_step(thread, &command.join(" "), step, json)
 }
 
 pub fn verify_shell(thread: &Path, shell: &str, json: bool) -> Result<VerifyOutcome> {
+    verify_shell_with_step(thread, shell, None, json)
+}
+
+pub fn verify_shell_with_step(
+    thread: &Path,
+    shell: &str,
+    step: Option<&str>,
+    json: bool,
+) -> Result<VerifyOutcome> {
+    let step = step.map(str::trim).filter(|step| !step.is_empty());
     let shell = shell.to_string();
     if shell.trim().is_empty() {
         bail!("verify needs a command, for example: niuse verify -- cargo test");
@@ -47,6 +62,7 @@ pub fn verify_shell(thread: &Path, shell: &str, json: bool) -> Result<VerifyOutc
         command: shell.clone(),
         ok,
         output: tail.clone(),
+        step: step.map(ToString::to_string),
         ts: now_ms(),
     })?;
 
@@ -58,6 +74,7 @@ pub fn verify_shell(thread: &Path, shell: &str, json: bool) -> Result<VerifyOutc
                 "ok": ok,
                 "code": code,
                 "output": tail,
+                "step": step,
                 "thread": thread.display().to_string(),
             }))?
         );

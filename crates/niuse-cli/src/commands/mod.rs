@@ -8,6 +8,7 @@ mod goals;
 mod journal;
 mod loops;
 mod memory;
+mod plan;
 mod profile;
 mod projects;
 mod recall;
@@ -25,13 +26,14 @@ pub use memory::{
     mem_add, mem_confirm, mem_edit, mem_forget, mem_list, mem_prune, mem_review, mem_search,
     mem_show,
 };
+pub use plan::{plan_add, plan_done, plan_list};
 pub use profile::{identity_edit, identity_init, identity_show, user_edit, user_show};
 pub use projects::projects;
 pub use recall::{recall, recall_text};
 #[cfg(feature = "tui")]
 pub(crate) use session::write_export;
 pub use session::{export, sessions, thread_at, threads};
-pub use verify::{verify, verify_shell};
+pub use verify::{verify_shell, verify_with_step};
 
 use anyhow::Result;
 use niuse_core::prompt::compose_with_goals;

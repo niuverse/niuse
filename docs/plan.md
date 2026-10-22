@@ -4,7 +4,7 @@ title = "Implementation plan"
 kind = "plan"
 status = "active"
 order = 10
-summary = "Fifteen decisions, the six stores, turn lifecycle, write thresholds, milestones, and verifiable acceptance."
+summary = "Fifteen decisions, the seven stores, turn lifecycle, write thresholds, milestones, and verifiable acceptance."
 +++
 
 ## In one sentence
@@ -51,7 +51,7 @@ Anything else is rejected. This is what keeps "index every session" and "environ
 
 ## 3. Stores and injection
 
-### 3.1 The six stores
+### 3.1 The seven stores
 
 ```text
 ~/.niuse/
@@ -64,6 +64,7 @@ Anything else is rejected. This is what keeps "index every session" and "environ
     2026-10.md         experience, one file per month
   loops.md             promises: things it said it would do
   goals.md             human-owned outcomes (ADR-0006)
+  plan.md              human-owned steps; verification-gated completion
 ```
 
 - UTF-8 Markdown only; directories `0700`, files `0600`.
@@ -111,7 +112,7 @@ One memory is one section: machine-parseable and human-readable.
 
 ```text
 startup
-  ├─ read the six stores
+  ├─ read the six injected stores
   ├─ assemble the system prompt (once)
   └─ restore thread history via project_history
 

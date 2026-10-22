@@ -13,8 +13,8 @@ use anyhow::{Context, Result};
 
 use crate::date::Date;
 use crate::model::{
-    parse_goals, parse_journal, parse_loop_line, parse_memory_section, Goal, JournalDay, LoopItem,
-    MemoryEntry, MemoryKind,
+    parse_goals, parse_journal, parse_loop_line, parse_memory_section, parse_plan, Goal,
+    JournalDay, LoopItem, MemoryEntry, MemoryKind, PlanStep,
 };
 
 const MEMORY_HEADER: &str = "<!-- 由 niuse 维护。可以手工编辑，但请保持每条的字段格式。 -->\n";
@@ -64,6 +64,10 @@ impl Store {
 
     pub fn goals_path(&self) -> PathBuf {
         self.root.join("goals.md")
+    }
+
+    pub fn plan_path(&self) -> PathBuf {
+        self.root.join("plan.md")
     }
 
     pub fn session_path(&self) -> PathBuf {
@@ -367,6 +371,42 @@ impl Store {
         goal.done = true;
         self.write_goals(&goals)?;
         Ok(true)
+    }
+
+    pub fn plan(&self) -> Result<Vec<PlanStep>> {
+        let text = read_optional(&self.plan_path())?.unwrap_or_default();
+        Ok(parse_plan(&text))
+    }
+
+    pub fn write_plan(&self, steps: &[PlanStep]) -> Result<()> {
+        let mut text = String::from(
+            "# 计划\n\n<!-- 由你维护。每一步用 p-N 标记；完成前先用 `niuse verify --step p-N` 留下证据。 -->\n\n",
+        );
+        for step in steps {
+            text.push_str(&step.render());
+            text.push('\n');
+        }
+        write_private(&self.plan_path(), &text)
+    }
+
+    pub fn add_step(&self, text: String, created: Date) -> Result<PlanStep> {
+        let mut steps = self.plan()?;
+        let id = steps.iter().map(|step| step.id).max().unwrap_or(0) + 1;
+        let step = PlanStep::new(id, text, created);
+        steps.push(step.clone());
+        self.write_plan(&steps)?;
+        Ok(step)
+    }
+
+    pub fn close_step(&self, id: u32) -> Result<Option<PlanStep>> {
+        let mut steps = self.plan()?;
+        let Some(step) = steps.iter_mut().find(|step| step.id == id) else {
+            return Ok(None);
+        };
+        step.done = true;
+        let closed = step.clone();
+        self.write_plan(&steps)?;
+        Ok(Some(closed))
     }
 
     /// Append bullets under the given day, creating the day section if needed.
@@ -751,5 +791,24 @@ mod tests {
         assert_eq!(loaded, vec![item.clone()]);
         assert!(store.close_loop(&item.id).unwrap());
         assert!(store.loops().unwrap()[0].done);
+    }
+    #[test]
+    fn plan_steps_round_trip_with_incrementing_ids() {
+        let (_directory, store) = store();
+        let first = store
+            .add_step("write tests".into(), date("2026-10-22"))
+            .unwrap();
+        let second = store
+            .add_step("run clippy".into(), date("2026-10-22"))
+            .unwrap();
+        assert_eq!(first.id, 1);
+        assert_eq!(second.id, 2);
+        assert_eq!(store.plan().unwrap().len(), 2);
+        let closed = store.close_step(1).unwrap().expect("closed");
+        assert!(closed.done);
+        let loaded = store.plan().unwrap();
+        assert!(loaded[0].done);
+        assert!(!loaded[1].done);
+        assert!(store.close_step(99).unwrap().is_none());
     }
 }
