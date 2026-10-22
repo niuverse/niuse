@@ -7,7 +7,7 @@ order = 1
 summary = "Entry point after the autonomous iteration: what works, what is pinned, and what waits for a human decision."
 +++
 
-## Snapshot · 2026-10-22
+## Snapshot · 2026-10-23
 
 niuse is runnable end to end: seven Markdown stores, an interactive REPL with line editing, history, completion, multi-line input, confirmation and conflict handling, the in-band protocol, a read-only startup brief, bootstrap from history (memory candidates and a user profile), JSON views for every store, one-shot session listing, colored approval diffs, `doctor`, and acceptance metrics. The declared MSRV is 1.88; the full test suite and the optional `tui` feature pass under it, and a weekly workflow checks both.
 

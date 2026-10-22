@@ -25,8 +25,9 @@ proven, what is still a gate, and what needs a human decision.
   covers approvals, session isolation, resume/fork pointers, memory prompts,
   and brief/report/steps composition.
 - **Board.** 161 cards and 18 docs are generated and link-checked.
-- **CI.** niucode `2b278fe` is green; niuse `ed54d6f` is green and `a85e2a2` is
-  the current checked commit.
+- **CI.** niucode `2b278fe` and niuse `ed54d6f` are green. niuse `c4282f3`
+  passes local `check.sh`/`eval.sh`; GitHub CI is pending on a runner backlog,
+  with no red run.
 
 ## Real evidence
 
@@ -51,6 +52,13 @@ proven, what is still a gate, and what needs a human decision.
 1. Publish `niucode-mcp` 0.1.5 (the token exists; no upload is authorized).
 2. Accept or reject [ADR-0034](https://github.com/niuverse/niucode/blob/main/docs/adr/0034-mutating-mcp.md).
 3. Continue past round 79 only on an explicit request.
+
+## Stage outcome
+
+Five rounds (75–79) closed with the TUI command-composition test, the stage
+report, and the last stale store count fixed. The implementation surface is
+verified locally and on CI through `ed54d6f`; the product still needs eight
+more real days, the MCP upload, and the mutating-MCP decision.
 
 ## Not claimed
 
