@@ -105,8 +105,9 @@ connector instead of one-off shell commands.
 
 **Cards:** niucode M8-001 is done: read-only stdio v1 with explicit trust,
 config mounting in `exec`/TUI, and offline tests. niuse mounts the host in the
-TUI, REPL, and `exec`, ships read-only notes and calendar packs, and installs
-both with `niuse mcp init` (which merges safely). Mutating MCP is
+TUI, REPL, and `exec`, ships read-only notes and calendar packs, installs both
+with `niuse mcp init` (which merges safely), and covers the TUI mount with a PTY
+test. Mutating MCP is
 proposed in [ADR-0034](https://github.com/niuverse/niucode/blob/main/docs/adr/0034-mutating-mcp.md)
 and blocked on human sign-off; do not implement it before that.
 
@@ -152,6 +153,7 @@ and commit agree.
 | 19 | M8-004 calendar pack | done | A second personal source reuses the MCP seam |
 | 20 | M8-005 mcp init | done | Two-minute setup for both read-only packs |
 | 21 | M8-006 mcp merge | done | Adding a pack does not erase the trust file |
+| 22 | M8-007 TUI MCP PTY | done | The last untested MCP path is covered |
 
 ## The round ritual
 

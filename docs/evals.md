@@ -26,6 +26,7 @@ agent-dispatch tests. No API key, network, or model call is involved.
 | `brief_surfaces_overdue_promises_and_stale_memory` | The startup brief reports overdue promises, stale memory, and the review queue |
 | `reports_files_checks_failures_and_denials` | Includes a completed delegation's task and summary |
 | `an_unfinished_delegation_is_not_reported_as_success` | A spawn without a result is `?`, not ✓ |
+| `pty_tui_mounts_mcp_and_dispatches_a_tool` | The TUI mounts a manifest and dispatches a namespaced tool |
 | `mcp_init_merges_new_servers_and_keeps_existing_text` | A new pack is appended; comments survive; invalid TOML is untouched |
 | `mcp_init_writes_a_mountable_read_only_config` | Generated config mounts and both packs answer |
 | `calendar_pack_lists_and_searches_without_network` | A second read-only pack lists, searches, and excludes out-of-window events |
