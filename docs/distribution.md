@@ -53,6 +53,12 @@ dependency `niucode-agent` does not specify a version
 
 crates.io removes `path` specifications and expects the dependency to exist in the registry. Until that changes, only `niuse-core` is packageable on its own, and it is not useful without the CLI.
 
+## Chosen path (2026-10-22)
+
+Publish the `niucode-*` crates first at **0.1.0**, then consume them by version. The path dependencies in niuse already carry `version = "0.1.0"` beside `path`, so local development keeps the sibling checkout while packaging can resolve registry versions once the upload exists.
+
+Remaining before the upload: choose a license, run `cargo login`, and publish in the order documented in niucode's `docs/release.md`. Until then, `cargo package -p niuse` still cannot verify against the registry.
+
 ## Options
 
 | Option | Cost | When |

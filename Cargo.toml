@@ -25,8 +25,8 @@ walkdir = "2.5"
 
 # Local sibling checkout. A published build should pin a git revision instead;
 # see docs/plan.md §8.
-niucode-agent = { path = "../niuverse/niucode/crates/niucode-agent" }
-niucode-auth = { path = "../niuverse/niucode/crates/niucode-auth" }
-niucode-core = { path = "../niuverse/niucode/crates/niucode-core" }
-niucode-provider = { path = "../niuverse/niucode/crates/niucode-provider" }
-niucode-tools = { path = "../niuverse/niucode/crates/niucode-tools" }
+niucode-agent = { path = "../niuverse/niucode/crates/niucode-agent", version = "0.1.0" }
+niucode-auth = { path = "../niuverse/niucode/crates/niucode-auth", version = "0.1.0" }
+niucode-core = { path = "../niuverse/niucode/crates/niucode-core", version = "0.1.0" }
+niucode-provider = { path = "../niuverse/niucode/crates/niucode-provider", version = "0.1.0" }
+niucode-tools = { path = "../niuverse/niucode/crates/niucode-tools", version = "0.1.0" }
