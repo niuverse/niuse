@@ -82,6 +82,7 @@ Not chosen yet. crates.io requires a `license` or `license-file`, so publishing 
 ## Checklist
 
 - [ ] Choose a license and add it to the workspace manifest.
-- [ ] Decide whether clean-checkout installs matter enough to convert the niucode dependencies to pinned git revisions.
+- [x] Choose publishing the niucode crates first at 0.1.0; until the upload exists, clean-checkout installs still need the sibling checkout.
+- [ ] Add `CARGO_REGISTRY_TOKEN` / `cargo login` and run the release workflow.
 - [ ] Recheck crate names and reserve them with a real release.
 - [ ] Add a release workflow that runs `scripts/check.sh` before publish.
