@@ -29,6 +29,7 @@ After day labels moved to the local calendar, `stats --days 1` still used a roll
 - [x] `--days 2` starts at local midnight yesterday.
 - [x] `--days 0` still means all time.
 - [x] A DST transition cannot silently shift the cutoff by a day.
+- [x] If a zone skips local midnight, the first valid hour is used instead of zero.
 
 ## Notes
 

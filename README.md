@@ -100,6 +100,14 @@ niuse stats [--days N] [--trend] [--json] local acceptance counters
 niuse status
 ```
 
+Install shell completions once:
+
+```sh
+niuse completions bash > ~/.local/share/bash-completion/completions/niuse
+niuse completions zsh  > "${fpath[1]}/_niuse"
+niuse completions fish > ~/.config/fish/completions/niuse.fish
+```
+
 `mem list` and `mem search` accept `--kind preference|lesson` and `--tag <tag>`. `mem`, `threads`, `journal`, `loops`, `status`, `doctor`, `stats`, and `config effective` accept `--json` for scripts; `stats` also sums recorded token usage per window.
 
 Inside the REPL: `/help`, `/mem`, `/mem recall`, `/mem review`, `/stats`, `/doctor`, `/remember`, `/forget`, `/loops`, `/loop`, `/done`, `/journal search`, `/journal add`, `/identity edit`, `/user`, `/model`, `/cost`, `/threads`, `/sessions`, `/resume`, `/export`, `/new`, `/journal`, `/identity`, `/cd`, `/status`, `/prompt`, `/quit`.
