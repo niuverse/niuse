@@ -35,6 +35,8 @@ pub use recall::{recall, recall_text};
 #[cfg(feature = "tui")]
 pub(crate) use session::write_export;
 pub use session::{export, sessions, thread_at, threads};
+#[cfg(feature = "tui")]
+pub use verify::verify_shell_with_step;
 pub use verify::{verify_shell, verify_with_step};
 
 use anyhow::Result;

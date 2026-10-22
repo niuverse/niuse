@@ -120,7 +120,7 @@ niuse completions fish > ~/.config/fish/completions/niuse.fish
 
 `mem list` and `mem search` accept `--kind preference|lesson` and `--tag <tag>`. `mem`, `threads`, `journal`, `loops`, `status`, `doctor`, `stats`, and `config effective` accept `--json` for scripts; `stats` also sums recorded token usage per window and reports cache-hit percent and tokens per turn.
 
-Inside the REPL: `/help`, `/mem`, `/mem recall`, `/mem review`, `/stats`, `/doctor`, `/remember`, `/forget`, `/loops`, `/loop`, `/done`, `/goals`, `/plan`, `/recall`, `/evidence`, `/verify`, `/journal search`, `/journal add`, `/identity edit`, `/user`, `/model`, `/cost`, `/threads`, `/sessions`, `/resume`, `/export`, `/new`, `/journal`, `/identity`, `/cd`, `/status`, `/prompt`, `/quit`.
+Inside the REPL: `/help`, `/mem`, `/mem recall`, `/mem review`, `/stats`, `/doctor`, `/remember`, `/forget`, `/loops`, `/loop`, `/done`, `/goals`, `/plan`, `/steps`, `/recall`, `/evidence`, `/verify`, `/journal search`, `/journal add`, `/identity edit`, `/user`, `/model`, `/cost`, `/threads`, `/sessions`, `/resume`, `/export`, `/new`, `/journal`, `/identity`, `/cd`, `/status`, `/prompt`, `/quit`.
 
 On a terminal the prompt has line editing, persistent history (`~/.niuse/history`, `0600`), Tab completion for slash commands, memory/loop ids, and paths after `/cd` / `/export`; a trailing `\` continues the prompt; piped input keeps the plain reader. Each turn ends with a compact usage line, and tool lines are dimmed unless `NO_COLOR` is set.
 

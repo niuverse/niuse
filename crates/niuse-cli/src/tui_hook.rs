@@ -261,6 +261,14 @@ impl TurnHooks for CompanionHooks {
                 "/goals".into(),
                 "list goals; /goals add <text>; /goals done <id>".into(),
             ),
+            (
+                "/steps".into(),
+                "list steps; /steps add <text>; /steps done <p-N>".into(),
+            ),
+            (
+                "/verify".into(),
+                "run a check; /verify p-N <command> tags a plan step".into(),
+            ),
             ("/recall".into(), "search memory, journal, and loops".into()),
             ("/mem".into(), "list memory; /mem show <id>".into()),
             ("/loops".into(), "list open promises".into()),
@@ -285,6 +293,58 @@ impl TurnHooks for CompanionHooks {
             "/evidence" => crate::evidence::from_thread(&self.thread)
                 .ok()
                 .map(|report| report.render()),
+            "/steps" => match parts.next() {
+                None | Some("list") => {
+                    let report = crate::evidence::from_thread(&self.thread).ok();
+                    let steps = store.plan().ok()?;
+                    let open: Vec<String> = steps
+                        .iter()
+                        .filter(|step| !step.done)
+                        .map(|step| {
+                            let label = step.label();
+                            let verified = report.as_ref().is_some_and(|report| {
+                                report.verifications.iter().any(|check| {
+                                    check.step.as_deref() == Some(label.as_str()) && check.ok
+                                })
+                            });
+                            format!(
+                                "[ ] {label} {} — {}",
+                                step.text,
+                                if verified {
+                                    "verified"
+                                } else {
+                                    "no recorded verification"
+                                }
+                            )
+                        })
+                        .collect();
+                    if open.is_empty() {
+                        Some("no open steps".to_string())
+                    } else {
+                        Some(open.join("\n"))
+                    }
+                }
+                Some("add") => {
+                    let text = input
+                        .split_once("/steps add")
+                        .map(|(_, rest)| rest.trim())
+                        .unwrap_or("");
+                    match crate::commands::plan_add(&store, text) {
+                        Ok(step) => Some(format!("added {}", step.label())),
+                        Err(error) => Some(format!("error: {error:#}")),
+                    }
+                }
+                Some("done") => {
+                    let Some(id) = parts.next().and_then(|id| id.parse::<u32>().ok()) else {
+                        return Some("usage: /steps done <N>".to_string());
+                    };
+                    match crate::commands::plan_done(&store, &self.thread, id) {
+                        Ok(step) => Some(format!("done {}", step.label())),
+                        Err(error) => Some(format!("error: {error:#}")),
+                    }
+                }
+                _ => Some("usage: /steps [add <text>|done <N>]".to_string()),
+            },
             "/goals" => match parts.next() {
                 None | Some("list") => Some(
                     store
@@ -312,6 +372,25 @@ impl TurnHooks for CompanionHooks {
                 }
                 _ => None,
             },
+            "/verify" => {
+                let rest = input.strip_prefix("/verify").unwrap_or("").trim();
+                if rest.is_empty() {
+                    return Some("usage: /verify [p-N] <command>".to_string());
+                }
+                let (step, command) = match rest.split_once(' ') {
+                    Some((first, command)) if first.starts_with("p-") && !command.is_empty() => {
+                        (Some(first), command.trim())
+                    }
+                    _ => (None, rest),
+                };
+                match crate::commands::verify_shell_with_step(&self.thread, command, step, false) {
+                    Ok(outcome) => Some(format!(
+                        "verify · {} · {command}",
+                        if outcome.ok { "passed" } else { "FAILED" }
+                    )),
+                    Err(error) => Some(format!("error: {error:#}")),
+                }
+            }
             "/recall" => {
                 let query = parts.collect::<Vec<_>>().join(" ");
                 if query.is_empty() {
@@ -632,6 +711,8 @@ mod tests {
             "/evidence",
             "/recall",
             "/goals",
+            "/steps",
+            "/verify",
         ] {
             assert!(
                 commands.iter().any(|(listed, _)| listed == name),
@@ -655,6 +736,19 @@ mod tests {
         assert!(evidence.contains("evidence"));
         assert!(cost.contains("150 in"));
         assert!(cost.contains("40 cached"));
+
+        let added = hooks.command("/steps add write the tests").unwrap();
+        assert!(added.contains("p-1"));
+        let steps = hooks.command("/steps").unwrap();
+        assert!(steps.contains("p-1 write the tests"));
+        assert!(steps.contains("no recorded verification"));
+        let refused = hooks.command("/steps done 1").unwrap();
+        assert!(refused.contains("no passing verification"), "{refused}");
+        let verified = hooks.command("/verify p-1 true").unwrap();
+        assert!(verified.contains("passed"), "{verified}");
+        let closed = hooks.command("/steps done 1").unwrap();
+        assert!(closed.contains("done p-1"), "{closed}");
+        assert!(store.plan().unwrap()[0].done);
     }
 
     #[test]

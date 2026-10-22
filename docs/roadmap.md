@@ -155,6 +155,7 @@ and commit agree.
 | 21 | M8-006 mcp merge | done | Adding a pack does not erase the trust file |
 | 22 | M8-007 TUI MCP PTY | done | The last untested MCP path is covered |
 | 23 | M9-004 personal workflow | done | Packs + plan + verification compose |
+| 24 | M7-008 TUI plan/verify | done | The ledger is usable without leaving the TUI |
 
 ## The round ritual
 

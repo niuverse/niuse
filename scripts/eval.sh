@@ -45,6 +45,9 @@ cargo test -p niuse --features tui --test tui_mcp -- --nocapture
 echo "== combined personal workflow =="
 cargo test -p niuse --test personal_workflow -- --nocapture
 
+echo "== TUI plan/verify =="
+cargo test -p niuse --features tui --bin niuse read_only_commands -- --nocapture
+
 if [[ -d "$root/../niucode" ]]; then
   echo "== MCP client boundaries =="
   (cd "$root/../niucode" && cargo test -p niucode-mcp --tests -- --nocapture)
