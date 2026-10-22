@@ -22,7 +22,8 @@ The contract is deliberately small: `run_with_history`, `AgentConfig`, `project_
 
 | niuse | niucode | status | updated |
 |---|---|---|---|
-| 0.1.0 | `aac20a1` | current pin; ADR-0032 library target landed | 2026-10-22 |
+| 0.1.0 | `fb68b31` | current pin; changelog corrected | 2026-10-22 |
+| 0.1.0 | `aac20a1` | previous pin; ADR-0032 library target landed | 2026-10-22 |
 | 0.1.0 | `d6d69f0` | previous pin; 0.1.0 changelog added | 2026-10-22 |
 | 0.1.0 | `3508a94` | previous pin; release workflow tests before publish | 2026-10-22 |
 | 0.1.0 | `1753d05` | previous pin; release workflow added | 2026-10-22 |
