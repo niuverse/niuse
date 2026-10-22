@@ -39,7 +39,7 @@ The script runs `niuse stats --days 1 --json`, uses the local calendar date, and
 
 | date | turns | proposed | accepted | note |
 |---|---|---|---|---|
-| 2026-10-22 | 19 | 1 | 1 | real exec/MCP/TUI/write; A/B cited m-3d0b; disagreement dropped RSS; 9 digests reviewed; unresolved failed check stayed failed in digest |
+| 2026-10-22 | 19 | 1 | 1 | real exec/MCP/TUI/write; A/B cited m-3d0b; disagreement dropped RSS; 10/10 digests reviewed; M6 closed, digest stays opt-in |
 
 ## Rules
 

@@ -5,7 +5,7 @@
     "title": "niuse",
     "tagline": "personal engineering companion on niucode",
     "summary": "A personal engineering companion on top of niucode: six Markdown stores for identity, memory, and human goals, an opt-in shared TUI, project context, and a long-horizon roadmap. The board records architecture, decisions, and iteration; it is not runtime monitoring.",
-    "status": "M2 · Dogfood gate · M3 deferred · M7 done · M8/M9 next",
+    "status": "M2/M5 gates · M3 deferred · M6/M7 done · M8/M9 next",
     "repo": "niuverse/niuse",
     "language": "Rust"
   },
@@ -79,7 +79,7 @@
     {
       "id": "M6",
       "title": "Compounding context",
-      "status": "planned",
+      "status": "done",
       "goal": "Make what the companion knows visible and useful at the moment work starts, without adding a database.",
       "exit": [
         "startup brief surfaces overdue promises and review queues",

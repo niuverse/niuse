@@ -1,12 +1,13 @@
 +++
 id = "M6-003"
 title = "Session digest into the journal"
-status = "review"
+status = "done"
 milestone = "M6"
 module = "cli"
 size = "L"
 priority = "P1"
 updated = "2026-10-22"
+completed = "2026-10-22"
 depends_on = ["M6-001"]
 docs = ["roadmap", "plan"]
 +++
@@ -34,7 +35,7 @@ a memory strategy.
       user/assistant text, and never writes tool output.
 - [x] `--dry-run` prints the entry without writing.
 - [x] A failed, empty, or malformed response writes nothing and says why.
-- [ ] Ten real digests are reviewed before the path becomes automatic.
+- [x] Ten real digests are reviewed before the path becomes automatic.
 - [x] The journal format and existing day-merging behaviour are unchanged.
 
 ## Notes
@@ -79,7 +80,14 @@ RSS → `YES · 助手明确反对...`; trivial → `NO · 用户仅要求回复
   `p-1` check created an open decision. One bullet says the check failed and the
   choice is README vs step, with no invented repair.
 
-That is 9/10 real reviews; the path stays opt-in. Activity-only digests are a
+- memory Q&A (`1792683247889-429410-0`): initially YES because the answer
+  restated `m-3d0b`; after the restatement gate rule, NO with reason “仅复述
+  已注入的长期记忆内容”.
+
+That is 10/10 real reviews. Decision: keep the digest **opt-in**. Automatic
+journal writes would add a model call and noise to every thread; the gate is
+still model-dependent, and no real user asked for automatic. The card is done
+for the opt-in feature, not for automatic writes. Activity-only digests are a
 known limitation, not a reason to auto-write.
 
 The source thread is named in the command output and recorded in the `digest`
