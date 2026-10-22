@@ -27,6 +27,7 @@ agent-dispatch tests. No API key, network, or model call is involved.
 | `reports_files_checks_failures_and_denials` | Includes a completed delegation's task and summary |
 | `an_unfinished_delegation_is_not_reported_as_success` | A spawn without a result is `?`, not ✓ |
 | `read_only_commands_read_the_store` | TUI `/steps` and tagged `/verify` share the CLI gate |
+| `steps_execute_one_at_a_time_and_vanish_after_verification` | A closed step leaves the next prompt; the remaining step stays |
 | `two_packs_plan_step_and_verification_close_the_loop` | Notes + calendar + plan + tagged verification compose in one scenario |
 | `pty_tui_mounts_mcp_and_dispatches_a_tool` | The TUI mounts a manifest and dispatches a namespaced tool |
 | `mcp_init_merges_new_servers_and_keeps_existing_text` | A new pack is appended; comments survive; invalid TOML is untouched |
