@@ -30,14 +30,14 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 - Journal and loops: model-written blocks plus manual entry and manual promises.
 - Bootstrap: dry-run preview, candidate merge into the inbox, optional `user.md` draft.
 - Sessions: derived thread titles, `threads` and `sessions` listings, Markdown export with a title, JSON output.
-- Machine output: JSON for memory, journal, threads, loops, status, doctor, stats; `stats` totals and trends include token usage.
+- Machine output: JSON for memory (list/search/show), journal, threads, sessions, loops, status, doctor, stats, config effective, identity, and user; `stats` totals and trends include token usage.
 - Operations: pinned niucode revision, contract tests, nightly main check, doctor, acceptance metrics.
 
 ## Waiting on you
 
 1. **ADR-0032** — accept or reject the reusable TUI library and turn hooks. If accepted, the next step is the library target plus empty hooks, then moving niuse's renderer upstream. Discussion: [niuverse/niucode#1](https://github.com/niuverse/niucode/issues/1).
-2. **License and dependency strategy** — publishing needs a license choice and a decision between publishing niucode crates first or staying on `cargo install --git`. Details: [distribution](distribution.md).
-3. **Dogfood** — ten working days recorded in [dogfood](dogfood.md). The tooling is ready; only real use can close M2.
+2. **License and crates.io token** — publishing the niucode crates first is chosen, at version 0.1.0. Manifests, the release guide, the publish script, and a manual workflow are ready; the remaining blockers are a license choice (MIT OR Apache-2.0 is the recommendation) and `CARGO_REGISTRY_TOKEN`. Details: [distribution](distribution.md) and niucode's `docs/release.md`.
+3. **Dogfood** — ten working days recorded in [dogfood](dogfood.md). `./scripts/dogfood.sh "note"` writes the day's row from `stats --days 1 --json`; only real use can close M2.
 
 ## Not built
 
