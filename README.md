@@ -216,13 +216,14 @@ History (`~/.niuse/history`) contains the prompts you typed, and thread/session 
 
 ```sh
 ./scripts/check.sh   # fmt, clippy, docs, tests, package, dashboard
+./scripts/eval.sh    # offline personal-agent eval + notes MCP pack
 ```
 
 Repository rules and commands for future sessions live in [AGENTS.md](AGENTS.md).
 
 ## Not building
 
-A daemon, a web UI, WeChat / Feishu bridges, scheduled push notifications, vector search, full session indexing, automatic repo edits, multi-user support, a TUI (for now), or a general agent framework.
+A daemon, a web UI, WeChat / Feishu bridges, scheduled push notifications, vector search, full session indexing, automatic repo edits, or multi-user support. The TUI is opt-in; the working-companion scope is in [roadmap](docs/roadmap.md).
 
 ## Known limits
 
