@@ -17,7 +17,8 @@ docs = ["adr-0003", "compat"]
 - A small hook surface: augment the system prompt before a turn, observe a finished turn, receive session lifecycle events.
 - niuse implements the hooks: identity / memory injection, candidate extraction, journal and loop writes.
 - Delete niuse's renderer and its per-turn `AgentConfig` assembly once the shared path is stable.
-- Step 1 is done in niucode `aac20a1`: `niucode-cli` exports `run()`, `TurnHooks`, and `NoHooks`. The hooks are not yet invoked; wiring them and moving the renderer are the remaining steps.
+- Step 1 is done in niucode `aac20a1`: `niucode-cli` exports `run()`, `TurnHooks`, and `NoHooks`.
+- Step 2 is partially done: the exec path invokes prompt, event, and turn-end hooks through `run_exec_with_hooks`; the TUI path does not yet, and the renderer has not moved.
 
 ## Acceptance
 

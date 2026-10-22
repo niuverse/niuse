@@ -40,7 +40,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 
 ## In progress
 
-- **ADR-0032 step 2** — the library target and `TurnHooks` are exported (`aac20a1`); wiring prompt augmentation, event observation, and turn-end into the TUI/exec paths, then migrating niuse's renderer, is next. Discussion: [niuverse/niucode#1](https://github.com/niuverse/niucode/issues/1).
+- **ADR-0032 step 2** — the library target and `TurnHooks` are exported; the exec path now invokes prompt augmentation, event observation, and turn-end (`run_exec_with_hooks`). The TUI path and renderer migration remain. Discussion: [niuverse/niucode#1](https://github.com/niuverse/niucode/issues/1).
 
 ## Not built
 
