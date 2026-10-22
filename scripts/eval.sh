@@ -21,6 +21,9 @@ cargo test -p niuse --test cli plan_steps -- --nocapture
 echo "== prompt budget =="
 cargo test -p niuse --test prompt_budget -- --nocapture
 
+echo "== cost signals =="
+cargo test -p niuse --test cli stats_json_reports -- --nocapture
+
 echo "== agent recall =="
 cargo test -p niuse --bin niuse memory_tool::tests -- --nocapture
 

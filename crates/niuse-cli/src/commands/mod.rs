@@ -270,6 +270,16 @@ impl Summary {
     fn acceptance_percent(&self) -> Option<usize> {
         (self.proposals > 0).then(|| self.accepted * 100 / self.proposals)
     }
+
+    fn cache_hit_percent(&self) -> Option<usize> {
+        (self.input_tokens > 0)
+            .then(|| (self.cached_tokens.saturating_mul(100) / self.input_tokens) as usize)
+            .map(|percent| percent.min(100))
+    }
+
+    fn tokens_per_turn(&self) -> Option<u64> {
+        (self.turns > 0).then(|| (self.input_tokens + self.output_tokens) / self.turns as u64)
+    }
 }
 
 fn window_start(days: u64) -> u64 {
@@ -311,6 +321,17 @@ pub fn stats(store: &Store, days: u64, trend: bool, json: bool) -> Result<()> {
         crate::render::compact_tokens(report.output_tokens),
         crate::render::compact_tokens(report.cached_tokens)
     );
+    match report.cache_hit_percent {
+        Some(percent) => println!("cache        {percent}% hit (cached / input)"),
+        None => println!("cache        n/a (no input tokens yet)"),
+    }
+    match report.tokens_per_turn {
+        Some(tokens) => println!(
+            "per turn     {} tokens (input + output)",
+            crate::render::compact_tokens(tokens)
+        ),
+        None => println!("per turn     n/a (no turns yet)"),
+    }
     println!(
         "candidates   {} proposed · {} accepted · {} discarded · {} edited · {} suppressed · {} blocked",
         report.proposals,
@@ -391,6 +412,8 @@ struct StatsReport {
     input_tokens: u64,
     output_tokens: u64,
     cached_tokens: u64,
+    cache_hit_percent: Option<usize>,
+    tokens_per_turn: Option<u64>,
     days: Vec<DayReport>,
 }
 
@@ -431,6 +454,8 @@ impl StatsReport {
             input_tokens: summary.input_tokens,
             output_tokens: summary.output_tokens,
             cached_tokens: summary.cached_tokens,
+            cache_hit_percent: summary.cache_hit_percent(),
+            tokens_per_turn: summary.tokens_per_turn(),
             days: daily
                 .into_iter()
                 .map(|(date, day)| DayReport {
@@ -618,5 +643,25 @@ mod tests {
         let metrics = parse_metrics("1000\tturn\tok\n9999999999999\tturn\tok\n");
         let summary = summarize(&metrics, 5000);
         assert_eq!(summary.turns, 1);
+    }
+    #[test]
+    fn cost_signals_are_derived_from_token_totals() {
+        let summary = Summary {
+            turns: 2,
+            input_tokens: 1_000,
+            output_tokens: 200,
+            cached_tokens: 500,
+            ..Summary::default()
+        };
+        assert_eq!(summary.cache_hit_percent(), Some(50));
+        assert_eq!(summary.tokens_per_turn(), Some(600));
+        assert_eq!(Summary::default().cache_hit_percent(), None);
+        assert_eq!(Summary::default().tokens_per_turn(), None);
+        let over = Summary {
+            input_tokens: 10,
+            cached_tokens: 20,
+            ..Summary::default()
+        };
+        assert_eq!(over.cache_hit_percent(), Some(100));
     }
 }

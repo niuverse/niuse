@@ -121,7 +121,7 @@ that way.
 - A memory-on/off A/B case shows a behavioural difference.
 - Regressions in dogfood metrics block a release.
 
-**Cards:** M9-001 and M9-002 are done: briefs, goals, memory A/B, recall, MCP boundaries, the dogfood trend gate, and prompt-size budgets are covered.
+**Cards:** M9-001, M9-002, and M9-003 are done: briefs, goals, memory A/B, recall, MCP boundaries, the dogfood trend gate, prompt-size budgets, and token/cache signals are covered.
 
 ## Current sprint
 
@@ -147,6 +147,7 @@ and commit agree.
 | 15 | M7-006 plan prompt | done | Agent sees only open steps and the verify rule |
 | 16 | M7-007 delegation evidence | done | Delegated runs are visible, unfinished ones are not success |
 | 17 | M9-002 prompt budget | done | Fat stores cannot silently inflate every turn |
+| 18 | M9-003 cost signals | done | Cache hit and tokens/turn are visible, not guessed |
 
 ## The round ritual
 

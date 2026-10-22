@@ -325,6 +325,27 @@ fn plan_steps_close_only_after_step_verification() {
 }
 
 #[test]
+fn stats_json_reports_cache_hit_and_tokens_per_turn() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    std::fs::create_dir_all(&home).unwrap();
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_millis();
+    std::fs::write(
+        home.join("metrics.jsonl"),
+        format!("{now}\tturn\tok\n{now}\ttokens\t1000,200,500\n"),
+    )
+    .unwrap();
+    let output = run(&home, &["stats", "--days", "1", "--json"]);
+    assert!(output.status.success(), "{output:?}");
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(report["cache_hit_percent"], 50);
+    assert_eq!(report["tokens_per_turn"], 1200);
+}
+
+#[test]
 fn projects_json_filters_and_limits() {
     let directory = tempfile::tempdir().unwrap();
     let niucode = directory.path().join("niucode-home");

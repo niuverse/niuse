@@ -26,6 +26,7 @@ agent-dispatch tests. No API key, network, or model call is involved.
 | `brief_surfaces_overdue_promises_and_stale_memory` | The startup brief reports overdue promises, stale memory, and the review queue |
 | `reports_files_checks_failures_and_denials` | Includes a completed delegation's task and summary |
 | `an_unfinished_delegation_is_not_reported_as_success` | A spawn without a result is `?`, not ✓ |
+| `stats_json_reports_cache_hit_and_tokens_per_turn` | Cost signals are derived from token totals, not guessed |
 | `a_fat_store_stays_under_the_prompt_budget` | A 200-memory store stays under 4.2k tokens |
 | `plan_injection_caps_at_six_steps` | A 50-step plan injects six, not all |
 | `memory_is_truncated_before_it_can_dominate_the_prompt` | 500 memories are dropped, not appended |
