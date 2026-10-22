@@ -34,7 +34,10 @@ README.md:106 for `niuse report`; the turn used 2 steps, 11k input, 76 output,
 `mcp__notes__search_notes` returned `launch.md:1: Launch checklist` in 2 steps,
 5k input, 95 output, 3.1k cached. A third real turn ran through `niuse tui` and
 replied `391` (13k input, 2 output, 0 cached), confirming the TUI path works
-against the real provider. The dogfood table still has 1/10 days; ten days and
-the acceptance criteria remain open.
+against the real provider. A real write task used `--approval ask`: the diff
+was shown, the write was approved, `hello.txt` contained `real write ok`, and
+the answer surfaced a due loop from `loops.md` (3 steps, 7.1k input, 279 output,
+6.3k cached). The dogfood table still has 1/10 days; ten days and the acceptance
+criteria remain open.
 
 Record one row per day in [the dogfood log](../dogfood.md). This card writes no code. Its job is to stop new features before the current ones are validated.
