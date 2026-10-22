@@ -32,7 +32,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 - Sessions: derived thread titles, `threads` and `sessions` listings, Markdown export with a title, JSON output.
 - Machine output: JSON for memory (list/search/show), journal, threads, sessions, loops, status, doctor, stats, config effective, identity, and user; `stats` totals and trends include token usage.
 - Operations: pinned niucode revision, contract tests, nightly main check, doctor, acceptance metrics.
-- Distribution: seven niucode crates and both niuse crates are published. niucode 0.1.3 adds `filter_text` and the embedder command hook on top of 0.1.2's full TUI hook surface; `cargo install niucode --version 0.1.3` and `cargo install niuse --version 0.1.3` were verified from clean roots, and `cargo package -p niuse` succeeds against the registry.
+- Distribution: seven niucode crates and both niuse crates are published. niucode 0.1.3 adds `filter_text`, the embedder command hook, and post-turn prompts on top of 0.1.2's full TUI hook surface; `cargo install niucode --version 0.1.3` and `cargo install niuse --version 0.1.3` were verified from clean roots, and `cargo package -p niuse` succeeds against the registry.
 
 ## Waiting on you
 
@@ -40,7 +40,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 
 ## In progress
 
-- **ADR-0032 step 3** — hooks cover prompt, event, turn-end, and `filter_text` and the embedder command hook; the TUI shares an `Rc<RefCell<Box<dyn TurnHooks>>>` so no borrow crosses an await. Renderer migration is gated on candidate confirmation and command registration, not on moving files: [renderer-migration](renderer-migration.md).
+- **ADR-0032 step 3** — hooks cover prompt, event, turn-end, and `filter_text`, the embedder command hook, and post-turn prompts; the TUI shares an `Rc<RefCell<Box<dyn TurnHooks>>>` so no borrow crosses an await. Renderer migration is gated on candidate confirmation and command registration, not on moving files: [renderer-migration](renderer-migration.md).
 
 ## Not built
 

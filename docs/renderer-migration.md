@@ -30,12 +30,13 @@ The duplication is real, but it is not one renderer: niuse's candidate confirmat
 - `on_event` — observe every runtime `AgentEvent`.
 - `filter_text` — mutate a text delta before display; the persisted event is untouched.
 - `on_turn_end` — observe the final `RunOutcome`.
+- `after_turn` / `on_answer` — ask a numbered question after a successful turn; the host renders it and returns the choice.
 
 `filter_text` (published in niucode 0.1.3) is the first renderer seam: a niuse hook can run `StreamFilter` and strip protocol blocks before the TUI prints them, while capturing the raw deltas for parsing at turn end. The example `hooked_tui.rs` verifies the filter under a PTY.
 
 ## Gaps that still block deleting `render.rs`
 
-1. **Candidate confirmation.** After `on_turn_end`, the embedder can parse the captured raw text, but the TUI gives no way to ask "accept / edit / discard" inside its event loop. Printing to stdout from a hook would fight raw mode and the composer.
+1. **Candidate confirmation.** `after_turn` now provides a generic numbered prompt, so an embedder can ask "accept / edit / discard" after the turn. The remaining work is the niuse-side hook implementation (capture raw text, parse blocks, write memory on answer), not a TUI seam.
 2. **Product commands.** `/mem`, `/remember`, `/forget`, `/journal`, `/loops`, `/review`, and `/export` are niuse commands. The TUI's command registry has no embedder extension point; `run_tui_with_hooks` cannot register them.
 3. **Approval presentation.** The TUI already has a good approval UI, but niuse's preview contract (80-line cap, `d` full diff, denial preview returned to the model) is part of its acceptance. Reusing the TUI changes that contract and needs an explicit compatibility test.
 4. **Usage and `/cost`.** niuse accumulates usage across a session and prints one compact line; the TUI prints its own turn metrics. The numbers exist, but the presentation and `/cost` command need an adapter.
