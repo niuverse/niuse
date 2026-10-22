@@ -191,7 +191,8 @@ and commit agree.
 | 57 | M5-008 TUI fork pointer | done | /verify after /fork hits the destination |
 | 58 | M5-009 TUI memory prompt | done | Accept/discard works through a real terminal |
 | 59 | M5-010 TUI turn metrics | done | Real TUI turns reach stats and dogfood |
-| 60 | M2-002 distinct citations | done | Three different ids, not three rows |
+| 60 | M2-099 distinct citations | done | Three different ids, not three rows |
+| 61 | M5-011 TUI command compose | done | Brief, report, and steps run back-to-back |
 
 ## The round ritual
 
