@@ -3,9 +3,7 @@
 //! Memory ages and journal headings only need `YYYY-MM-DD`, so a small,
 //! deterministic conversion from days since the Unix epoch is enough.
 
-use std::time::{SystemTime, UNIX_EPOCH};
-
-const SECONDS_PER_DAY: i64 = 86_400;
+use chrono::{Datelike, Local, TimeZone};
 
 /// A calendar date, stored as days since 1970-01-01.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -22,15 +20,25 @@ impl Date {
         self.days
     }
 
-    /// Today in the machine's local timezone is not tracked; the day boundary
-    /// follows UTC. A personal journal one day off near midnight is worse than
-    /// carrying a timezone database, and the value is visibly a date.
+    /// Today in the machine's local timezone. Memory and journal dates follow
+    /// the user's calendar; event timestamps remain UTC epoch milliseconds.
     pub fn today() -> Self {
-        let seconds = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .map(|elapsed| elapsed.as_secs() as i64)
-            .unwrap_or(0);
-        Self::from_days(seconds.div_euclid(SECONDS_PER_DAY))
+        let now = Local::now().date_naive();
+        Self::from_days(days_from_civil(now.year() as i64, now.month(), now.day()))
+    }
+
+    /// Local calendar day for an epoch-millisecond timestamp. Used by metrics
+    /// trends so their labels agree with journal and memory dates.
+    pub fn from_millis_local(millis: u64) -> Self {
+        let local = Local
+            .timestamp_millis_opt(millis as i64)
+            .single()
+            .unwrap_or_else(|| Local.timestamp_opt(0, 0).unwrap());
+        Self::from_days(days_from_civil(
+            local.year() as i64,
+            local.month(),
+            local.day(),
+        ))
     }
 
     pub fn plus_days(self, days: i64) -> Self {
@@ -101,6 +109,27 @@ fn days_from_civil(year: i64, month: u32, day: u32) -> i64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn millis_map_to_the_local_calendar_day() {
+        let now = Local
+            .timestamp_millis_opt(1_700_000_000_000)
+            .single()
+            .unwrap();
+        assert_eq!(
+            Date::from_millis_local(1_700_000_000_000).format(),
+            format!("{:04}-{:02}-{:02}", now.year(), now.month(), now.day())
+        );
+    }
+
+    #[test]
+    fn today_follows_the_local_calendar() {
+        let now = Local::now().date_naive();
+        assert_eq!(
+            Date::today().format(),
+            format!("{:04}-{:02}-{:02}", now.year(), now.month(), now.day())
+        );
+    }
 
     #[test]
     fn epoch_round_trips() {

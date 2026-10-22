@@ -181,7 +181,7 @@ A daemon, a web UI, WeChat / Feishu bridges, scheduled push notifications, vecto
 
 - One thread: a single `thread.jsonl`, no `/new`.
 - Memory is capped around 200 entries; overflow is handled by budget trimming and manual review.
-- Dates are computed in UTC, so near midnight the journal may be one day off.
+- Journal, memory, and stats day labels follow the machine's local timezone; event timestamps stay UTC.
 - `bootstrap` sends old user/assistant text to the provider (tool output is dropped).
 - Similarity uses character-bigram Jaccard; the thresholds are heuristics and will be tuned after two weeks.
 

@@ -15,13 +15,13 @@ docs = ["architecture"]
 ## Scope
 
 - `niuse stats --trend` adds a per-day breakdown for the selected window.
-- Days are UTC dates; each row shows turns, accepted/proposed, and acceptance.
+- Days are local calendar dates; each row shows turns, accepted/proposed, and acceptance.
 - At most the last fourteen active days are printed.
 - `/stats` keeps the summary view; the flag is CLI-only for now.
 
 ## Acceptance
 
-- [x] Metrics on two UTC days produce two rows.
+- [x] Metrics on two local days produce two rows.
 - [x] Acceptance is `-` on days without proposals.
 - [x] Grouping has a unit test with synthetic timestamps.
 - [x] A real metrics file renders without panics.

@@ -373,7 +373,7 @@ fn parse_token_detail(detail: &str) -> Option<(u64, u64, u64)> {
 fn daily_summary(metrics: &[Metric], since_ms: u64) -> BTreeMap<Date, DaySummary> {
     let mut days: BTreeMap<Date, DaySummary> = BTreeMap::new();
     for metric in metrics.iter().filter(|metric| metric.at_ms >= since_ms) {
-        let date = Date::from_days((metric.at_ms / 86_400_000) as i64);
+        let date = Date::from_millis_local(metric.at_ms);
         let day = days.entry(date).or_default();
         match metric.kind.as_str() {
             "turn" => day.turns += 1,
@@ -490,20 +490,20 @@ mod tests {
     }
 
     #[test]
-    fn daily_summary_groups_by_utc_day() {
+    fn daily_summary_groups_by_local_day() {
         let metrics = parse_metrics(
             "0\tturn\tok\n1000\tpropose\trust\n2000\taccept\tm-1\n3000\ttokens\t100,20,5\n86400000\tturn\tok\n",
         );
         let days = daily_summary(&metrics, 0);
         assert_eq!(days.len(), 2);
-        let first = days.get(&Date::from_days(0)).unwrap();
+        let first = days.get(&Date::from_millis_local(0)).unwrap();
         assert_eq!(first.turns, 1);
         assert_eq!(first.proposals, 1);
         assert_eq!(first.accepted, 1);
         assert_eq!(first.input_tokens, 100);
         assert_eq!(first.output_tokens, 20);
         assert_eq!(first.acceptance_percent(), Some(100));
-        let second = days.get(&Date::from_days(1)).unwrap();
+        let second = days.get(&Date::from_millis_local(86_400_000)).unwrap();
         assert_eq!(second.turns, 1);
         assert_eq!(second.acceptance_percent(), None);
     }
