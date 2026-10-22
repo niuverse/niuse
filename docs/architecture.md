@@ -29,7 +29,7 @@ Only `driver.rs` touches `niucode-agent` directly. Everything else is either pur
 
 niuse does not fork niucode and does not add a memory hook to its loop. Memory is a product layer; the kernel stays minimal.
 
-niucode now exposes a library target and the generic `TurnHooks` trait (ADR-0032). The exec path invokes all three hooks through `run_exec_with_hooks`; the TUI path accepts `TuiOptions` and invokes the prompt hook, while event/turn-end wiring and renderer migration still remain. niuse keeps its REPL and renderer deliberately rather than accidentally.
+niucode now exposes a library target and the generic `TurnHooks` trait (ADR-0032). Both `run_exec_with_hooks` and `run_tui_with_hooks` invoke prompt, event, and turn-end hooks; the renderer migration remains. niuse keeps its REPL and renderer deliberately rather than accidentally until that migration lands.
 
 Terminal input uses `rustyline` only when stdin is a TTY; pipes keep the plain reader. History is stored at `~/.niuse/history` with mode `0600`. A line ending in `\` continues the prompt and is joined into one user message.
 

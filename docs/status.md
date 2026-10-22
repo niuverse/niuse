@@ -40,7 +40,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 
 ## In progress
 
-- **ADR-0032 step 2** — the exec path invokes prompt augmentation, event observation, and turn-end (`run_exec_with_hooks`); the TUI path accepts `TuiOptions` / `run_tui_with_hooks` and invokes the prompt hook. TUI event/turn-end wiring and renderer migration remain. Discussion: [niuverse/niucode#1](https://github.com/niuverse/niucode/issues/1).
+- **ADR-0032 step 2** — both `run_exec_with_hooks` and `run_tui_with_hooks` invoke prompt augmentation, event observation, and turn-end; the TUI shares an `Rc<RefCell<Box<dyn TurnHooks>>>` so no borrow crosses an await. Renderer migration remains. Discussion: [niuverse/niucode#1](https://github.com/niuverse/niucode/issues/1).
 
 ## Not built
 
