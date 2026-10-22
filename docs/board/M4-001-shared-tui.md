@@ -1,7 +1,8 @@
 +++
 id = "M4-001"
 title = "Reuse niucode's TUI through a library and hooks"
-status = "doing"
+status = "blocked"
+blocked_reason = "Renderer removal waits on ten real TUI dogfood days (M5-002) and ADR-0004."
 milestone = "M4"
 module = "frontend"
 size = "L"
