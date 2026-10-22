@@ -7,6 +7,7 @@ module = "cli"
 size = "S"
 priority = "P1"
 updated = "2026-10-22"
+completed = "2026-10-22"
 depends_on = ["M3-001"]
 docs = ["distribution"]
 +++
