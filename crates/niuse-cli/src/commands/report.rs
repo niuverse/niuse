@@ -40,6 +40,10 @@ pub fn report(store: &Store, days: u64, dogfood: Option<PathBuf>, json: bool) ->
     Ok(())
 }
 
+pub fn report_text(store: &Store, days: u64, dogfood: Option<PathBuf>) -> Result<String> {
+    Ok(render(&build(store, days, dogfood.as_deref())?))
+}
+
 pub fn build(store: &Store, days: u64, dogfood: Option<&Path>) -> Result<Report> {
     let days = days.max(1);
     let today = Date::today();

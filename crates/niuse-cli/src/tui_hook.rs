@@ -258,6 +258,10 @@ impl TurnHooks for CompanionHooks {
                 "tools, files, checks, and failures".into(),
             ),
             (
+                "/report".into(),
+                "weekly review: turns, cost, stores, dogfood".into(),
+            ),
+            (
                 "/goals".into(),
                 "list goals; /goals add <text>; /goals done <id>".into(),
             ),
@@ -294,6 +298,14 @@ impl TurnHooks for CompanionHooks {
                 let mut report = crate::evidence::from_thread(&self.thread).ok()?;
                 report.plan = store.plan().ok()?;
                 Some(report.render())
+            }
+            "/report" => {
+                let dogfood = self.cwd.join("docs/dogfood.md");
+                let dogfood = dogfood.is_file().then_some(dogfood);
+                match crate::commands::report_text(&store, 7, dogfood) {
+                    Ok(text) => Some(text),
+                    Err(error) => Some(format!("error: {error:#}")),
+                }
             }
             "/steps" => match parts.next() {
                 None | Some("list") => {
@@ -702,6 +714,7 @@ mod tests {
             "/user",
             "/brief",
             "/evidence",
+            "/report",
             "/recall",
             "/goals",
             "/steps",
@@ -727,6 +740,8 @@ mod tests {
         assert!(cost.contains("2 turns"));
         let evidence = hooks.command("/evidence").unwrap();
         assert!(evidence.contains("evidence"));
+        let report = hooks.command("/report").unwrap();
+        assert!(report.contains("weekly report"), "{report}");
         assert!(cost.contains("150 in"));
         assert!(cost.contains("40 cached"));
 

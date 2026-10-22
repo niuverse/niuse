@@ -164,6 +164,7 @@ and commit agree.
 | 30 | M2-096 dogfood command | done | The row comes from metrics, not hand arithmetic |
 | 31 | M2-097 weekly report | done | One read-only view for the weekly review |
 | 32 | M9-007 prompt prefix | done | Cacheable bytes are pinned; protocol heading deduped |
+| 33 | M2-098 report commands | done | The weekly review is available in-session |
 
 ## The round ritual
 

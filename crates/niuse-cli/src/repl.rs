@@ -58,6 +58,7 @@ const SLASH_COMMANDS: &[&str] = &[
     "/cd",
     "/status",
     "/evidence",
+    "/report",
     "/verify",
     "/brief",
     "/plan",
@@ -824,6 +825,12 @@ impl App {
             "/evidence" => {
                 print!("{}", crate::evidence::from_thread(&thread.path)?.render());
             }
+            "/report" => {
+                let days = argument.parse().unwrap_or(7);
+                let dogfood = self.cwd.join("docs/dogfood.md");
+                let dogfood = dogfood.is_file().then_some(dogfood);
+                print!("{}", commands::report_text(&self.store, days, dogfood)?);
+            }
             "/verify" => {
                 if argument.is_empty() {
                     println!("用法：/verify <命令>");
@@ -1275,6 +1282,7 @@ const HELP: &str = r#"对话
 会话
   /brief                  今天需要处理什么（逾期/审查/过期）
   /evidence               本 thread 的工具调用、文件、检查与失败
+  /report [days]          周报：turn、成本、store、dogfood
   /verify <command>       运行检查并把结果写入 thread
   /plan [on|off]          只读计划模式（工具限制为 read/grep/glob）
   /export [path]          导出当前主线为 Markdown
