@@ -30,7 +30,9 @@ docs = ["plan", "dogfood"]
 
 2026-10-22: started. A real read-only `niuse exec` on this repository cited
 README.md:106 for `niuse report`; the turn used 2 steps, 11k input, 76 output,
-3.5k cached tokens. The dogfood table has 1/10 days. Ten days and the acceptance
-criteria are still open.
+3.5k cached tokens. A second real turn used the notes MCP pack:
+`mcp__notes__search_notes` returned `launch.md:1: Launch checklist` in 2 steps,
+5k input, 95 output, 3.1k cached. The dogfood table has 1/10 days. Ten days and
+the acceptance criteria are still open.
 
 Record one row per day in [the dogfood log](../dogfood.md). This card writes no code. Its job is to stop new features before the current ones are validated.
