@@ -100,6 +100,7 @@ niuse doctor [--json]            check home, identity, credentials, sandbox, pin
 niuse config init|show|effective
 niuse stats [--days N] [--trend] [--json] local acceptance counters
 niuse brief [--json]            what needs attention today
+niuse projects [--limit N] [--all] [--json] recent niucode projects
 niuse status
 ```
 

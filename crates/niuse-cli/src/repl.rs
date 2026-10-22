@@ -759,7 +759,7 @@ impl App {
             }
             "/brief" => print!("{}", commands::brief_text(&self.store, &self.cwd)?),
             "/status" => {
-                commands::status(&self.store, &thread.path, false)?;
+                commands::status(&self.store, &thread.path, &self.cwd, false)?;
                 let events = load(&thread.path)
                     .map(|loaded| loaded.events.len())
                     .unwrap_or(0);

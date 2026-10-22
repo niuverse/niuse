@@ -7,6 +7,7 @@ mod journal;
 mod loops;
 mod memory;
 mod profile;
+mod projects;
 mod session;
 pub use doctor::doctor;
 pub(crate) use editor::{edit_markdown, edit_text};
@@ -17,6 +18,7 @@ pub use memory::{
     mem_show,
 };
 pub use profile::{identity_edit, identity_init, identity_show, user_edit, user_show};
+pub use projects::projects;
 #[cfg(feature = "tui")]
 pub(crate) use session::write_export;
 pub use session::{export, sessions, thread_at, threads};
@@ -29,13 +31,17 @@ use std::path::Path;
 
 use serde::Serialize;
 
-pub fn status(store: &Store, thread: &Path, json: bool) -> Result<()> {
+pub fn status(store: &Store, thread: &Path, cwd: &Path, json: bool) -> Result<()> {
     let today = Date::today();
     let memories = store.memories()?;
     let loops = store.loops()?;
     let journal = store.recent_journal(3)?;
     let identity = store.identity()?;
     let user = store.user()?;
+    let registry = crate::projects::default_root()
+        .ok()
+        .map(|root| crate::projects::Registry::discover(&root));
+    let current = registry.as_ref().and_then(|registry| registry.current(cwd));
     let composition = compose(
         identity.as_deref(),
         user.as_deref(),
@@ -86,6 +92,15 @@ pub fn status(store: &Store, thread: &Path, json: bool) -> Result<()> {
                 "injected": composition.memory_injected,
                 "dropped": composition.memory_dropped,
             },
+            "project": current.map(|project| serde_json::json!({
+                "key": project.key,
+                "name": project.name(),
+                "cwd": project.cwd.display().to_string(),
+                "sessions": project.sessions,
+                "activity": project.activity(),
+                "last_seen": project.last_seen,
+                "missing": project.missing,
+            })),
         });
         println!("{}", serde_json::to_string_pretty(&payload)?);
         return Ok(());
@@ -94,6 +109,15 @@ pub fn status(store: &Store, thread: &Path, json: bool) -> Result<()> {
     println!("version   {}", env!("CARGO_PKG_VERSION"));
     println!("home      {}", store.root().display());
     println!("thread    {}", thread.display());
+    match current {
+        Some(project) => println!(
+            "project   {} · {} 个 session · {}",
+            project.name(),
+            project.sessions,
+            crate::projects::day_label(project.activity())
+        ),
+        None => println!("project   未登记"),
+    }
     println!(
         "identity  {}",
         if identity.is_some() {

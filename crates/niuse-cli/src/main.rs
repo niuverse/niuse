@@ -5,6 +5,7 @@ mod commands;
 mod config;
 mod driver;
 mod export;
+mod projects;
 mod render;
 mod repl;
 mod settings;
@@ -177,6 +178,18 @@ enum Command {
     },
     /// Show what needs attention today
     Brief {
+        /// Emit JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// List recent niucode projects
+    Projects {
+        /// Maximum number to show
+        #[arg(long, default_value_t = 10)]
+        limit: usize,
+        /// Include missing and temporary projects
+        #[arg(long)]
+        all: bool,
         /// Emit JSON
         #[arg(long)]
         json: bool,
@@ -530,9 +543,11 @@ async fn main() -> Result<()> {
             let cwd = config::resolve_cwd(cli.cwd.clone())?;
             commands::brief(&store, &cwd, json)
         }
+        Some(Command::Projects { limit, all, json }) => commands::projects(limit, all, json),
         Some(Command::Status { json }) => {
             let thread = config::resolve_thread(cli.thread.clone(), &store)?;
-            commands::status(&store, &thread, json)
+            let cwd = config::resolve_cwd(cli.cwd.clone())?;
+            commands::status(&store, &thread, &cwd, json)
         }
     }
 }

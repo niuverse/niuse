@@ -24,6 +24,21 @@ fn run_in(
         .expect("run niuse")
 }
 
+fn run_with_env(
+    home: &std::path::Path,
+    env: &[(&str, &str)],
+    args: &[&str],
+) -> std::process::Output {
+    Command::new(env!("CARGO_BIN_EXE_niuse"))
+        .current_dir(".")
+        .envs(env.iter().copied())
+        .arg("--home")
+        .arg(home)
+        .args(args)
+        .output()
+        .expect("run niuse")
+}
+
 #[test]
 fn status_works_on_an_empty_home() {
     let directory = tempfile::tempdir().unwrap();
@@ -102,6 +117,7 @@ fn status_json_has_nested_sections() {
     assert_eq!(status["memory"]["lessons"], 0);
     assert_eq!(status["loops"]["open"], 0);
     assert!(status["prompt"]["tokens"].as_u64().unwrap() > 0);
+    assert!(status.get("project").is_some());
 }
 
 #[test]
@@ -133,6 +149,62 @@ fn brief_json_reports_actionable_context() {
     let stdout = String::from_utf8_lossy(&text.stdout);
     assert!(stdout.contains("niuse brief"));
     assert!(stdout.contains("ship the brief"));
+}
+
+#[test]
+fn projects_json_filters_and_limits() {
+    let directory = tempfile::tempdir().unwrap();
+    let niucode = directory.path().join("niucode-home");
+    let second = directory.path().join("second");
+    std::fs::create_dir_all(&second).unwrap();
+
+    for (key, cwd, last_seen, sessions) in [
+        ("demo-key", directory.path(), 100, 0),
+        ("second-key", second.as_path(), 200, 2),
+    ] {
+        let project = niucode.join("projects").join(key);
+        std::fs::create_dir_all(project.join("sessions")).unwrap();
+        std::fs::write(
+            project.join("project.toml"),
+            format!(
+                "schema_version = 1\ncwd = \"{}\"\nlast_seen = {last_seen}\n",
+                cwd.display()
+            ),
+        )
+        .unwrap();
+        for index in 0..sessions {
+            std::fs::write(
+                project.join("sessions").join(format!("s{index}.jsonl")),
+                "{}\n",
+            )
+            .unwrap();
+        }
+    }
+
+    let home = directory.path().join(".niuse");
+    let env = [("NIUCODE_HOME", niucode.to_str().unwrap())];
+
+    // Temporary checkouts are hidden unless --all is passed.
+    let filtered = run_with_env(&home, &env, &["projects", "--json"]);
+    assert!(filtered.status.success(), "{filtered:?}");
+    let filtered: serde_json::Value = serde_json::from_slice(&filtered.stdout).expect("valid JSON");
+    assert_eq!(filtered["total"], 0);
+    assert_eq!(filtered["shown"], 0);
+
+    let output = run_with_env(
+        &home,
+        &env,
+        &["projects", "--json", "--all", "--limit", "1"],
+    );
+    assert!(output.status.success(), "{output:?}");
+    let registry: serde_json::Value = serde_json::from_slice(&output.stdout).expect("valid JSON");
+    assert_eq!(registry["all"], 2);
+    assert_eq!(registry["total"], 2);
+    assert_eq!(registry["shown"], 1);
+    let project = &registry["projects"][0];
+    assert_eq!(project["key"], "second-key");
+    assert_eq!(project["sessions"], 2);
+    assert_eq!(project["missing"], false);
 }
 
 #[test]

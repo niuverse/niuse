@@ -44,6 +44,7 @@ Terminal input uses `rustyline` only when stdin is a TTY; pipes keep the plain r
 | `protocol` | Engine | in-band block parsing and streaming stripping |
 | `policy` | Engine | soft expiry, conflicts, secret scanning |
 | `driver` | Adapters | niucode boundary, sessions, per-turn cwd |
+| `projects` | Adapters | read-only view of niucode's project registry |
 | `bootstrap` | Adapters | old-session mining and the inbox |
 | `stores` | State | five-store load / save and permissions |
 | `dashboard` | Engineering | offline board generation |

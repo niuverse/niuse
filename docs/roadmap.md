@@ -127,7 +127,7 @@ and commit agree.
 | Order | Card | Status | Why now |
 |---|---|---|---|
 | 1 | M6-001 startup brief | done | Makes existing context actionable without new architecture |
-| 2 | M6-002 project registry | ready | Answers "where was I?" before planning work |
+| 2 | M6-002 project registry | done | Answers "where was I?" before planning work |
 | 3 | M5-001 TUI parity | ready | Unblocks the default front end and renderer retirement |
 | 4 | M5-002 TUI dogfood | ready | Product proof for the new default |
 | 5 | M6-003 session digest | backlog | Turns finished work into reusable experience |
