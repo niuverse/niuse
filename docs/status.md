@@ -41,7 +41,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 - Sessions: derived thread titles, `threads` and `sessions` listings, Markdown export with a title, JSON output.
 - Machine output: JSON for memory (list/search/show), journal, threads, sessions, loops, status, doctor, stats, config effective, identity, and user; `stats` totals and trends include token usage, cache-hit percent, and tokens per turn.
 - Operations: pinned niucode revision, contract tests, nightly main check, doctor, acceptance metrics.
-- Distribution: crates.io has `niuse`/`niuse-core` 0.1.11 and seven `niucode-*` crates at 0.1.5. The current tree added `niucode-mcp`, which is not published yet, so `cargo package -p niuse` fails on that dependency. M3 remains planned until the MCP crate is released and the dry-run passes.
+- Distribution: crates.io has `niuse`/`niuse-core` 0.1.11 and seven `niucode-*` crates at 0.1.5. The current tree added `niucode-mcp`; it packages and passes `cargo publish --dry-run`, and the publish order includes it, but it is not on crates.io yet. `cargo package -p niuse` still fails on that dependency; M3 remains planned until the authorized upload and a passing package verification.
 
 ## Waiting on you
 

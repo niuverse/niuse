@@ -182,6 +182,7 @@ and commit agree.
 | 48 | M6-013 restated memory | done | Restating memory is not a new change |
 | 49 | M5-002 TUI gate | doing | 1/10 TUI days; two gates may overlap |
 | 50 | M3-004 publish state | done | Docs match crates.io and the MCP blocker |
+| 51 | niucode M8-003 MCP preflight | ready | Missing crate is packageable; upload awaits human |
 
 ## The round ritual
 

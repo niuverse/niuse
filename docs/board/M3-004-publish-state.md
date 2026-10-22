@@ -38,3 +38,6 @@ the new `niucode-mcp` dependency was not.
 
 Historical 0.1.3/0.1.6 install checks remain true for those versions; they are no
 longer presented as the current state.
+
+2026-10-22 follow-up: `niucode-mcp` package and publish dry-run pass; the only
+blocker is the authorized upload.
