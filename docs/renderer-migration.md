@@ -36,7 +36,7 @@ The duplication is real, but it is not one renderer: niuse's candidate confirmat
 
 ## Gaps that still block deleting `render.rs`
 
-1. **Candidate confirmation.** `after_turn` provides a generic numbered prompt, and the `tui` feature now carries a `CompanionHooks` prototype (capture, parse, auto loop/journal, memory accept/discard). It is not wired to a `niuse --tui` entry yet.
+1. **Candidate confirmation.** `after_turn` provides a generic numbered prompt, and the `tui` feature carries `CompanionHooks` (capture, parse, auto loop/journal, memory accept/discard). `niuse tui` wires it end to end; conflict replace/keep and `e` edit are still missing.
 2. **Product commands.** `/mem`, `/remember`, `/forget`, `/journal`, `/loops`, `/review`, and `/export` are niuse commands. The TUI's command registry has no embedder extension point; `run_tui_with_hooks` cannot register them.
 3. **Approval presentation.** The TUI already has a good approval UI, but niuse's preview contract (80-line cap, `d` full diff, denial preview returned to the model) is part of its acceptance. Reusing the TUI changes that contract and needs an explicit compatibility test.
 4. **Usage and `/cost`.** niuse accumulates usage across a session and prints one compact line; the TUI prints its own turn metrics. The numbers exist, but the presentation and `/cost` command need an adapter.
@@ -47,7 +47,7 @@ The duplication is real, but it is not one renderer: niuse's candidate confirmat
 1. **Text filter (done).** `filter_text` exists and is verified; niuse can strip protocol blocks while capturing raw text.
 2. **Post-turn interaction hook (next).** Add a hook that lets the embedder present a candidate decision through the host UI, or a first-class "candidate" widget/command extension. This is the hard one.
 3. **Command registry injection.** Let the embedder add slash commands with help text and completion.
-4. **Opt-in TUI mode.** Prototype `niuse --tui` behind a flag, with niuse hooks and a contract test for approval and candidate confirmation. Keep the rustyline REPL as the fallback.
+4. **Opt-in TUI mode (prototype done).** `niuse tui` runs under the `tui` feature with `CompanionHooks`; a replay PTY test confirms protocol stripping, the accept/discard question, and the memory write. The rustyline REPL remains the default.
 5. **Retire `render.rs` only after** ten real dogfood days on the TUI path, the same bar as M2. Until then the renderer stays; it is not dead code.
 
 ## Decision

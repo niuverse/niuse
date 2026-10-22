@@ -9,7 +9,6 @@ mod render;
 mod repl;
 mod settings;
 #[cfg(feature = "tui")]
-#[allow(dead_code)]
 mod tui_hook;
 
 use std::path::PathBuf;
@@ -87,6 +86,13 @@ enum Command {
         /// Emit JSON
         #[arg(long)]
         json: bool,
+    },
+    /// Experimental: run niucode's TUI with niuse hooks
+    #[cfg(feature = "tui")]
+    Tui {
+        /// Replay normalized provider turns from a fixture JSON (testing)
+        #[arg(long)]
+        replay: Option<PathBuf>,
     },
     /// Generate shell completions
     Completions {
@@ -359,6 +365,8 @@ async fn main() -> Result<()> {
     store.init()?;
 
     match command {
+        #[cfg(feature = "tui")]
+        Some(Command::Tui { replay }) => run_tui(&cli, &store, replay).await,
         Some(Command::Completions { .. }) => Ok(()),
         None => {
             let settings = settings::resolve(&cli, &store)?;
@@ -517,4 +525,42 @@ async fn main() -> Result<()> {
             commands::status(&store, &thread, json)
         }
     }
+}
+
+#[cfg(feature = "tui")]
+async fn run_tui(cli: &Cli, store: &Store, replay: Option<PathBuf>) -> Result<()> {
+    let settings = settings::resolve(cli, store)?;
+    let cwd = config::resolve_cwd(cli.cwd.clone())?;
+    let (policy, approval, _) =
+        config::resolve_policy(&settings.sandbox, &settings.approval, &settings.network)?;
+    let model = settings
+        .model
+        .clone()
+        .unwrap_or_else(|| "deepseek-flash".to_string());
+    let thread = store.session_path();
+    let meta = driver::SessionMeta {
+        cwd: &cwd,
+        model: &model,
+        provider: &settings.provider,
+        policy,
+        approval,
+    };
+    drop(driver::open_thread(&thread, &meta)?);
+
+    let hooks = tui_hook::CompanionHooks::new(store)?;
+    let options = niucode::TuiOptions {
+        preset: settings.provider,
+        model: Some(model),
+        max_steps: settings.max_steps,
+        no_thinking: cli.no_thinking,
+        cwd: Some(cwd),
+        session_dir: Some(store.root().to_path_buf()),
+        resume: Some(thread),
+        sandbox: settings.sandbox,
+        approval: settings.approval,
+        network: settings.network,
+        replay,
+        ..niucode::TuiOptions::default()
+    };
+    niucode::run_tui_with_hooks(options, Box::new(hooks)).await
 }

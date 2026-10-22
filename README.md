@@ -168,6 +168,17 @@ Four views: Architecture (default), Work, Docs, Decisions. Sources are `docs/das
 
 `.github/workflows/pages.yml` deploys the generated board to GitHub Pages. A private repository needs GitHub Pro/Team/Enterprise; on the Free plan the workflow skips with a notice until Pages is available.
 
+## Experimental TUI
+
+The default REPL stays on rustyline. An opt-in build reuses niucode's TUI with niuse hooks:
+
+```sh
+cargo run --features tui -- tui
+# or: cargo install niuse --features tui
+```
+
+Memory candidates become accept/discard prompts after the turn; journal and loops are written automatically. Conflict replace/keep and edit are not wired yet. The default binary does not link the TUI.
+
 ## Privacy
 
 Everything niuse stores is local Markdown under `~/.niuse`: directories `0700`, files `0600`. Writers create files private from the first byte; `$EDITOR` scratch files and exports are `0600` too. Memory, journal, loops, identity, and user text are scanned for common secret patterns before writing; a match is refused. `NIUSE_MEMORY=off` disables injection entirely for an A/B run or trust recovery.
