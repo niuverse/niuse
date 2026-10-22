@@ -9,7 +9,7 @@ summary = "Entry point after the autonomous iteration: what works, what is pinne
 
 ## Snapshot · 2026-10-22
 
-niuse is runnable end to end: six Markdown stores, an interactive REPL with line editing, history, completion, multi-line input, confirmation and conflict handling, the in-band protocol, a read-only startup brief, bootstrap from history (memory candidates and a user profile), JSON views for every store, one-shot session listing, colored approval diffs, `doctor`, and acceptance metrics. The declared MSRV is 1.88; the full test suite and the optional `tui` feature pass under it, and a weekly workflow checks both.
+niuse is runnable end to end: seven Markdown stores, an interactive REPL with line editing, history, completion, multi-line input, confirmation and conflict handling, the in-band protocol, a read-only startup brief, bootstrap from history (memory candidates and a user profile), JSON views for every store, one-shot session listing, colored approval diffs, `doctor`, and acceptance metrics. The declared MSRV is 1.88; the full test suite and the optional `tui` feature pass under it, and a weekly workflow checks both.
 
 Both repositories are green. The board at <https://niuverse.github.io/niuse/> is deployed from a single generated file; source docs are not published. niuse builds against the niucode revision in `niucode.rev`. The long-running direction is in [roadmap](roadmap.md): harness-native companion, compounding context, long-horizon work, connected tools, and proof.
 
@@ -41,7 +41,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 - Sessions: derived thread titles, `threads` and `sessions` listings, Markdown export with a title, JSON output.
 - Machine output: JSON for memory (list/search/show), journal, threads, sessions, loops, status, doctor, stats, config effective, identity, and user; `stats` totals and trends include token usage, cache-hit percent, and tokens per turn.
 - Operations: pinned niucode revision, contract tests, nightly main check, doctor, acceptance metrics.
-- Distribution: seven niucode crates and both niuse crates are published. niucode 0.1.3 adds `filter_text`, the embedder command hook, and post-turn prompts on top of 0.1.2's full TUI hook surface; `cargo install niucode --version 0.1.3` and `cargo install niuse --version 0.1.6` were verified from clean roots, and `cargo package -p niuse` succeeds against the registry.
+- Distribution: crates.io has `niuse`/`niuse-core` 0.1.11 and seven `niucode-*` crates at 0.1.5. The current tree added `niucode-mcp`, which is not published yet, so `cargo package -p niuse` fails on that dependency. M3 remains planned until the MCP crate is released and the dry-run passes.
 
 ## Waiting on you
 

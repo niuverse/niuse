@@ -56,7 +56,9 @@ crates.io removes `path` specifications and expects the dependency to exist in t
 
 Publish the `niucode-*` crates first at **0.1.0**, then consume them by version. The path dependencies in niuse already carry `version = "0.1.0"` beside `path`, so local development keeps the sibling checkout while packaging can resolve registry versions once the upload exists.
 
-Remaining before the upload: choose a license, run `cargo login`, and publish in the order documented in niucode's `docs/release.md`. Until then, `cargo package -p niuse` still cannot verify against the registry.
+Current state (2026-10-22): `niuse` and `niuse-core` are published at 0.1.11; the seven original `niucode-*` crates are published at 0.1.5. The current tree adds `niucode-mcp`, which is not on crates.io, so `cargo package -p niuse` now fails with `no matching package named niucode-mcp`.
+
+Remaining before the next release: publish `niucode-mcp` with the next niucode release, then bump niuse's dependency and verify `cargo package -p niuse` against the registry. Until then, the crates.io packages are older than this checkout.
 
 ## Options
 

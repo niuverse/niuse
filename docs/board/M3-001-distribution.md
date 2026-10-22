@@ -27,5 +27,8 @@ docs = ["plan", "distribution"]
 ## Notes
 
 Findings and options are recorded in [distribution](../distribution.md).
+2026-10-22: the original crates are published, but `niucode-mcp` is not on
+crates.io, so `cargo package -p niuse` fails on that dependency. This card stays
+backlog until the MCP crate is released with niucode and the dry-run passes.
 
 Current failure: `all dependencies must have a version requirement specified when packaging`, pointing at the `niucode-agent` path dependency.
