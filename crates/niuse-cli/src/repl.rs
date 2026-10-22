@@ -12,7 +12,7 @@ use niucode_core::{load, Event};
 use niucode_provider::Provider;
 use niucode_tools::SandboxPolicy;
 use niuse_core::policy::{conflicts, secret_reason};
-use niuse_core::prompt::compose;
+use niuse_core::prompt::compose_with_goals;
 use niuse_core::{Block, Date, LoopItem, MemoryEntry, MemoryKind, Store};
 use rustyline::completion::{Completer, Pair};
 use rustyline::config::Config;
@@ -37,6 +37,9 @@ const SLASH_COMMANDS: &[&str] = &[
     "/loops",
     "/loop",
     "/done",
+    "/goals",
+    "/goals add",
+    "/goals done",
     "/journal",
     "/journal search",
     "/journal add",
@@ -345,10 +348,12 @@ impl App {
             Vec::new()
         };
         let loops = self.store.loops()?;
+        let goals = self.store.goals()?;
         let journal = self.store.recent_journal(3)?;
-        let composition = compose(
+        let composition = compose_with_goals(
             identity.as_deref(),
             user.as_deref(),
+            &goals,
             &memories,
             &loops,
             &journal,
@@ -586,6 +591,13 @@ impl App {
             .iter()
             .filter(|item| !item.done)
             .count();
+        let open_goals = self
+            .store
+            .goals()
+            .unwrap_or_default()
+            .iter()
+            .filter(|goal| !goal.done)
+            .count();
 
         println!(
             "niuse · {} · {} / {}",
@@ -594,9 +606,10 @@ impl App {
             self.approval.as_str()
         );
         println!(
-            "{} 条记忆（{} 条待验证）· {} 条未完成承诺 · prompt ~{} tokens",
+            "{} 条记忆（{} 条待验证）· {} 个进行中的目标 · {} 条未完成承诺 · prompt ~{} tokens",
             memories.len(),
             stale,
+            open_goals,
             open,
             self.prompt_tokens
         );
@@ -687,6 +700,15 @@ impl App {
                     println!("用法：/recall <关键词>");
                 } else {
                     print!("{}", commands::recall_text(&self.store, argument, 20)?);
+                }
+            }
+            "/goals" => {
+                if let Some(text) = argument.strip_prefix("add ") {
+                    commands::goals_add(&self.store, text.trim())?;
+                } else if let Some(id) = argument.strip_prefix("done ") {
+                    commands::goals_done(&self.store, id.trim())?;
+                } else {
+                    commands::goals_list(&self.store, false, false)?;
                 }
             }
             "/loops" => commands::loops_list(&self.store, false, false, false)?,
@@ -1177,6 +1199,9 @@ const HELP: &str = r#"对话
   /forget <id>            删除一条记忆
 
 承诺与日记
+  /goals                  列出进行中的目标
+  /goals add <text>       添加一个目标（由你维护，最多 7 个）
+  /goals done <g-id>      完成一个目标
   /loops                  列出承诺
   /loop <text>            记下一条承诺
   /done <l-id>            关闭一条承诺

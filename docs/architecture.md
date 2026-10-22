@@ -4,7 +4,7 @@ title = "Architecture"
 kind = "doc"
 status = "living"
 order = 5
-summary = "niuse boundaries, the five stores, turn data flow, write thresholds, and explicit non-goals."
+summary = "niuse boundaries, the six stores, turn data flow, write thresholds, and explicit non-goals."
 +++
 
 ## In one sentence
@@ -48,7 +48,7 @@ Terminal input uses `rustyline` only when stdin is a TTY; pipes keep the plain r
 | `driver` | Adapters | niucode boundary, sessions, per-turn cwd |
 | `projects` | Adapters | read-only view of niucode's project registry |
 | `bootstrap` | Adapters | old-session mining and the inbox |
-| `stores` | State | five-store load / save and permissions |
+| `stores` | State | six-store load / save and permissions |
 | `dashboard` | Engineering | offline board generation |
 
 ## Turn data flow
@@ -71,7 +71,7 @@ user input
 
 There is no second copy of the conversation. `niuse export` renders the event log as Markdown without changing it. `history` is projected from the event log by niucode's `project_history`, so compaction, replay, and fork behave exactly as they do in niucode.
 
-## The five stores and injection
+## The six stores and injection
 
 ```text
 ~/.niuse/
@@ -80,6 +80,7 @@ There is no second copy of the conversation. `niuse export` renders the event lo
   memory/          facts: preferences, decisions, pitfalls (confirmed, expiring)
   journal/         experience: one file per month, merged per day (automatic)
   loops.md         promises (automatic, optional due date)
+  goals.md         human-owned outcomes (injected, at most seven open)
   thread.jsonl     the relationship thread
   threads/         archived chapters from `/new`
   sessions/        one-shot `exec` logs (`niuse sessions`)
@@ -99,6 +100,7 @@ Injection order is fixed, stable before volatile:
 | persona | constant | never |
 | identity | ≤ 600 tok | very low |
 | user | ≤ 600 tok | low |
+| goals | ≤ 300 tok | low |
 | memory | ≤ 2 000 tok | low |
 | protocol | constant | never |
 | today | one line | daily |

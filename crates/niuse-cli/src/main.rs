@@ -75,6 +75,11 @@ enum Command {
         #[command(subcommand)]
         command: LoopsCommand,
     },
+    /// Manage human-owned goals
+    Goals {
+        #[command(subcommand)]
+        command: GoalsCommand,
+    },
     /// Export a session log as Markdown
     Export {
         /// Write to a file instead of stdout
@@ -296,6 +301,23 @@ enum MemCommand {
 }
 
 #[derive(Subcommand, Debug, Clone)]
+enum GoalsCommand {
+    /// List goals
+    List {
+        /// Include completed goals
+        #[arg(long)]
+        all: bool,
+        /// Emit JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Add a goal manually
+    Add { text: String },
+    /// Complete a goal
+    Done { id: String },
+}
+
+#[derive(Subcommand, Debug, Clone)]
 enum LoopsCommand {
     /// List loops
     List {
@@ -455,6 +477,11 @@ async fn main() -> Result<()> {
             }
             LoopsCommand::Add { text, due } => commands::loops_add(&store, &text, due.as_deref()),
             LoopsCommand::Done { id } => commands::loops_done(&store, &id),
+        },
+        Some(Command::Goals { command }) => match command {
+            GoalsCommand::List { all, json } => commands::goals_list(&store, all, json),
+            GoalsCommand::Add { text } => commands::goals_add(&store, &text),
+            GoalsCommand::Done { id } => commands::goals_done(&store, &id),
         },
         Some(Command::Sessions { json }) => commands::sessions(&store, json),
         Some(Command::Threads { json }) => {

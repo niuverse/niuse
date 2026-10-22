@@ -34,7 +34,8 @@ cargo test -p niuse --features tui   # opt-in TUI path
 - **Pin what you consume.** `niucode.rev` is the revision required CI builds
   against. Bump it through the script, not by editing the number by hand.
 - **Markdown is the only storage.** `identity.md`, `user.md`, `memory/`,
-  `journal/`, `loops.md` live under `~/.niuse`; no database, no second index.
+  `journal/`, `loops.md`, `goals.md` live under `~/.niuse`; no database, no
+  second index.
 - **Confirmation is the write barrier for memory.** Journal and loops are
   automatic; memory is proposed and confirmed; identity is human-written.
 - **Never auto-edit a user's repository.** Project knowledge stays in that
@@ -53,7 +54,7 @@ cargo test -p niuse --features tui   # opt-in TUI path
 ## Layout
 
 ```text
-crates/niuse-core/   domain: dates, five stores, prompt, protocol, policy
+crates/niuse-core/   domain: dates, six stores, prompt, protocol, policy
 crates/niuse-cli/    REPL, subcommands, driver, bootstrap, export, tui_hook
 crates/xtask/        offline dashboard generator
 docs/                plan, architecture, ADRs, board cards, generated board

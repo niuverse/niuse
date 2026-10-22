@@ -152,6 +152,31 @@ fn brief_json_reports_actionable_context() {
 }
 
 #[test]
+fn goals_round_trip_through_status() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+
+    let added = run(&home, &["goals", "add", "ship the personal agent"]);
+    assert!(added.status.success(), "{added:?}");
+    let listed = run(&home, &["goals", "list", "--json"]);
+    assert!(listed.status.success(), "{listed:?}");
+    let goals: serde_json::Value = serde_json::from_slice(&listed.stdout).expect("valid JSON");
+    assert_eq!(goals.as_array().unwrap().len(), 1);
+    assert_eq!(goals[0]["text"], "ship the personal agent");
+    let id = goals[0]["id"].as_str().unwrap().to_string();
+
+    let status = run(&home, &["status", "--json"]);
+    let status: serde_json::Value = serde_json::from_slice(&status.stdout).expect("valid JSON");
+    assert_eq!(status["goals"]["open"], 1);
+
+    let done = run(&home, &["goals", "done", &id]);
+    assert!(done.status.success(), "{done:?}");
+    let listed = run(&home, &["goals", "list", "--json"]);
+    let goals: serde_json::Value = serde_json::from_slice(&listed.stdout).expect("valid JSON");
+    assert_eq!(goals.as_array().unwrap().len(), 0);
+}
+
+#[test]
 fn recall_finds_memory_journal_and_loops() {
     let directory = tempfile::tempdir().unwrap();
     let home = directory.path().join(".niuse");

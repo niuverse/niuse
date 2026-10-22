@@ -9,7 +9,7 @@ summary = "Entry point after the autonomous iteration: what works, what is pinne
 
 ## Snapshot · 2026-10-22
 
-niuse is runnable end to end: five Markdown stores, an interactive REPL with line editing, history, completion, multi-line input, confirmation and conflict handling, the in-band protocol, a read-only startup brief, bootstrap from history (memory candidates and a user profile), JSON views for every store, one-shot session listing, colored approval diffs, `doctor`, and acceptance metrics. The declared MSRV is 1.88; the full test suite and the optional `tui` feature pass under it, and a weekly workflow checks both.
+niuse is runnable end to end: six Markdown stores, an interactive REPL with line editing, history, completion, multi-line input, confirmation and conflict handling, the in-band protocol, a read-only startup brief, bootstrap from history (memory candidates and a user profile), JSON views for every store, one-shot session listing, colored approval diffs, `doctor`, and acceptance metrics. The declared MSRV is 1.88; the full test suite and the optional `tui` feature pass under it, and a weekly workflow checks both.
 
 Both repositories are green. The board at <https://niuverse.github.io/niuse/> is deployed from a single generated file; source docs are not published. niuse builds against the niucode revision in `niucode.rev`. The long-running direction is in [roadmap](roadmap.md): harness-native companion, compounding context, long-horizon work, connected tools, and proof.
 
@@ -33,6 +33,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 - Recall: `niuse recall <query> [--json]` and `/recall` search memory (including expired), journal, and loops together; the agent can also call the read-only `memory_search` tool during a turn, and the protocol tells it to request `/recall` when no tool is available.
 - Dates: journal, memory, and stats day labels follow the local calendar; event timestamps stay UTC.
 - Journal and loops: model-written blocks plus manual entry and manual promises.
+- Goals: `goals.md` holds human-owned outcomes with `g-` ids; `niuse goals list|add|done` and `/goals` edit them, at most seven open, secret-scanned, and injected after user and before memory.
 - Bootstrap: dry-run preview, candidate merge into the inbox, optional `user.md` draft.
 - Sessions: derived thread titles, `threads` and `sessions` listings, Markdown export with a title, JSON output.
 - Machine output: JSON for memory (list/search/show), journal, threads, sessions, loops, status, doctor, stats, config effective, identity, and user; `stats` totals and trends include token usage.
@@ -49,6 +50,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 
 - **M5 · Harness-native companion** — M5-001 is done: configurable `y`/`n`/`s` approval keys, an offline PTY deny/allow test, product commands in TUI help/completion, and `/cost` computed from the thread event log. M5-002 starts the ten-day TUI dogfood gate.
 - **M6 · Compounding context** — startup brief (M6-001), project registry (M6-002), session digest (M6-003, in review), unified recall (M6-004), and agent-invoked `memory_search` (M6-005) landed. The remaining M6 item is real digest review.
+- **M7 · Long-horizon work** — the human-owned goal store (M7-001) landed and is injected into every session; plan → execute → verify and delegated work are next.
 - **M2 dogfood** continues in parallel; it is not a blocker for product work, but it still decides whether the memory layer pays for itself.
 
 ## Not built

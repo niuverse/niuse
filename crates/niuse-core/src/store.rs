@@ -13,8 +13,8 @@ use anyhow::{Context, Result};
 
 use crate::date::Date;
 use crate::model::{
-    parse_journal, parse_loop_line, parse_memory_section, JournalDay, LoopItem, MemoryEntry,
-    MemoryKind,
+    parse_goals, parse_journal, parse_loop_line, parse_memory_section, Goal, JournalDay, LoopItem,
+    MemoryEntry, MemoryKind,
 };
 
 const MEMORY_HEADER: &str = "<!-- 由 niuse 维护。可以手工编辑，但请保持每条的字段格式。 -->\n";
@@ -60,6 +60,10 @@ impl Store {
 
     pub fn loops_path(&self) -> PathBuf {
         self.root.join("loops.md")
+    }
+
+    pub fn goals_path(&self) -> PathBuf {
+        self.root.join("goals.md")
     }
 
     pub fn session_path(&self) -> PathBuf {
@@ -326,6 +330,42 @@ impl Store {
         };
         item.done = true;
         self.write_loops(&loops)?;
+        Ok(true)
+    }
+
+    pub fn goals(&self) -> Result<Vec<Goal>> {
+        let text = read_optional(&self.goals_path())?.unwrap_or_default();
+        Ok(parse_goals(&text))
+    }
+
+    pub fn write_goals(&self, goals: &[Goal]) -> Result<()> {
+        let mut text = String::from(
+            "# 目标\n\n<!-- 由你维护。niuse 读取进行中的目标并围绕它们工作，不会自动添加或完成。 -->\n\n",
+        );
+        for goal in goals {
+            text.push_str(&goal.render());
+            text.push('\n');
+        }
+        write_private(&self.goals_path(), &text)
+    }
+
+    pub fn add_goal(&self, mut goal: Goal) -> Result<Goal> {
+        let mut goals = self.goals()?;
+        while goals.iter().any(|existing| existing.id == goal.id) {
+            goal.id = crate::model::new_id(&format!("{}-{}", goal.text, goal.id));
+        }
+        goals.push(goal.clone());
+        self.write_goals(&goals)?;
+        Ok(goal)
+    }
+
+    pub fn close_goal(&self, id: &str) -> Result<bool> {
+        let mut goals = self.goals()?;
+        let Some(goal) = goals.iter_mut().find(|goal| goal.id == id) else {
+            return Ok(false);
+        };
+        goal.done = true;
+        self.write_goals(&goals)?;
         Ok(true)
     }
 

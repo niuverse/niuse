@@ -19,6 +19,7 @@ pub struct Brief {
     pub stale: usize,
     pub expired: usize,
     pub open_loops: usize,
+    pub open_goals: usize,
     pub overdue: Vec<LoopItem>,
     pub inbox: usize,
     pub journal_last: Option<Date>,
@@ -40,6 +41,7 @@ impl Brief {
 
         let loops = store.loops()?;
         let open_loops = loops.iter().filter(|item| !item.done).count();
+        let open_goals = store.goals()?.iter().filter(|goal| !goal.done).count();
         let mut overdue: Vec<LoopItem> = loops
             .into_iter()
             .filter(|item| item.is_overdue(today))
@@ -73,6 +75,7 @@ impl Brief {
             stale,
             expired,
             open_loops,
+            open_goals,
             overdue,
             inbox,
             journal_last,
@@ -156,6 +159,11 @@ impl Brief {
                 "  {}\n",
                 item.render().trim_start_matches("- [ ] ")
             ));
+        }
+        if self.open_goals == 0 {
+            out.push_str("goals      没有进行中的目标\n");
+        } else {
+            out.push_str(&format!("goals      {} 条进行中\n", self.open_goals));
         }
         if self.inbox > 0 {
             out.push_str(&format!(

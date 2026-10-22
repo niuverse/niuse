@@ -5,10 +5,11 @@
 //! journal) come last. The whole prompt is built once per session.
 
 use crate::date::Date;
-use crate::model::{JournalDay, LoopItem, MemoryEntry};
+use crate::model::{Goal, JournalDay, LoopItem, MemoryEntry};
 
 pub const IDENTITY_BUDGET: usize = 600;
 pub const USER_BUDGET: usize = 600;
+pub const GOAL_BUDGET: usize = 300;
 pub const MEMORY_BUDGET: usize = 2_000;
 pub const LOOP_BUDGET: usize = 300;
 pub const JOURNAL_BUDGET: usize = 600;
@@ -73,6 +74,18 @@ pub fn compose(
     journal: &[JournalDay],
     today: Date,
 ) -> Composition {
+    compose_with_goals(identity, user, &[], memories, loops, journal, today)
+}
+
+pub fn compose_with_goals(
+    identity: Option<&str>,
+    user: Option<&str>,
+    goals: &[Goal],
+    memories: &[MemoryEntry],
+    loops: &[LoopItem],
+    journal: &[JournalDay],
+    today: Date,
+) -> Composition {
     let mut sections: Vec<(&str, String)> = Vec::new();
 
     match identity.map(str::trim).filter(|text| !text.is_empty()) {
@@ -90,6 +103,11 @@ pub fn compose(
     }
     if let Some(user) = user.map(str::trim).filter(|text| !text.is_empty()) {
         sections.push(("你在和谁一起工作", truncate_to_tokens(user, USER_BUDGET)));
+    }
+
+    let goal_text = goal_section(goals);
+    if !goal_text.is_empty() {
+        sections.push(("当前目标", goal_text));
     }
 
     let (memory_text, memory_injected, memory_dropped) = memory_section(memories, today);
@@ -131,6 +149,20 @@ pub fn compose(
         memory_injected,
         memory_dropped,
     }
+}
+
+fn goal_section(goals: &[Goal]) -> String {
+    let mut lines = String::new();
+    for goal in goals.iter().filter(|goal| !goal.done) {
+        lines.push_str(&format!("- g-{} {}\n", goal.id, goal.text));
+    }
+    if lines.is_empty() {
+        return String::new();
+    }
+    format!(
+        "以下是用户当前进行中的目标。围绕它们安排工作；目标由用户维护，不要自行添加、完成或改写。\n\n{}",
+        truncate_to_tokens(&lines, GOAL_BUDGET)
+    )
 }
 
 fn memory_section(memories: &[MemoryEntry], today: Date) -> (String, usize, usize) {
@@ -298,6 +330,30 @@ mod tests {
         assert!(protocol < loops);
         assert!(loops < journal);
         assert_eq!(composition.memory_injected, 1);
+    }
+
+    #[test]
+    fn goals_sit_between_user_and_memory() {
+        let today = date("2026-10-22");
+        let goal = Goal::new("ship the recall path", today);
+        let memory = entry("先给结论", "2026-10-20");
+        let composition = compose_with_goals(
+            Some("你是 Niuse。"),
+            Some("用户在做机器人。"),
+            &[goal],
+            &[memory],
+            &[],
+            &[],
+            today,
+        );
+        let system = composition.system;
+        let user = system.find("你在和谁一起工作").unwrap();
+        let goals = system.find("当前目标").unwrap();
+        let memory = system.find("长期记忆").unwrap();
+        assert!(user < goals);
+        assert!(goals < memory);
+        assert!(system.contains("g-"));
+        assert!(system.contains("ship the recall path"));
     }
 
     #[test]

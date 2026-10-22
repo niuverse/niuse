@@ -3,6 +3,7 @@
 
 mod doctor;
 mod editor;
+mod goals;
 mod journal;
 mod loops;
 mod memory;
@@ -12,6 +13,9 @@ mod recall;
 mod session;
 pub use doctor::doctor;
 pub(crate) use editor::{edit_markdown, edit_text};
+pub use goals::{goals_add, goals_done, goals_list};
+#[cfg(feature = "tui")]
+pub use goals::{goals_add_one, goals_close};
 pub use journal::{journal_add, journal_search, journal_show};
 pub use loops::{loops_add, loops_done, loops_list};
 pub use memory::{
@@ -26,7 +30,7 @@ pub(crate) use session::write_export;
 pub use session::{export, sessions, thread_at, threads};
 
 use anyhow::Result;
-use niuse_core::prompt::compose;
+use niuse_core::prompt::compose_with_goals;
 use niuse_core::{Brief, Date, MemoryKind, Store};
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -37,6 +41,7 @@ pub fn status(store: &Store, thread: &Path, cwd: &Path, json: bool) -> Result<()
     let today = Date::today();
     let memories = store.memories()?;
     let loops = store.loops()?;
+    let goals = store.goals()?;
     let journal = store.recent_journal(3)?;
     let identity = store.identity()?;
     let user = store.user()?;
@@ -44,9 +49,10 @@ pub fn status(store: &Store, thread: &Path, cwd: &Path, json: bool) -> Result<()
         .ok()
         .map(|root| crate::projects::Registry::discover(&root));
     let current = registry.as_ref().and_then(|registry| registry.current(cwd));
-    let composition = compose(
+    let composition = compose_with_goals(
         identity.as_deref(),
         user.as_deref(),
+        &goals,
         &memories,
         &loops,
         &journal,
@@ -70,6 +76,7 @@ pub fn status(store: &Store, thread: &Path, cwd: &Path, json: bool) -> Result<()
         .filter(|entry| entry.kind == MemoryKind::Lesson)
         .count();
     let open_loops = loops.iter().filter(|item| !item.done).count();
+    let open_goals = goals.iter().filter(|goal| !goal.done).count();
 
     if json {
         let payload = serde_json::json!({
@@ -88,6 +95,10 @@ pub fn status(store: &Store, thread: &Path, cwd: &Path, json: bool) -> Result<()
             "loops": {
                 "total": loops.len(),
                 "open": open_loops,
+            },
+            "goals": {
+                "total": goals.len(),
+                "open": open_goals,
             },
             "prompt": {
                 "tokens": composition.tokens,
@@ -145,6 +156,7 @@ pub fn status(store: &Store, thread: &Path, cwd: &Path, json: bool) -> Result<()
         expired
     );
     println!("loops     {} 条未完成", open_loops);
+    println!("goals     {} 条进行中", open_goals);
     println!(
         "prompt    ~{} tokens（注入 {} 条记忆，{} 条被预算或过期挡掉）",
         composition.tokens, composition.memory_injected, composition.memory_dropped

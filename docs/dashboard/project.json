@@ -4,8 +4,8 @@
     "name": "niuse",
     "title": "niuse",
     "tagline": "personal engineering companion on niucode",
-    "summary": "A personal engineering companion on top of niucode: five Markdown stores for identity and memory, an opt-in shared TUI, project context, and a long-horizon roadmap. The board records architecture, decisions, and iteration; it is not runtime monitoring.",
-    "status": "M2 · Dogfood gate · M6 context track",
+    "summary": "A personal engineering companion on top of niucode: six Markdown stores for identity, memory, and human goals, an opt-in shared TUI, project context, and a long-horizon roadmap. The board records architecture, decisions, and iteration; it is not runtime monitoring.",
+    "status": "M2 · Dogfood gate · M6/M7 goals + context",
     "repo": "niuverse/niuse",
     "language": "Rust"
   },
@@ -445,6 +445,16 @@
         "roadmap",
         "M5-001",
         "M6-001"
+      ]
+    },
+    {
+      "date": "2026-10-22",
+      "kind": "decision",
+      "title": "Give human goals their own store",
+      "detail": "goals.md is human-owned, injected after user and before memory, and capped at seven open goals; loops remain the companion's promises.",
+      "refs": [
+        "adr-0006",
+        "M7-001"
       ]
     }
   ]

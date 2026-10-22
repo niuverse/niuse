@@ -235,6 +235,70 @@ pub fn parse_loop_line(line: &str) -> Option<LoopItem> {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Goal {
+    pub id: String,
+    pub text: String,
+    pub created: Date,
+    pub done: bool,
+}
+
+impl Goal {
+    pub fn new(text: impl Into<String>, created: Date) -> Self {
+        let text = one_line(text.into());
+        Self {
+            id: new_id(&text),
+            text,
+            created,
+            done: false,
+        }
+    }
+
+    pub fn render(&self) -> String {
+        let mark = if self.done { "x" } else { " " };
+        format!(
+            "- [{mark}] g-{} {}（创建 {}）",
+            self.id, self.text, self.created
+        )
+    }
+}
+
+pub fn parse_goal_line(line: &str) -> Option<Goal> {
+    let rest = line.strip_prefix("- [")?;
+    let mut chars = rest.chars();
+    let mark = chars.next()?;
+    if mark != ' ' && mark != 'x' {
+        return None;
+    }
+    let rest = chars.as_str().strip_prefix("] ")?;
+    let rest = rest.strip_prefix("g-")?;
+    let (id, rest) = rest.split_once(char::is_whitespace)?;
+    let rest = rest.trim();
+
+    let mut text = rest.trim();
+    let mut created = Date::from_days(0);
+    if let Some(open) = rest.rfind("（创建 ") {
+        let tail = &rest[open + "（创建 ".len()..];
+        if let Some(close) = tail.rfind('）') {
+            if let Some(date) = Date::parse(&tail[..close]) {
+                created = date;
+                text = rest[..open].trim();
+            }
+        }
+    }
+
+    Some(Goal {
+        id: id.to_string(),
+        text: text.to_string(),
+        created,
+        done: mark == 'x',
+    })
+}
+
+pub fn parse_goals(text: &str) -> Vec<Goal> {
+    text.lines().filter_map(parse_goal_line).collect()
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct JournalDay {
     pub date: Date,
     pub bullets: Vec<String>,

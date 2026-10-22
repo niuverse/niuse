@@ -12,7 +12,7 @@ use niuse_core::candidate::{parse, Block, StreamFilter};
 use niuse_core::date::Date;
 use niuse_core::model::{LoopItem, MemoryEntry, MemoryKind};
 use niuse_core::policy::secret_reason;
-use niuse_core::prompt::compose;
+use niuse_core::prompt::compose_with_goals;
 use niuse_core::Store;
 
 #[derive(Clone)]
@@ -62,12 +62,14 @@ impl CompanionHooks {
             Vec::new()
         };
         let loops = store.loops()?;
+        let goals = store.goals()?;
         let journal = store.recent_journal(3)?;
         let identity = store.identity()?;
         let user = store.user()?;
-        let composition = compose(
+        let composition = compose_with_goals(
             identity.as_deref(),
             user.as_deref(),
+            &goals,
             &memories,
             &loops,
             &journal,
@@ -249,6 +251,10 @@ impl TurnHooks for CompanionHooks {
     fn commands(&self) -> Vec<(String, String)> {
         vec![
             ("/brief".into(), "what needs attention today".into()),
+            (
+                "/goals".into(),
+                "list goals; /goals add <text>; /goals done <id>".into(),
+            ),
             ("/recall".into(), "search memory, journal, and loops".into()),
             ("/mem".into(), "list memory; /mem show <id>".into()),
             ("/loops".into(), "list open promises".into()),
@@ -270,6 +276,33 @@ impl TurnHooks for CompanionHooks {
         let name = parts.next()?;
         match name {
             "/brief" => crate::commands::brief_text(&store, &self.cwd).ok(),
+            "/goals" => match parts.next() {
+                None | Some("list") => Some(
+                    store
+                        .goals()
+                        .ok()?
+                        .iter()
+                        .filter(|goal| !goal.done)
+                        .map(|goal| goal.render())
+                        .collect::<Vec<_>>()
+                        .join("\n"),
+                )
+                .filter(|text| !text.is_empty())
+                .or_else(|| Some("(no open goals)".into())),
+                Some("add") => {
+                    let text = parts.collect::<Vec<_>>().join(" ");
+                    crate::commands::goals_add_one(&store, &text)
+                        .ok()
+                        .map(|goal| format!("goal g-{}: {}", goal.id, goal.text))
+                }
+                Some("done") => {
+                    let id = parts.next()?;
+                    crate::commands::goals_close(&store, id)
+                        .ok()
+                        .map(|id| format!("goal g-{id} done"))
+                }
+                _ => None,
+            },
             "/recall" => {
                 let query = parts.collect::<Vec<_>>().join(" ");
                 if query.is_empty() {
@@ -557,6 +590,14 @@ mod tests {
         assert!(brief.contains("niuse brief"));
         let recalled = hooks.command("/recall rust").unwrap();
         assert!(recalled.contains("Rust projects use cargo test"));
+        let added = hooks.command("/goals add ship the recall path").unwrap();
+        assert!(added.contains("goal g-"));
+        let goals = hooks.command("/goals").unwrap();
+        assert!(goals.contains("ship the recall path"));
+        let goal_id = store.goals().unwrap()[0].id.clone();
+        let closed = hooks.command(&format!("/goals done g-{goal_id}")).unwrap();
+        assert!(closed.contains("done"));
+        assert!(store.goals().unwrap()[0].done);
         assert_eq!(hooks.command("/loops").unwrap(), "(no open loops)");
         assert_eq!(hooks.command("/journal").unwrap(), "(journal is empty)");
         assert!(!hooks.command("/prompt").unwrap().is_empty());
@@ -580,6 +621,7 @@ mod tests {
             "/user",
             "/brief",
             "/recall",
+            "/goals",
         ] {
             assert!(
                 commands.iter().any(|(listed, _)| listed == name),

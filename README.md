@@ -8,7 +8,7 @@
 
 niuse is a personal engineering companion built on top of [niucode](https://github.com/niuverse/niucode). It keeps your judgements, preferences, and hard-won pitfalls in human-readable Markdown, so the same companion can remember you across projects and sessions, track what it promised, and speak up when you are wrong.
 
-> Status: **runnable MVP**. The five stores, candidate protocol, soft expiry, bootstrap from history, and an interactive REPL (line editing, history, completion, multi-line input, `/model`, `/cost`, `/export`) are implemented. What is missing is long-term dogfooding in a real terminal.
+> Status: **runnable MVP**. The six stores, candidate protocol, soft expiry, bootstrap from history, and an interactive REPL (line editing, history, completion, multi-line input, `/model`, `/cost`, `/export`) are implemented. What is missing is long-term dogfooding in a real terminal.
 
 ## Quick start
 
@@ -90,6 +90,7 @@ niuse user show|edit
 niuse mem list|search|show|edit|add|forget|confirm|review|prune
 niuse recall <query> [--limit N] [--json]  search memory, journal, and loops
 niuse loops list|add|done         (list --overdue for late promises)
+niuse goals list|add|done         (human-owned outcomes, at most seven open)
 niuse journal [--days N] [--search QUERY] [--add TEXT]
 niuse threads                   list the active thread and archived chapters
 niuse sessions [--json]         list one-shot `exec` session logs
@@ -127,7 +128,7 @@ Set `NIUSE_MEMORY=off` to disable both memory injection and new candidates, for 
 One turn:
 
 ```text
-load the five stores → compose the prompt (once) → run_with_history
+load the six stores → compose the prompt (once) → run_with_history
                      → stream, with a tail buffer that strips protocol blocks
                      → journal / loop blocks are written automatically
                      → memory candidates: y / n / e / s
@@ -155,7 +156,7 @@ No second model call is involved. Missing a memory is acceptable; recording a wr
 
 ```text
 crates/
-  niuse-core/   pure domain: dates, five stores, prompt, protocol, policy
+  niuse-core/   pure domain: dates, six stores, prompt, protocol, policy
   niuse-cli/    REPL, commands, provider wiring, session driver, bootstrap
   xtask/        offline dashboard generator
 ```
