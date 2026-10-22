@@ -30,6 +30,9 @@ cargo test -p niuse --bin niuse memory_tool::tests -- --nocapture
 echo "== MCP notes pack =="
 cargo test -p niuse --test mcp_notes -- --nocapture
 
+echo "== MCP calendar pack =="
+cargo test -p niuse --test mcp_calendar -- --nocapture
+
 if [[ -d "$root/../niucode" ]]; then
   echo "== MCP client boundaries =="
   (cd "$root/../niucode" && cargo test -p niucode-mcp --tests -- --nocapture)
