@@ -199,6 +199,18 @@ enum Command {
         #[arg(long)]
         json: bool,
     },
+    /// Run a verification command and append its result to the thread
+    Verify {
+        /// Thread JSONL to append to (defaults to the main thread)
+        #[arg(long)]
+        thread: Option<PathBuf>,
+        /// Emit JSON
+        #[arg(long)]
+        json: bool,
+        /// Command and arguments, after `--`
+        #[arg(last = true, required = true)]
+        command: Vec<String>,
+    },
     /// Show tool calls, files, checks, and failures from a thread
     Evidence {
         /// Thread JSONL to inspect (defaults to the main thread)
@@ -627,6 +639,15 @@ async fn main() -> Result<()> {
             }
         },
         Some(Command::Stats { days, trend, json }) => commands::stats(&store, days, trend, json),
+        Some(Command::Verify {
+            thread,
+            json,
+            command,
+        }) => {
+            let thread = config::resolve_thread(thread.or(cli.thread.clone()), &store)?;
+            let outcome = commands::verify(&thread, &command, json)?;
+            std::process::exit(outcome.code);
+        }
         Some(Command::Evidence { thread, json }) => {
             let thread = config::resolve_thread(thread.or(cli.thread.clone()), &store)?;
             commands::evidence(&thread, json)

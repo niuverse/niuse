@@ -11,6 +11,9 @@ cargo test -p niuse --test personal_agent_eval -- --nocapture
 echo "== evidence report =="
 cargo test -p niuse --test cli evidence -- --nocapture
 
+echo "== recorded verification =="
+cargo test -p niuse --test cli verify -- --nocapture
+
 echo "== agent recall =="
 cargo test -p niuse --bin niuse memory_tool::tests -- --nocapture
 

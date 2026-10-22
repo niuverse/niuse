@@ -24,6 +24,7 @@ pub struct Evidence {
     pub denied: usize,
     pub files: Vec<String>,
     pub checks: Vec<Check>,
+    pub verifications: Vec<Check>,
 }
 
 pub fn from_thread(path: &Path) -> Result<Evidence> {
@@ -70,6 +71,12 @@ pub fn from_events(events: &[Event]) -> Evidence {
                     evidence.checks.push(Check { command, ok: *ok });
                 }
             }
+            Event::Verification { command, ok, .. } => {
+                evidence.verifications.push(Check {
+                    command: command.clone(),
+                    ok: *ok,
+                });
+            }
             Event::Approval { allowed, .. } if !allowed => {
                 evidence.denied += 1;
             }
@@ -83,7 +90,11 @@ pub fn from_events(events: &[Event]) -> Evidence {
 
 impl Evidence {
     pub fn is_empty(&self) -> bool {
-        self.tools == 0 && self.files.is_empty() && self.checks.is_empty() && self.denied == 0
+        self.tools == 0
+            && self.files.is_empty()
+            && self.checks.is_empty()
+            && self.verifications.is_empty()
+            && self.denied == 0
     }
 
     pub fn render(&self) -> String {
@@ -92,11 +103,12 @@ impl Evidence {
         }
         let passed = self.checks.iter().filter(|check| check.ok).count();
         let mut out = format!(
-            "evidence · {} tool call(s) · {} file(s) · {}/{} check(s) · {} failure(s)\n",
+            "evidence · {} tool call(s) · {} file(s) · {}/{} check(s) · {} verification(s) · {} failure(s)\n",
             self.tools,
             self.files.len(),
             passed,
             self.checks.len(),
+            self.verifications.len(),
             self.failures
         );
         if !self.files.is_empty() {
@@ -108,6 +120,16 @@ impl Evidence {
         if !self.checks.is_empty() {
             out.push_str("checks\n");
             for check in &self.checks {
+                out.push_str(&format!(
+                    "  {} {}\n",
+                    if check.ok { "✓" } else { "✗" },
+                    check.command
+                ));
+            }
+        }
+        if !self.verifications.is_empty() {
+            out.push_str("verification\n");
+            for check in &self.verifications {
                 out.push_str(&format!(
                     "  {} {}\n",
                     if check.ok { "✓" } else { "✗" },
@@ -163,6 +185,9 @@ mod tests {
             event(r#"{"type":"tool_result","call_id":"c2","ok":true,"output":"ok","ts":3}"#),
             event(r#"{"type":"tool_result","call_id":"c3","ok":false,"output":"bad","ts":4}"#),
             event(r#"{"type":"approval","tool":"bash","allowed":false,"ts":5}"#),
+            event(
+                r#"{"type":"verification","command":"cargo test","ok":true,"output":"ok","ts":6}"#,
+            ),
         ];
         let evidence = from_events(&events);
         assert_eq!(evidence.tools, 3);
@@ -172,10 +197,13 @@ mod tests {
         assert!(!evidence.checks[1].ok);
         assert_eq!(evidence.failures, 1);
         assert_eq!(evidence.denied, 1);
+        assert_eq!(evidence.verifications.len(), 1);
+        assert!(evidence.verifications[0].ok);
         let rendered = evidence.render();
         assert!(rendered.contains("src/lib.rs"));
         assert!(rendered.contains("cargo test"));
         assert!(rendered.contains("denied"));
+        assert!(rendered.contains("verification"));
     }
 
     #[test]

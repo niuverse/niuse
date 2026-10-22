@@ -58,6 +58,7 @@ const SLASH_COMMANDS: &[&str] = &[
     "/cd",
     "/status",
     "/evidence",
+    "/verify",
     "/brief",
     "/plan",
     "/prompt",
@@ -821,6 +822,13 @@ impl App {
             "/evidence" => {
                 print!("{}", crate::evidence::from_thread(&thread.path)?.render());
             }
+            "/verify" => {
+                if argument.is_empty() {
+                    println!("用法：/verify <命令>");
+                } else if !commands::verify_shell(&thread.path, argument, false)?.ok {
+                    println!("verify failed");
+                }
+            }
             "/status" => {
                 commands::status(&self.store, &thread.path, &self.cwd, false)?;
                 let events = load(&thread.path)
@@ -1265,6 +1273,7 @@ const HELP: &str = r#"对话
 会话
   /brief                  今天需要处理什么（逾期/审查/过期）
   /evidence               本 thread 的工具调用、文件、检查与失败
+  /verify <command>       运行检查并把结果写入 thread
   /plan [on|off]          只读计划模式（工具限制为 read/grep/glob）
   /export [path]          导出当前主线为 Markdown
   /new                    归档当前主线并开始一条新的

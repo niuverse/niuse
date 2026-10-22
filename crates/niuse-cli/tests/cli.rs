@@ -254,6 +254,39 @@ fn evidence_json_reports_files_and_checks() {
 }
 
 #[test]
+fn verify_records_and_evidence_reports_it() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    let thread = directory.path().join("thread.jsonl");
+    std::fs::write(&thread, "").unwrap();
+    let thread_arg = thread.to_str().unwrap();
+
+    let passed = run(
+        &home,
+        &["verify", "--thread", thread_arg, "--json", "--", "true"],
+    );
+    assert!(passed.status.success(), "{passed:?}");
+    let report: serde_json::Value = serde_json::from_slice(&passed.stdout).unwrap();
+    assert_eq!(report["ok"], true);
+    assert_eq!(report["command"], "true");
+
+    let failed = run(
+        &home,
+        &["verify", "--thread", thread_arg, "--json", "--", "false"],
+    );
+    assert!(!failed.status.success());
+    let report: serde_json::Value = serde_json::from_slice(&failed.stdout).unwrap();
+    assert_eq!(report["ok"], false);
+
+    let evidence = run(&home, &["evidence", "--thread", thread_arg, "--json"]);
+    assert!(evidence.status.success(), "{evidence:?}");
+    let report: serde_json::Value = serde_json::from_slice(&evidence.stdout).unwrap();
+    assert_eq!(report["verifications"].as_array().unwrap().len(), 2);
+    assert_eq!(report["verifications"][0]["command"], "true");
+    assert_eq!(report["verifications"][1]["ok"], false);
+}
+
+#[test]
 fn projects_json_filters_and_limits() {
     let directory = tempfile::tempdir().unwrap();
     let niucode = directory.path().join("niucode-home");

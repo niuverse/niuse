@@ -12,6 +12,7 @@ mod profile;
 mod projects;
 mod recall;
 mod session;
+mod verify;
 pub use doctor::doctor;
 pub(crate) use editor::{edit_markdown, edit_text};
 pub use evidence::evidence;
@@ -30,6 +31,7 @@ pub use recall::{recall, recall_text};
 #[cfg(feature = "tui")]
 pub(crate) use session::write_export;
 pub use session::{export, sessions, thread_at, threads};
+pub use verify::{verify, verify_shell};
 
 use anyhow::Result;
 use niuse_core::prompt::compose_with_goals;

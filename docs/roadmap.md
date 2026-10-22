@@ -88,7 +88,7 @@ session boundary.
   audit.
 - A three-day goal completes without re-explaining the task.
 
-**Cards:** M7-001, M7-002, M7-003; a single plan → execute → verify flow and delegation are next.
+**Cards:** M7-001 through M7-004; a single plan → execute → verify flow and delegation are next.
 
 ### M8 · Connected agent (planned)
 
@@ -140,6 +140,7 @@ and commit agree.
 | 10 | M8-003 notes pack | done | First real personal MCP connector |
 | 11 | M9-001 offline eval | done | Named regressions + dogfood trend gate |
 | 12 | M7-003 thread evidence | done | Shows what ran, not just what was claimed |
+| 13 | M7-004 recorded verification | done | Human-run check becomes durable evidence |
 
 ## The round ritual
 
