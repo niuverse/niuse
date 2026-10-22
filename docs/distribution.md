@@ -77,7 +77,7 @@ The pinned-revision policy in [compat](compat.md) is independent of this choice;
 
 ## License
 
-Not chosen yet. crates.io requires a `license` or `license-file`, so publishing waits on that decision. The workspace `repository` field is set; the package warning now only complains about the missing license.
+`MIT OR Apache-2.0`, the usual Rust dual license. `LICENSE-MIT` and `LICENSE-APACHE` are at the repository root and `license.workspace` is inherited by every crate. crates.io can now accept the packages.
 
 ## Checklist
 

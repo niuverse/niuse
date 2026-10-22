@@ -205,3 +205,7 @@ A daemon, a web UI, WeChat / Feishu bridges, scheduled push notifications, vecto
 - [Dogfood log](docs/dogfood.md): the ten-day acceptance ritual
 - [Distribution notes](docs/distribution.md): install paths, crates.io blockers, license decision
 - [Agent guide](AGENTS.md): repo rules for future sessions
+
+## License
+
+MIT OR Apache-2.0. See [LICENSE-MIT](LICENSE-MIT) and [LICENSE-APACHE](LICENSE-APACHE).
