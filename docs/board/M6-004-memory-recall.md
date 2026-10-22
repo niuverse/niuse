@@ -16,13 +16,13 @@ docs = ["roadmap", "adr-0001"]
 
 Full injection is capped at about 2k tokens; entries outside the cap or past
 expiry are invisible to the model even though they are still in the stores. A
-human can search memory one command at a time, but not memory, journal, and
-promises together, and the model has no honest way to ask for an old entry.
+human can search memory one command at a time, but not memory, journal,
+promises, and goals together, and the model has no honest way to ask for an old entry.
 
 ## Scope
 
 - One bounded, read-only search over memory (including expired), journal
-  bullets, and loops.
+  bullets, loops, and goals.
 - `niuse recall <query> [--limit N] [--json]`, `/recall` in the REPL and TUI.
 - Rank with the existing lexical score, label freshness, and cap the result.
 - Tell the model in the protocol that it may ask the user to run
@@ -30,7 +30,7 @@ promises together, and the model has no honest way to ask for an old entry.
 
 ## Acceptance
 
-- [x] A query returns hits from all three stores with ids, dates, and detail.
+- [x] A query returns hits from all four stores with ids, dates, and detail.
 - [x] Expired memory is included and labelled.
 - [x] The result is capped and JSON is available for scripts.
 - [x] Offline tests cover hit, miss, empty store, and the limit.

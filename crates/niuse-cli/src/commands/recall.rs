@@ -110,6 +110,21 @@ fn collect(store: &Store, query: &str, limit: usize) -> Result<Vec<Hit>> {
         });
     }
 
+    for goal in store.goals()? {
+        let score = search_score(query, &goal.text, &[]);
+        if score < THRESHOLD {
+            continue;
+        }
+        hits.push(Hit {
+            kind: "goal",
+            id: format!("g-{}", goal.id),
+            date: Some(goal.created.format()),
+            detail: if goal.done { "done" } else { "open" }.to_string(),
+            text: goal.text,
+            score,
+        });
+    }
+
     hits.sort_by(|left, right| {
         right
             .score
@@ -141,7 +156,7 @@ fn render(query: &str, hits: &[Hit]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use niuse_core::{MemoryEntry, MemoryKind};
+    use niuse_core::{Goal, MemoryEntry, MemoryKind};
 
     fn temp_store() -> (tempfile::TempDir, Store) {
         let directory = tempfile::tempdir().unwrap();
@@ -185,5 +200,11 @@ mod tests {
         assert!(all
             .iter()
             .any(|hit| hit.text == "rust expired" && hit.detail.contains("expired")));
+
+        let goal = store.add_goal(Goal::new("rust goal", today)).unwrap();
+        let all = collect(&store, "rust", 10).unwrap();
+        assert!(all
+            .iter()
+            .any(|hit| hit.kind == "goal" && hit.id == format!("g-{}", goal.id)));
     }
 }

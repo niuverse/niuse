@@ -177,7 +177,7 @@ fn goals_round_trip_through_status() {
 }
 
 #[test]
-fn recall_finds_memory_journal_and_loops() {
+fn recall_finds_memory_journal_loops_and_goals() {
     let directory = tempfile::tempdir().unwrap();
     let home = directory.path().join(".niuse");
 
@@ -199,6 +199,8 @@ fn recall_finds_memory_journal_and_loops() {
         &["journal", "--add", "decided the rust recall design"],
     );
     assert!(journal.status.success(), "{journal:?}");
+    let goal = run(&home, &["goals", "add", "finish the rust goal"]);
+    assert!(goal.status.success(), "{goal:?}");
 
     let output = run(&home, &["recall", "rust", "--json"]);
     assert!(output.status.success(), "{output:?}");
@@ -208,6 +210,7 @@ fn recall_finds_memory_journal_and_loops() {
     assert!(kinds.contains(&"memory"));
     assert!(kinds.contains(&"journal"));
     assert!(kinds.contains(&"loop"));
+    assert!(kinds.contains(&"goal"));
 
     let text = run(&home, &["recall", "rust"]);
     assert!(text.status.success(), "{text:?}");

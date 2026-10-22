@@ -34,7 +34,7 @@ impl EmbedderTool for MemoryTool {
     fn spec(&self) -> ToolSpec {
         ToolSpec::function(
             "memory_search",
-            "Search the user's durable memory, journal, and promises, including entries no longer injected. Read-only. Use when an old judgement may be missing; cite returned ids. Results are capped.",
+            "Search the user's durable memory, journal, promises, and goals, including entries no longer injected. Read-only. Use when an old judgement may be missing; cite returned ids. Results are capped.",
             json!({
                 "type": "object",
                 "properties": {
