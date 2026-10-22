@@ -59,8 +59,13 @@ class Pane:
 
 
 def main():
-    if len(sys.argv) != 2:
-        raise SystemExit("usage: tui_new.py <niuse-binary>")
+    if len(sys.argv) not in (2, 3):
+        raise SystemExit("usage: tui_new.py <niuse-binary> [new|reset]")
+    mode = sys.argv[2] if len(sys.argv) == 3 else "new"
+    if mode not in ("new", "reset"):
+        raise SystemExit(f"unknown mode {mode}")
+    command = b"/reset\r" if mode == "reset" else b"/new\r"
+    marker = b"runtime reset" if mode == "reset" else b"new conversation"
     with tempfile.TemporaryDirectory(prefix="niuse-pty-new-") as directory:
         root = Path(directory)
         (root / "work").mkdir(); (root / "niuse-home").mkdir()
@@ -78,8 +83,8 @@ def main():
             os.write(pane.master, b"one\r")
             pane.wait_for(b"FIRST_ANSWER")
             pane.settle(0.6)
-            os.write(pane.master, b"/new\r")
-            pane.wait_for(b"new conversation")
+            os.write(pane.master, command)
+            pane.wait_for(marker)
             pane.settle(0.6)
             os.write(pane.master, b"two\r")
             pane.wait_for(b"SECOND_ANSWER")
@@ -90,7 +95,7 @@ def main():
             archived = list((root / "niuse-home" / "threads").glob("*.jsonl"))
             assert archived, "no archived thread after /new"
             assert any("FIRST_ANSWER" in path.read_text() for path in archived)
-            print("PTY /new: old thread archived, context cleared, thread.jsonl reset")
+            print(f"PTY /{mode}: old thread archived, context cleared, thread.jsonl reset")
         finally:
             pane.close()
 
