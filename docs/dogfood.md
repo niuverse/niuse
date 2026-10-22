@@ -39,7 +39,7 @@ The script runs `niuse stats --days 1 --json`, uses the local calendar date, and
 
 | date | turns | proposed | accepted | note |
 |---|---|---|---|---|
-| 2026-10-22 | 13 | 1 | 1 | identity bug surfaced/fixed in 0.1.1; real exec cited README:106 (2 steps, 11k in); real MCP exec found launch.md via mcp__notes__search_notes (2 steps, 5k in, 3.1k cached) |
+| 2026-10-22 | 13 | 1 | 1 | identity bug surfaced/fixed in 0.1.1; real exec cited README:106 (2 steps, 11k in); real MCP exec found launch.md via mcp__notes__search_notes (2 steps, 5k in); real TUI turn replied 391 (13k in, 2 out, 0 cached) |
 
 ## Rules
 

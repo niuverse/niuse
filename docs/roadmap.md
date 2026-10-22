@@ -169,7 +169,7 @@ and commit agree.
 | 35 | M9-009 board check | done | Milestone and card states cannot contradict |
 | 36 | M9-010 README contract | done | Docs commands are checked against the binary |
 | 37 | M9-011 README flags | done | Documented flags must exist on the command |
-| 38 | M2-001 first real day | doing | 1/10; real exec + real MCP turn |
+| 38 | M2-001 first real day | doing | 1/10; real exec + MCP + TUI turns |
 
 ## The round ritual
 

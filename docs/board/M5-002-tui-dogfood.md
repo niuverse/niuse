@@ -37,5 +37,9 @@ terminal-specific rendering failures.
 
 ## Notes
 
+2026-10-22: one real TUI turn replied `391` through the provider. The card stays
+`ready` because the gate is a recorded ten-day run, not a single validation
+turn.
+
 If the gate fails, keep the REPL default and open a focused card for the failure
 instead of extending the gate's definition.

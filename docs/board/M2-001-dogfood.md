@@ -32,7 +32,9 @@ docs = ["plan", "dogfood"]
 README.md:106 for `niuse report`; the turn used 2 steps, 11k input, 76 output,
 3.5k cached tokens. A second real turn used the notes MCP pack:
 `mcp__notes__search_notes` returned `launch.md:1: Launch checklist` in 2 steps,
-5k input, 95 output, 3.1k cached. The dogfood table has 1/10 days. Ten days and
-the acceptance criteria are still open.
+5k input, 95 output, 3.1k cached. A third real turn ran through `niuse tui` and
+replied `391` (13k input, 2 output, 0 cached), confirming the TUI path works
+against the real provider. The dogfood table still has 1/10 days; ten days and
+the acceptance criteria remain open.
 
 Record one row per day in [the dogfood log](../dogfood.md). This card writes no code. Its job is to stop new features before the current ones are validated.
