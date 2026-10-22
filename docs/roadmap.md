@@ -105,7 +105,7 @@ connector instead of one-off shell commands.
 
 **Cards:** niucode M8-001 is done: read-only stdio v1 with explicit trust,
 config mounting in `exec`/TUI, and offline tests. niuse mounts the host in the
-TUI, REPL, and `exec` (M8-002); a personal pack follows.
+TUI, REPL, and `exec` (M8-002) and ships the read-only notes pack (M8-003).
 
 ### M9 · Proof (planned)
 
@@ -137,6 +137,7 @@ and commit agree.
 | 7 | M6-005 agent recall | done | Read-only `memory_search` through niucode's embedder seam |
 | 8 | M7-001 persistent goals | done | Human-owned goals injected across sessions |
 | 9 | M7-002 REPL plan mode | done | Safe read-only planning without the TUI |
+| 10 | M8-003 notes pack | done | First real personal MCP connector |
 
 ## The round ritual
 

@@ -202,7 +202,8 @@ read_only = true
 ```
 
 A broken manifest or a server that fails to start prints a warning and disables
-MCP for that run; it does not take down the session. See niucode's
+MCP for that run; it does not take down the session. A read-only notes pack is
+included: [packs/notes](packs/notes/README.md). See niucode's
 [ADR-0033](https://github.com/niuverse/niucode/blob/main/docs/adr/0033-mcp-client.md).
 
 ## Privacy
