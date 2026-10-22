@@ -14,10 +14,20 @@ use niuse_core::policy::secret_reason;
 use niuse_core::prompt::compose;
 use niuse_core::Store;
 
+#[derive(Clone)]
+enum Action {
+    Accept,
+    Replace(String),
+    KeepBoth,
+    Edit,
+    Discard,
+}
+
 struct PendingMemory {
     kind: MemoryKind,
     tags: Vec<String>,
     text: String,
+    actions: Vec<Action>,
 }
 
 pub struct CompanionHooks {
@@ -73,6 +83,7 @@ impl TurnHooks for CompanionHooks {
         self.filter = StreamFilter::new();
         let parsed = parse(&raw);
         let store = self.store();
+        let memories = store.memories().unwrap_or_default();
         let mut prompts = Vec::new();
         self.pending.clear();
 
@@ -90,22 +101,53 @@ impl TurnHooks for CompanionHooks {
                         continue;
                     }
                     let index = self.pending.len();
+                    let tag_text = tags.join(",");
+                    let conflict = memories.iter().find(|entry| {
+                        niuse_core::policy::conflicts(&text, &tags, &entry.text, &entry.tags)
+                    });
+                    let (actions, options, prefix) = match conflict {
+                        Some(entry) => (
+                            vec![
+                                Action::Replace(entry.id.clone()),
+                                Action::KeepBoth,
+                                Action::Edit,
+                                Action::Discard,
+                            ],
+                            vec![
+                                "replace".to_string(),
+                                "keep both".to_string(),
+                                "edit".to_string(),
+                                "discard".to_string(),
+                            ],
+                            format!("conflicts with m-{} ({})", entry.id, entry.text),
+                        ),
+                        None => (
+                            vec![Action::Accept, Action::Edit, Action::Discard],
+                            vec![
+                                "accept".to_string(),
+                                "edit".to_string(),
+                                "discard".to_string(),
+                            ],
+                            "new memory".to_string(),
+                        ),
+                    };
                     self.pending.push(Some(PendingMemory {
                         kind,
                         tags: tags.clone(),
                         text: text.clone(),
+                        actions,
                     }));
-                    let tag_text = tags.join(",");
                     let _ = store.append_metric("propose", &tag_text);
                     prompts.push(TurnPrompt {
                         id: format!("memory-{index}"),
                         question: format!(
-                            "{} memory [{}]: {}",
+                            "{} memory [{}] · {}: {}",
                             kind.as_str(),
                             if tag_text.is_empty() { "-" } else { &tag_text },
+                            prefix,
                             text
                         ),
-                        options: vec!["accept".into(), "discard".into()],
+                        options,
                     });
                 }
             }
@@ -127,19 +169,41 @@ impl TurnHooks for CompanionHooks {
             return;
         };
         let store = self.store();
-        match choice {
-            0 => {
-                let entry = MemoryEntry::new(
-                    memory.kind,
-                    memory.text,
-                    memory.tags,
-                    Date::today(),
-                    Some("tui-hook".into()),
-                );
-                let _ = store.add_memory(entry);
+        let Some(action) = memory.actions.get(choice).cloned() else {
+            return;
+        };
+        let add = |text: String| {
+            let entry = MemoryEntry::new(
+                memory.kind,
+                text,
+                memory.tags.clone(),
+                Date::today(),
+                Some("tui-hook".into()),
+            );
+            let _ = store.add_memory(entry);
+            let _ = store.append_metric("accept", "tui-hook");
+        };
+        match action {
+            Action::Accept | Action::KeepBoth => add(memory.text),
+            Action::Replace(id) => {
+                let _ = store.update_memory(&id, |entry| {
+                    entry.kind = memory.kind;
+                    entry.text = memory.text.clone();
+                    entry.tags = memory.tags.clone();
+                    entry.confirmed = Date::today();
+                });
                 let _ = store.append_metric("accept", "tui-hook");
             }
-            _ => {
+            Action::Edit => {
+                if let Some(edited) = crate::commands::edit_text(&memory.text) {
+                    if secret_reason(&edited).is_none() {
+                        add(edited);
+                    } else {
+                        let _ = store.append_metric("blocked", "secret");
+                    }
+                }
+            }
+            Action::Discard => {
                 let _ = store.append_metric("discard", "tui-hook");
             }
         }
@@ -188,6 +252,52 @@ mod tests {
         let memories = store.memories().unwrap();
         assert_eq!(memories.len(), 1);
         assert_eq!(memories[0].text, "use nextest");
+    }
+
+    fn seed(store: &Store) {
+        store
+            .add_memory(MemoryEntry::new(
+                MemoryKind::Preference,
+                "Rust projects use cargo test",
+                vec!["rust".into()],
+                Date::today(),
+                None,
+            ))
+            .unwrap();
+    }
+
+    fn conflict_prompt(store: &Store) -> (CompanionHooks, TurnPrompt) {
+        let mut hooks = CompanionHooks::new(store).unwrap();
+        let mut text = "<<niuse:memory kind=preference tags=rust>>\nRust projects use cargo nextest\n<</niuse:memory>>".to_string();
+        hooks.filter_text(&mut text);
+        let prompts = hooks.after_turn(&outcome());
+        assert_eq!(prompts.len(), 1);
+        assert!(prompts[0].options.contains(&"replace".to_string()));
+        (hooks, prompts[0].clone())
+    }
+
+    #[test]
+    fn conflict_can_replace() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        seed(&store);
+        let (mut hooks, prompt) = conflict_prompt(&store);
+        hooks.on_answer(&prompt.id, 0);
+        let memories = store.memories().unwrap();
+        assert_eq!(memories.len(), 1);
+        assert_eq!(memories[0].text, "Rust projects use cargo nextest");
+    }
+
+    #[test]
+    fn conflict_can_keep_both() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        seed(&store);
+        let (mut hooks, prompt) = conflict_prompt(&store);
+        hooks.on_answer(&prompt.id, 1);
+        assert_eq!(store.memories().unwrap().len(), 2);
     }
 
     #[test]

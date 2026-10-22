@@ -27,5 +27,5 @@ docs = ["renderer-migration"]
 
 - [x] 默认构建不引入 TUI 依赖。
 - [x] `--features tui` 测试与 clippy 通过。
-- [x] 协议块剥离、journal/loop 自动写入、memory prompt/写入有测试。
+- [x] 协议块剥离、journal/loop 自动写入、memory accept/replace/keep/discard 有测试。
 - [x] 真正的 `niuse tui` 入口与 replay PTY 端到端测试。

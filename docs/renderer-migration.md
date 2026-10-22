@@ -36,7 +36,7 @@ The duplication is real, but it is not one renderer: niuse's candidate confirmat
 
 ## Gaps that still block deleting `render.rs`
 
-1. **Candidate confirmation.** `after_turn` provides a generic numbered prompt, and the `tui` feature carries `CompanionHooks` (capture, parse, auto loop/journal, memory accept/discard). `niuse tui` wires it end to end; conflict replace/keep and `e` edit are still missing.
+1. **Candidate confirmation.** `after_turn` provides a generic numbered prompt, and the `tui` feature carries `CompanionHooks` (capture, parse, auto loop/journal, memory accept/discard). `niuse tui` wires it end to end, including conflict replace/keep and `e` edit; embedder commands and approval/usage parity remain.
 2. **Product commands.** `/mem`, `/remember`, `/forget`, `/journal`, `/loops`, `/review`, and `/export` are niuse commands. The TUI's command registry has no embedder extension point; `run_tui_with_hooks` cannot register them.
 3. **Approval presentation.** The TUI already has a good approval UI, but niuse's preview contract (80-line cap, `d` full diff, denial preview returned to the model) is part of its acceptance. Reusing the TUI changes that contract and needs an explicit compatibility test.
 4. **Usage and `/cost`.** niuse accumulates usage across a session and prints one compact line; the TUI prints its own turn metrics. The numbers exist, but the presentation and `/cost` command need an adapter.

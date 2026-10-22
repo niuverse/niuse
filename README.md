@@ -177,7 +177,7 @@ cargo run --features tui -- tui
 # or: cargo install niuse --features tui
 ```
 
-Memory candidates become accept/discard prompts after the turn; journal and loops are written automatically. Conflict replace/keep and edit are not wired yet. The default binary does not link the TUI.
+Memory candidates become accept/edit/discard prompts after the turn; conflicts offer replace/keep both. Journal and loops are written automatically. Embedder slash commands are still limited to the generic command hook. The default binary does not link the TUI.
 
 ## Privacy
 
