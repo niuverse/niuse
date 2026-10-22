@@ -3,7 +3,7 @@ resolver = "2"
 members = ["crates/niuse-core", "crates/niuse-cli", "crates/xtask"]
 
 [workspace.package]
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 rust-version = "1.88"
 repository = "https://github.com/niuverse/niuse"
@@ -27,7 +27,7 @@ walkdir = "2.5"
 # Local sibling checkout. A published build should pin a git revision instead;
 # see docs/plan.md §8.
 niucode-agent = { path = "../niuverse/niucode/crates/niucode-agent", version = "0.1.0" }
-niucode = { path = "../niuverse/niucode/crates/niucode-cli", version = "0.1.4" }
+niucode = { path = "../niuverse/niucode/crates/niucode-cli", version = "0.1.5" }
 niucode-auth = { path = "../niuverse/niucode/crates/niucode-auth", version = "0.1.0" }
 niucode-core = { path = "../niuverse/niucode/crates/niucode-core", version = "0.1.0" }
 niucode-provider = { path = "../niuverse/niucode/crates/niucode-provider", version = "0.1.0" }

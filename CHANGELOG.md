@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.6 — 2026-10-22
 
 - TUI embedder commands register in `/help` and Tab completion; `/mem`, `/mem show`, `/loops`, `/journal`, and `/status` are wired through `CompanionHooks`.
 
