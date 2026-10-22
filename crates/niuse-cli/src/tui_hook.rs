@@ -673,7 +673,8 @@ mod tests {
             "<<niuse:memory kind=lesson tags=rust>>\nnever panic\n<</niuse:memory>>".to_string();
         hooks.filter_text(&mut text);
         let prompts = hooks.after_turn(&outcome());
-        hooks.on_answer(&prompts[0].id, 1);
+        // New-memory options are accept, edit, discard; index 1 opens $EDITOR.
+        hooks.on_answer(&prompts[0].id, 2);
         assert!(store.memories().unwrap().is_empty());
     }
 }
