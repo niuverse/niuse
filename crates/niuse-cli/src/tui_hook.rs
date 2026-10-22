@@ -46,6 +46,7 @@ pub struct CompanionHooks {
 }
 
 impl CompanionHooks {
+    #[cfg(test)]
     pub fn new(store: &Store) -> Result<Self> {
         Self::new_with_thread(store, store.session_path())
     }
