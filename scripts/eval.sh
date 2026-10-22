@@ -9,6 +9,7 @@ echo "== personal-agent eval =="
 cargo test -p niuse --test personal_agent_eval -- --nocapture
 
 echo "== evidence report =="
+cargo test -p niuse --bin niuse evidence::tests -- --nocapture
 cargo test -p niuse --test cli evidence -- --nocapture
 
 echo "== recorded verification =="

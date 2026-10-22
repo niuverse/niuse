@@ -20,6 +20,18 @@ pub struct Check {
     pub step: Option<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct Delegation {
+    pub id: String,
+    pub profile: String,
+    pub task: String,
+    pub session: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ok: Option<bool>,
+    pub summary: String,
+    pub turns: u64,
+}
+
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize)]
 pub struct Evidence {
     pub tools: usize,
@@ -30,6 +42,7 @@ pub struct Evidence {
     pub verifications: Vec<Check>,
     #[serde(default)]
     pub plan: Vec<PlanStep>,
+    pub delegations: Vec<Delegation>,
 }
 
 pub fn from_thread(path: &Path) -> Result<Evidence> {
@@ -80,6 +93,48 @@ pub fn from_events(events: &[Event]) -> Evidence {
                     });
                 }
             }
+            Event::SubagentSpawn {
+                id,
+                task,
+                profile,
+                session,
+                ..
+            } => {
+                evidence.delegations.push(Delegation {
+                    id: id.clone(),
+                    profile: profile.clone(),
+                    task: task.clone(),
+                    session: session.clone(),
+                    ok: None,
+                    summary: String::new(),
+                    turns: 0,
+                });
+            }
+            Event::SubagentResult {
+                id,
+                ok,
+                summary,
+                session,
+                turns,
+                ..
+            } => {
+                if let Some(run) = evidence.delegations.iter_mut().find(|run| &run.id == id) {
+                    run.ok = Some(*ok);
+                    run.summary = summary.clone();
+                    run.session = session.clone();
+                    run.turns = *turns;
+                } else {
+                    evidence.delegations.push(Delegation {
+                        id: id.clone(),
+                        profile: String::new(),
+                        task: String::new(),
+                        session: session.clone(),
+                        ok: Some(*ok),
+                        summary: summary.clone(),
+                        turns: *turns,
+                    });
+                }
+            }
             Event::Verification {
                 command, ok, step, ..
             } => {
@@ -107,6 +162,7 @@ impl Evidence {
             && self.checks.is_empty()
             && self.verifications.is_empty()
             && self.plan.is_empty()
+            && self.delegations.is_empty()
             && self.denied == 0
     }
 
@@ -116,12 +172,13 @@ impl Evidence {
         }
         let passed = self.checks.iter().filter(|check| check.ok).count();
         let mut out = format!(
-            "evidence · {} tool call(s) · {} file(s) · {}/{} check(s) · {} verification(s) · {} failure(s)\n",
+            "evidence · {} tool call(s) · {} file(s) · {}/{} check(s) · {} verification(s) · {} delegated · {} failure(s)\n",
             self.tools,
             self.files.len(),
             passed,
             self.checks.len(),
             self.verifications.len(),
+            self.delegations.len(),
             self.failures
         );
         if !self.files.is_empty() {
@@ -138,6 +195,30 @@ impl Evidence {
                     if check.ok { "✓" } else { "✗" },
                     check.command
                 ));
+            }
+        }
+        if !self.delegations.is_empty() {
+            out.push_str("delegated\n");
+            for run in &self.delegations {
+                let status = match run.ok {
+                    Some(true) => "✓",
+                    Some(false) => "✗",
+                    None => "?",
+                };
+                out.push_str(&format!(
+                    "  {status} {} · {} · {} turn(s) · {}\n",
+                    if run.profile.is_empty() {
+                        "subagent"
+                    } else {
+                        &run.profile
+                    },
+                    run.task,
+                    run.turns,
+                    run.session
+                ));
+                if !run.summary.is_empty() {
+                    out.push_str(&format!("    {}\n", run.summary));
+                }
             }
         }
         if !self.plan.is_empty() {
@@ -227,6 +308,12 @@ mod tests {
             event(
                 r#"{"type":"verification","command":"cargo test","ok":true,"output":"ok","ts":6}"#,
             ),
+            event(
+                r#"{"type":"subagent_spawn","id":"s1","call_id":"c1","task":"inspect auth","profile":"explore","session":"sub.jsonl","max_steps":6,"timeout_secs":120,"context_budget":16000,"ts":7}"#,
+            ),
+            event(
+                r#"{"type":"subagent_result","id":"s1","call_id":"c1","ok":true,"summary":"found the seam","session":"sub.jsonl","turns":2,"usage":{},"ts":8}"#,
+            ),
         ];
         let evidence = from_events(&events);
         assert_eq!(evidence.tools, 3);
@@ -243,6 +330,22 @@ mod tests {
         assert!(rendered.contains("cargo test"));
         assert!(rendered.contains("denied"));
         assert!(rendered.contains("verification"));
+        assert_eq!(evidence.delegations.len(), 1);
+        assert_eq!(evidence.delegations[0].ok, Some(true));
+        assert!(rendered.contains("inspect auth"));
+        assert!(rendered.contains("found the seam"));
+    }
+
+    #[test]
+    fn an_unfinished_delegation_is_not_reported_as_success() {
+        let events = vec![event(
+            r#"{"type":"subagent_spawn","id":"s2","call_id":"c2","task":"slow task","profile":"explore","session":"sub.jsonl","max_steps":6,"timeout_secs":120,"context_budget":16000,"ts":1}"#,
+        )];
+        let evidence = from_events(&events);
+        assert_eq!(evidence.delegations[0].ok, None);
+        let rendered = evidence.render();
+        assert!(rendered.contains("? explore"));
+        assert!(rendered.contains("slow task"));
     }
 
     #[test]

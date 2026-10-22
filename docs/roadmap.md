@@ -75,7 +75,7 @@ starts, without adding a database.
 
 **Cards:** M6-001, M6-002, M6-003, M6-004, M6-005.
 
-### M7 · Long-horizon work (planned)
+### M7 · Long-horizon work (done)
 
 **Goal:** let one request become a checked sequence of work that survives a
 session boundary.
@@ -88,7 +88,7 @@ session boundary.
   audit.
 - A three-day goal completes without re-explaining the task.
 
-**Cards:** M7-001 through M7-006; delegation is next.
+**Cards:** M7-001 through M7-007; the phase is complete.
 
 ### M8 · Connected agent (planned)
 
@@ -143,6 +143,7 @@ and commit agree.
 | 13 | M7-004 recorded verification | done | Human-run check becomes durable evidence |
 | 14 | M7-005 plan ledger | done | Steps close only after step-scoped verification |
 | 15 | M7-006 plan prompt | done | Agent sees only open steps and the verify rule |
+| 16 | M7-007 delegation evidence | done | Delegated runs are visible, unfinished ones are not success |
 
 ## The round ritual
 

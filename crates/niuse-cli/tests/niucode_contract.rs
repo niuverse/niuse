@@ -46,6 +46,15 @@ fn text_turn(text: &str) -> Vec<StreamEvent> {
     ]
 }
 
+#[test]
+fn delegated_work_is_available_to_every_niuse_turn() {
+    let names: Vec<String> = niucode_tools::Toolbox::specs()
+        .into_iter()
+        .map(|spec| spec.function.name)
+        .collect();
+    assert!(names.contains(&"subagent".to_string()), "{names:?}");
+}
+
 /// One session, two turns, two different working directories.
 ///
 /// This pins the behaviour niuse's whole thread model rests on: `working_dir`

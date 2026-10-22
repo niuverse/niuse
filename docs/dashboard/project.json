@@ -5,7 +5,7 @@
     "title": "niuse",
     "tagline": "personal engineering companion on niucode",
     "summary": "A personal engineering companion on top of niucode: six Markdown stores for identity, memory, and human goals, an opt-in shared TUI, project context, and a long-horizon roadmap. The board records architecture, decisions, and iteration; it is not runtime monitoring.",
-    "status": "M2 · Dogfood gate · M6/M7 goals + context",
+    "status": "M2 · Dogfood gate · M7 done · M8/M9 next",
     "repo": "niuverse/niuse",
     "language": "Rust"
   },
@@ -90,7 +90,7 @@
     {
       "id": "M7",
       "title": "Long-horizon work",
-      "status": "planned",
+      "status": "done",
       "goal": "Let one request become a checked sequence of work that survives a session boundary.",
       "exit": [
         "persistent product goals survive resume",
