@@ -3,6 +3,7 @@
 //! Kept separate from the store commands: it is the only command that inspects
 //! credentials, the sandbox backend, and the pinned niucode checkout.
 
+use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -170,6 +171,12 @@ pub fn doctor(store: &Store, preset: &str, json: bool) -> Result<()> {
         "metrics",
         format!("{} records", metrics.lines().count()),
     );
+    let active = active_days(&metrics);
+    report.record(
+        if active >= 10 { Level::Ok } else { Level::Warn },
+        "dogfood",
+        format!("{active} active day(s) in metrics; M2 needs ten real days plus notes"),
+    );
 
     match crate::settings::load(store) {
         Ok(_) if store.config_path().exists() => report.record(
@@ -258,6 +265,21 @@ enum PinStatus {
     Match(String),
     Drift { pinned: String, local: String },
     Missing,
+}
+
+fn active_days(metrics: &str) -> usize {
+    let mut days = BTreeSet::new();
+    for line in metrics.lines() {
+        let mut parts = line.splitn(3, '\t');
+        let Some(at) = parts.next().and_then(|value| value.parse::<u64>().ok()) else {
+            continue;
+        };
+        if parts.next() != Some("turn") {
+            continue;
+        }
+        days.insert(Date::from_millis_local(at));
+    }
+    days.len()
 }
 
 fn pin_status() -> Option<PinStatus> {
@@ -381,6 +403,21 @@ mod tests {
         assert!(!is_private_mode(0o640));
         assert!(!is_private_mode(0o604));
         assert!(!is_private_mode(0o755));
+    }
+
+    #[test]
+    fn active_days_counts_distinct_turn_days() {
+        let first = Date::from_days(20_000);
+        let second = first.plus_days(1);
+        let metrics = format!(
+            "{}\tturn\tok\n{}\tturn\tok\n{}\tturn\tcancelled\n{}\tjournal\tx\n",
+            first.start_millis_local(),
+            first.start_millis_local() + 1,
+            second.start_millis_local(),
+            second.start_millis_local(),
+        );
+        assert_eq!(active_days(&metrics), 2);
+        assert_eq!(active_days("garbage\n"), 0);
     }
 
     #[test]

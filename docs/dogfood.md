@@ -27,6 +27,8 @@ Or record it from the repo root:
 
 The script runs `niuse stats --days 1 --json`, uses the local calendar date, and inserts or replaces today's row in this table. Run it at the end of a real working day, not to fill a gap.
 
+`niuse doctor` also reports `dogfood: N active day(s)` from the turn metrics. That is a convenience counter, not acceptance: only the rows and notes below can close M2.
+
 | date | turns | proposed | accepted | note |
 |---|---|---|---|---|
 | 2026-10-22 | 5 | 0 | 0 | identity bug surfaced; fixed in 0.1.1 and verified |

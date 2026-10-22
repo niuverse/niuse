@@ -159,6 +159,7 @@ and commit agree.
 | 25 | M9-005 plan execution | done | Closed steps leave the next prompt |
 | 26 | M9-006 verification failure | done | A failed check is visible and blocks done |
 | 27 | M7-009 TUI plan PTY | done | The full TUI gate runs in a real terminal |
+| 28 | M2-094 doctor dogfood | done | The ten-day gate is visible while using the product |
 
 ## The round ritual
 
