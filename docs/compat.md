@@ -20,11 +20,14 @@ The contract is deliberately small: `run_with_history`, `AgentConfig`, `project_
 
 One read-only exception: `niuse projects` reads niucode's workspace metadata at `~/.niucode/projects/*/project.toml` (schema 1: `cwd`, `last_seen`) and counts `sessions/*.jsonl`. This is a display view, not a second index; if niucode changes the layout, update `crates/niuse-cli/src/projects.rs` and its test.
 
+`niuse tui` inherits niucode's MCP mount: with a read-only `~/.niucode/mcp.toml`, the TUI exposes `mcp__*` tools. The REPL and `exec` build `AgentConfig` in niuse and do not mount them yet; that is a product follow-up.
+
 ## Matrix
 
 | niuse | niucode | status | updated |
 |---|---|---|---|
-| 0.1.11 | `eaece28` | current pin; read-only embedder tools | 2026-10-22 |
+| 0.1.11 | `f38df22` | current pin; read-only MCP mounting in exec/TUI | 2026-10-22 |
+| 0.1.11 | `eaece28` | previous pin; read-only embedder tools | 2026-10-22 |
 | 0.1.11 | `2d12360` | previous pin; configurable approval keys | 2026-10-22 |
 | 0.1.5 | `76fec7b` | previous pin; command registration released | 2026-10-22 |
 | 0.1.4 | `9ffed27` | previous pin; post-turn prompts released | 2026-10-22 |

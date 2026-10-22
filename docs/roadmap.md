@@ -103,7 +103,9 @@ connector instead of one-off shell commands.
 - A connector cannot read credentials, escape its declared roots, or write
   without approval.
 
-**Cards:** niucode M8-001 implements [ADR-0033](https://github.com/niuverse/niucode/blob/main/docs/adr/0033-mcp-client.md) (read-only stdio v1); a niuse personal pack follows after the client mounts.
+**Cards:** niucode M8-001 is done: read-only stdio v1 with explicit trust,
+config mounting in `exec`/TUI, and offline tests. `niuse tui` inherits the
+mount; REPL/`exec` mounting and a personal pack follow.
 
 ### M9 · Proof (planned)
 
