@@ -39,6 +39,11 @@ a memory strategy.
 
 ## Notes
 
+2026-10-22: reviewed one real `--dry-run` on the write session
+(`1792683203856-421044-0`): four bullets, source id present, task, decision,
+and the due loop survived, no code dump. That is 1/10 real reviews; the path
+stays opt-in.
+
 The source thread is named in the command output and recorded in the `digest`
 metric; the journal itself stays plain bullets. Do not summarize every turn: the
 journal records change, not activity.
