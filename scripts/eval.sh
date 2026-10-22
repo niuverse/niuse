@@ -42,6 +42,9 @@ cargo test -p niuse --test cli mcp_init_merges -- --nocapture
 echo "== TUI MCP PTY =="
 cargo test -p niuse --features tui --test tui_mcp -- --nocapture
 
+echo "== combined personal workflow =="
+cargo test -p niuse --test personal_workflow -- --nocapture
+
 if [[ -d "$root/../niucode" ]]; then
   echo "== MCP client boundaries =="
   (cd "$root/../niucode" && cargo test -p niucode-mcp --tests -- --nocapture)

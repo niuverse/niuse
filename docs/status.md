@@ -55,7 +55,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 - **M6 · Compounding context** — startup brief (M6-001), project registry (M6-002), session digest (M6-003, in review), unified recall (M6-004), and agent-invoked `memory_search` (M6-005) landed. The remaining M6 item is real digest review.
 - **M7 · Long-horizon work — done.** Goals, plan mode, evidence, recorded verification, verification-gated steps, open-plan injection, and delegated-run evidence all landed. The next product phase is M8 connected agent and M9 proof.
 - **M8 · Connected agent** — niucode M8-001 (read-only stdio MCP with explicit trust) is done; niuse mounts it in the TUI, REPL, and `exec`, and ships read-only notes and calendar packs. A mutating capability is proposed in [ADR-0034](https://github.com/niuverse/niucode/blob/main/docs/adr/0034-mutating-mcp.md); it stays off until the human accepts that ADR.
-- **M9 · Proof** — `./scripts/eval.sh` covers memory-on/off A/B, goal and plan injection, the startup brief, agent recall, the notes MCP pack, MCP timeout/read-only refusal, and prompt-size budgets. `scripts/dogfood-trend.sh` compares two weeks of real use and blocks `publish-niuse.sh` on a regression.
+- **M9 · Proof** — `./scripts/eval.sh` covers memory-on/off A/B, goal and plan injection, the startup brief, agent recall, the notes and calendar MCP packs, MCP timeout/read-only refusal, prompt-size budgets, and a combined two-pack + plan + verification workflow. `scripts/dogfood-trend.sh` compares two weeks of real use and blocks `publish-niuse.sh` on a regression.
 - **M2 dogfood** continues in parallel; it is not a blocker for product work, but it still decides whether the memory layer pays for itself.
 
 ## Not built

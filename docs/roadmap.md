@@ -123,7 +123,7 @@ that way.
 - A memory-on/off A/B case shows a behavioural difference.
 - Regressions in dogfood metrics block a release.
 
-**Cards:** M9-001, M9-002, and M9-003 are done: briefs, goals, memory A/B, recall, MCP boundaries, the dogfood trend gate, prompt-size budgets, and token/cache signals are covered.
+**Cards:** M9-001 through M9-004 are done: briefs, goals, memory A/B, recall, MCP boundaries, the dogfood trend gate, prompt-size budgets, token/cache signals, and a combined two-pack workflow are covered.
 
 ## Current sprint
 
@@ -154,6 +154,7 @@ and commit agree.
 | 20 | M8-005 mcp init | done | Two-minute setup for both read-only packs |
 | 21 | M8-006 mcp merge | done | Adding a pack does not erase the trust file |
 | 22 | M8-007 TUI MCP PTY | done | The last untested MCP path is covered |
+| 23 | M9-004 personal workflow | done | Packs + plan + verification compose |
 
 ## The round ritual
 
