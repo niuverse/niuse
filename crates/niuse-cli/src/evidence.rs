@@ -166,6 +166,24 @@ impl Evidence {
             && self.denied == 0
     }
 
+    /// `verified` if any recorded check passed, `verification failed` if only
+    /// failures exist, and `no recorded verification` when the step has none.
+    pub fn step_state(&self, step: &PlanStep) -> &'static str {
+        let label = step.label();
+        let checks: Vec<&Check> = self
+            .verifications
+            .iter()
+            .filter(|check| check.step.as_deref() == Some(label.as_str()))
+            .collect();
+        if checks.iter().any(|check| check.ok) {
+            "verified"
+        } else if checks.is_empty() {
+            "no recorded verification"
+        } else {
+            "verification failed"
+        }
+    }
+
     pub fn render(&self) -> String {
         if self.is_empty() {
             return "evidence · no tool calls in this thread\n".to_string();
@@ -224,21 +242,12 @@ impl Evidence {
         if !self.plan.is_empty() {
             out.push_str("plan\n");
             for step in &self.plan {
-                let label = step.label();
-                let verified = self
-                    .verifications
-                    .iter()
-                    .any(|check| check.step.as_deref() == Some(label.as_str()) && check.ok);
                 out.push_str(&format!(
                     "  [{}] {} {} — {}\n",
                     if step.done { "x" } else { " " },
-                    label,
+                    step.label(),
                     step.text,
-                    if verified {
-                        "verified"
-                    } else {
-                        "no recorded verification"
-                    }
+                    self.step_state(step)
                 ));
             }
         }
@@ -365,6 +374,27 @@ mod tests {
         let rendered = evidence.render();
         assert!(rendered.contains("p-1 write tests — verified"));
         assert!(rendered.contains("p-2 ship — no recorded verification"));
+        assert_eq!(evidence.step_state(&evidence.plan[0]), "verified");
+        assert_eq!(
+            evidence.step_state(&evidence.plan[1]),
+            "no recorded verification"
+        );
+    }
+
+    #[test]
+    fn a_failed_step_check_is_not_reported_as_missing() {
+        let step = PlanStep::new(1, "fix the check", niuse_core::Date::from_days(20_000));
+        let evidence = Evidence {
+            plan: vec![step.clone()],
+            verifications: vec![Check {
+                command: "cargo test".into(),
+                ok: false,
+                step: Some("p-1".into()),
+            }],
+            ..Evidence::default()
+        };
+        assert_eq!(evidence.step_state(&step), "verification failed");
+        assert!(evidence.render().contains("verification failed"));
     }
 
     #[test]

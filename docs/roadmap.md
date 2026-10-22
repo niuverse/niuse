@@ -123,7 +123,7 @@ that way.
 - A memory-on/off A/B case shows a behavioural difference.
 - Regressions in dogfood metrics block a release.
 
-**Cards:** M9-001 through M9-005 are done: briefs, goals, memory A/B, recall, MCP boundaries, the dogfood trend gate, prompt-size budgets, token/cache signals, a combined two-pack workflow, and multi-turn plan execution are covered.
+**Cards:** M9-001 through M9-006 are done: briefs, goals, memory A/B, recall, MCP boundaries, the dogfood trend gate, prompt-size budgets, token/cache signals, a combined two-pack workflow, multi-turn plan execution, and failed-verification recovery are covered.
 
 ## Current sprint
 
@@ -157,6 +157,7 @@ and commit agree.
 | 23 | M9-004 personal workflow | done | Packs + plan + verification compose |
 | 24 | M7-008 TUI plan/verify | done | The ledger is usable without leaving the TUI |
 | 25 | M9-005 plan execution | done | Closed steps leave the next prompt |
+| 26 | M9-006 verification failure | done | A failed check is visible and blocks done |
 
 ## The round ritual
 

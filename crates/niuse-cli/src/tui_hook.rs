@@ -295,26 +295,17 @@ impl TurnHooks for CompanionHooks {
                 .map(|report| report.render()),
             "/steps" => match parts.next() {
                 None | Some("list") => {
-                    let report = crate::evidence::from_thread(&self.thread).ok();
+                    let report = crate::evidence::from_thread(&self.thread).unwrap_or_default();
                     let steps = store.plan().ok()?;
                     let open: Vec<String> = steps
                         .iter()
                         .filter(|step| !step.done)
                         .map(|step| {
-                            let label = step.label();
-                            let verified = report.as_ref().is_some_and(|report| {
-                                report.verifications.iter().any(|check| {
-                                    check.step.as_deref() == Some(label.as_str()) && check.ok
-                                })
-                            });
                             format!(
-                                "[ ] {label} {} — {}",
+                                "[ ] {} {} — {}",
+                                step.label(),
                                 step.text,
-                                if verified {
-                                    "verified"
-                                } else {
-                                    "no recorded verification"
-                                }
+                                report.step_state(step)
                             )
                         })
                         .collect();
@@ -742,6 +733,12 @@ mod tests {
         let steps = hooks.command("/steps").unwrap();
         assert!(steps.contains("p-1 write the tests"));
         assert!(steps.contains("no recorded verification"));
+        let refused = hooks.command("/steps done 1").unwrap();
+        assert!(refused.contains("no passing verification"), "{refused}");
+        let failed = hooks.command("/verify p-1 false").unwrap();
+        assert!(failed.contains("FAILED"), "{failed}");
+        let steps = hooks.command("/steps").unwrap();
+        assert!(steps.contains("verification failed"), "{steps}");
         let refused = hooks.command("/steps done 1").unwrap();
         assert!(refused.contains("no passing verification"), "{refused}");
         let verified = hooks.command("/verify p-1 true").unwrap();

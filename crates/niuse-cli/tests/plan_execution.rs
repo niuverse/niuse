@@ -249,3 +249,88 @@ async fn steps_execute_one_at_a_time_and_vanish_after_verification() {
 
     host.shutdown().await.unwrap();
 }
+
+#[tokio::test]
+async fn a_failed_verification_keeps_the_step_open_until_a_pass() {
+    let directory = tempfile::tempdir().unwrap();
+    let store = Store::at(directory.path().join(".niuse"));
+    store.init().unwrap();
+    let step = store
+        .add_step("fix the failing check".into(), Date::from_days(20_000))
+        .unwrap();
+    let log = SessionLog::create(directory.path()).unwrap();
+
+    log.append(&Event::Verification {
+        command: "cargo test".into(),
+        ok: false,
+        output: "one failure".into(),
+        step: Some(step.label()),
+        ts: now_ms(),
+    })
+    .unwrap();
+
+    let prompt = system_prompt(&store);
+    assert!(prompt.contains("p-1 fix the failing check"), "{prompt}");
+    assert!(!store.plan().unwrap()[0].done);
+
+    let home = directory.path().join(".niuse");
+    let refused = std::process::Command::new(env!("CARGO_BIN_EXE_niuse"))
+        .arg("--home")
+        .arg(&home)
+        .arg("plan")
+        .arg("done")
+        .arg("1")
+        .arg("--thread")
+        .arg(log.path())
+        .output()
+        .unwrap();
+    assert!(!refused.status.success());
+    assert!(String::from_utf8_lossy(&refused.stderr).contains("no passing verification"));
+
+    let shown = std::process::Command::new(env!("CARGO_BIN_EXE_niuse"))
+        .arg("--home")
+        .arg(&home)
+        .arg("evidence")
+        .arg("--thread")
+        .arg(log.path())
+        .output()
+        .unwrap();
+    assert!(shown.status.success(), "{shown:?}");
+    let text = String::from_utf8_lossy(&shown.stdout);
+    assert!(text.contains("verification failed"), "{text}");
+
+    log.append(&Event::Verification {
+        command: "cargo test".into(),
+        ok: true,
+        output: "ok".into(),
+        step: Some(step.label()),
+        ts: now_ms(),
+    })
+    .unwrap();
+    let closed = std::process::Command::new(env!("CARGO_BIN_EXE_niuse"))
+        .arg("--home")
+        .arg(&home)
+        .arg("plan")
+        .arg("done")
+        .arg("1")
+        .arg("--thread")
+        .arg(log.path())
+        .output()
+        .unwrap();
+    assert!(closed.status.success(), "{closed:?}");
+    assert!(!system_prompt(&store).contains("当前计划"));
+
+    let evidence = std::process::Command::new(env!("CARGO_BIN_EXE_niuse"))
+        .arg("--home")
+        .arg(&home)
+        .arg("evidence")
+        .arg("--thread")
+        .arg(log.path())
+        .arg("--json")
+        .output()
+        .unwrap();
+    let report: serde_json::Value = serde_json::from_slice(&evidence.stdout).unwrap();
+    assert_eq!(report["verifications"].as_array().unwrap().len(), 2);
+    assert_eq!(report["verifications"][0]["ok"], false);
+    assert_eq!(report["verifications"][1]["ok"], true);
+}
