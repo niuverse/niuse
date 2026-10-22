@@ -72,3 +72,7 @@ jobs:
       - name: Check
         working-directory: niuse
         run: cargo check --workspace --all-targets
+
+      - name: Check the tui feature
+        working-directory: niuse
+        run: cargo check -p niuse --features tui --all-targets
