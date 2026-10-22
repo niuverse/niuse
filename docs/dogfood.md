@@ -29,7 +29,7 @@ The script runs `niuse stats --days 1 --json`, uses the local calendar date, and
 
 | date | turns | proposed | accepted | note |
 |---|---|---|---|---|
-| YYYY-MM-DD | 0 | 0 | 0 | - |
+| 2026-10-22 | 0 | 0 | 0 | day 1: dogfood setup and license; no real session yet |
 
 ## Rules
 
