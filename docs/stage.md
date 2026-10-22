@@ -25,6 +25,8 @@ proven, what is still a gate, and what needs a human decision.
   covers approvals, session isolation, resume/fork pointers, memory prompts,
   and brief/report/steps composition.
 - **Board.** 161 cards and 18 docs are generated and link-checked.
+- **CI.** niucode `2b278fe` is green; niuse `ed54d6f` is green and `a85e2a2` is
+  the current checked commit.
 
 ## Real evidence
 

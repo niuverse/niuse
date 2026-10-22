@@ -48,7 +48,7 @@ Terminal input uses `rustyline` only when stdin is a TTY; pipes keep the plain r
 | `driver` | Adapters | niucode boundary, sessions, per-turn cwd |
 | `projects` | Adapters | read-only view of niucode's project registry |
 | `bootstrap` | Adapters | old-session mining and the inbox |
-| `stores` | State | six-store load / save and permissions |
+| `stores` | State | seven-store load / save and permissions |
 | `dashboard` | Engineering | offline board generation |
 
 ## Active thread
