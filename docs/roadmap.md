@@ -160,6 +160,7 @@ and commit agree.
 | 26 | M9-006 verification failure | done | A failed check is visible and blocks done |
 | 27 | M7-009 TUI plan PTY | done | The full TUI gate runs in a real terminal |
 | 28 | M2-094 doctor dogfood | done | The ten-day gate is visible while using the product |
+| 29 | M2-095 dogfood checker | done | The gate cannot be claimed from a malformed table |
 
 ## The round ritual
 

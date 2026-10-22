@@ -28,6 +28,10 @@ bash scripts/dogfood_test.sh
 echo "== dogfood trend self-test =="
 bash scripts/dogfood-trend_test.sh
 
+echo "== dogfood log =="
+bash scripts/dogfood-check.sh
+bash scripts/dogfood-check_test.sh
+
 echo "== package =="
 cargo package -p niuse-core --allow-dirty --offline
 

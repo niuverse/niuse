@@ -45,7 +45,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 
 ## Waiting on you
 
-1. **Dogfood** — ten working days recorded in [dogfood](dogfood.md). `./scripts/dogfood.sh "note"` writes the day's row from `stats --days 1 --json`; `niuse doctor` shows the active-day count as a convenience. Only real use and review can close M2.
+1. **Dogfood** — ten working days recorded in [dogfood](dogfood.md). `./scripts/dogfood.sh "note"` writes the day's row from `stats --days 1 --json`; `niuse doctor` shows the active-day count; `scripts/dogfood-check.sh --complete` checks the table and criteria. Only real use and review can close M2.
 2. **TUI dogfood** — ten real days on `niuse tui` for M5-002; this is also the ADR-0004 gate for retiring the REPL renderer.
 3. **Digest review** — review ten real `niuse digest` runs before treating it as automatic; the card stays in `review` until then.
 

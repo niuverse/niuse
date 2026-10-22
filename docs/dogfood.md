@@ -29,6 +29,8 @@ The script runs `niuse stats --days 1 --json`, uses the local calendar date, and
 
 `niuse doctor` also reports `dogfood: N active day(s)` from the turn metrics. That is a convenience counter, not acceptance: only the rows and notes below can close M2.
 
+`./scripts/dogfood-check.sh` validates this table: dates, counts, duplicates, future days, and the ten-day/60%/three-citations/one-disagreement criteria. Without `--complete` it only reports gaps; with `--complete` it exits non-zero until every criterion holds. The citations and disagreement counts are text heuristics, so a human still reviews the notes.
+
 | date | turns | proposed | accepted | note |
 |---|---|---|---|---|
 | 2026-10-22 | 5 | 0 | 0 | identity bug surfaced; fixed in 0.1.1 and verified |
