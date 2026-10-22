@@ -132,7 +132,7 @@ Set `NIUSE_MEMORY=off` to disable both memory injection and new candidates, for 
 One turn:
 
 ```text
-load the six injected stores → compose the prompt (once) → run_with_history
+load the seven stores → compose the prompt (once) → run_with_history
                      → stream, with a tail buffer that strips protocol blocks
                      → journal / loop blocks are written automatically
                      → memory candidates: y / n / e / s
@@ -187,7 +187,7 @@ cargo run --features tui -- tui
 # or: cargo install niuse --features tui
 ```
 
-Memory candidates become accept/edit/discard prompts after the turn; conflicts offer replace/keep both. Journal and loops are written automatically. `NIUSE_MEMORY=off` disables injection and candidates in the TUI too. `/brief`, `/goals`, `/plan`, `/recall`, `/report`, `/mem`, `/mem show <id>`, `/loops`, `/journal`, `/status`, `/cost`, `/threads`, `/sessions`, `/export`, `/prompt`, `/identity`, and `/user` are handled by the embedder command hook and appear in `/help` and Tab completion. The default binary does not link the TUI. `--thread` also selects the TUI's active session.
+Memory candidates become accept/edit/discard prompts after the turn; conflicts offer replace/keep both. Journal and loops are written automatically. `NIUSE_MEMORY=off` disables injection and candidates in the TUI too. `/brief`, `/goals`, `/plan`, `/recall`, `/report`, `/mem`, `/mem show <id>`, `/loops`, `/journal`, `/status`, `/cost`, `/threads`, `/sessions`, `/export`, `/prompt`, `/identity`, and `/user` are handled by the embedder command hook and appear in `/help` and Tab completion. The default binary does not link the TUI. `--thread` also selects the TUI's active session. `/new` is an alias of `/clear`: it archives the current thread and starts a fresh `thread.jsonl`; `/resume` and `/fork` switch only the live session (ADR-0007).
 
 ## MCP
 
@@ -235,7 +235,7 @@ A daemon, a web UI, WeChat / Feishu bridges, scheduled push notifications, vecto
 
 ## Known limits
 
-- One thread: a single `thread.jsonl`, no `/new`.
+- One active line at a time: `thread.jsonl`. `/new` and `/reset` archive it and start a fresh one; `/resume` and `/fork` are session-scoped views, not a change to the next launch's active line ([ADR-0007](docs/adr/0007-active-thread.md)).
 - Memory is capped around 200 entries; overflow is handled by budget trimming and manual review.
 - Journal, memory, and stats day labels follow the machine's local timezone; event timestamps stay UTC.
 - `bootstrap` sends old user/assistant text to the provider (tool output is dropped).
