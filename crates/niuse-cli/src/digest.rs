@@ -144,16 +144,27 @@ pub async fn run(
 /// opening instead of the work that just finished.
 fn thread_transcript(path: &Path, limit: usize) -> Result<Option<String>> {
     let loaded = load(path)?;
-    let messages: Vec<(&str, &str)> = loaded
+    let messages: Vec<(&str, String)> = loaded
         .events
         .iter()
         .filter_map(|event| match event {
             Event::UserMessage { text, .. } if !text.trim().is_empty() => {
-                Some(("user", text.as_str()))
+                Some(("user", text.clone()))
             }
             Event::AssistantMessage { text, .. } if !text.trim().is_empty() => {
-                Some(("assistant", text.as_str()))
+                Some(("assistant", text.clone()))
             }
+            Event::Verification {
+                command, ok, step, ..
+            } => Some((
+                "verification",
+                format!(
+                    "{} {} {}",
+                    step.as_deref().unwrap_or("-"),
+                    if *ok { "ok" } else { "FAILED" },
+                    command
+                ),
+            )),
             _ => None,
         })
         .collect();
@@ -267,6 +278,24 @@ mod tests {
         );
         assert!(parse_bullets("NONE").is_empty());
         assert!(parse_bullets("just chatter").is_empty());
+    }
+
+    #[test]
+    fn transcript_includes_verification_evidence() {
+        let (directory, thread) = thread_with(&["run the check"]);
+        let log = SessionLog::open(&thread).unwrap();
+        log.append(&Event::Verification {
+            command: "cargo test".into(),
+            ok: false,
+            output: "one failure".into(),
+            step: Some("p-1".into()),
+            ts: now_ms(),
+        })
+        .unwrap();
+        let transcript = thread_transcript(&thread, 20).unwrap().unwrap();
+        assert!(transcript.contains("[verification] p-1 FAILED cargo test"));
+        drop(log);
+        drop(directory);
     }
 
     #[test]
