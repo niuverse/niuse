@@ -66,6 +66,28 @@ struct Cli {
 }
 
 #[derive(Subcommand, Debug, Clone)]
+enum McpCommand {
+    /// Write the bundled read-only packs and a trust manifest
+    Init {
+        /// Notes directory for the notes pack
+        #[arg(long)]
+        notes: Option<PathBuf>,
+        /// iCalendar file for the calendar pack
+        #[arg(long)]
+        calendar: Option<PathBuf>,
+        /// Manifest path (defaults to ~/.niucode/mcp.toml)
+        #[arg(long)]
+        config: Option<PathBuf>,
+        /// Where to write the bundled server scripts (defaults to ~/.niuse/packs)
+        #[arg(long)]
+        packs: Option<PathBuf>,
+        /// Replace an existing manifest (no merge)
+        #[arg(long)]
+        force: bool,
+    },
+}
+
+#[derive(Subcommand, Debug, Clone)]
 enum PlanCommand {
     /// List open steps (or all with --all)
     List {
@@ -218,6 +240,11 @@ enum Command {
         /// Emit JSON (summary plus per-day rows)
         #[arg(long)]
         json: bool,
+    },
+    /// Install read-only MCP packs and write a trust manifest
+    Mcp {
+        #[command(subcommand)]
+        command: McpCommand,
     },
     /// Human-owned plan steps, with a verification gate for closing
     Plan {
@@ -667,6 +694,24 @@ async fn main() -> Result<()> {
             }
         },
         Some(Command::Stats { days, trend, json }) => commands::stats(&store, days, trend, json),
+        Some(Command::Mcp { command }) => match command {
+            McpCommand::Init {
+                notes,
+                calendar,
+                config,
+                packs,
+                force,
+            } => commands::mcp_init(
+                &store,
+                commands::McpInitOptions {
+                    notes,
+                    calendar,
+                    config,
+                    packs,
+                    force,
+                },
+            ),
+        },
         Some(Command::Plan { command }) => match command {
             PlanCommand::List { all, json } => commands::plan_list(&store, all, json),
             PlanCommand::Add { text } => {

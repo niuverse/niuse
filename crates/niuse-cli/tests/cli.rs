@@ -5,6 +5,10 @@
 //! the subcommand is wired to the wrong flag.
 
 use std::process::Command;
+use std::time::Duration;
+
+use niucode_mcp::{McpConfig, McpHost};
+use serde_json::json;
 
 fn run(home: &std::path::Path, args: &[&str]) -> std::process::Output {
     run_in(std::path::Path::new("."), home, args)
@@ -343,6 +347,69 @@ fn stats_json_reports_cache_hit_and_tokens_per_turn() {
     let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(report["cache_hit_percent"], 50);
     assert_eq!(report["tokens_per_turn"], 1200);
+}
+
+#[tokio::test]
+async fn mcp_init_writes_a_mountable_read_only_config() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    let notes = directory.path().join("notes");
+    std::fs::create_dir_all(&notes).unwrap();
+    std::fs::write(notes.join("a.md"), "Rust note for search\n").unwrap();
+    let calendar = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../packs/calendar/tests/sample.ics");
+    let config = directory.path().join("mcp.toml");
+    let packs = directory.path().join("packs");
+    let args = [
+        "mcp",
+        "init",
+        "--notes",
+        notes.to_str().unwrap(),
+        "--calendar",
+        calendar.to_str().unwrap(),
+        "--config",
+        config.to_str().unwrap(),
+        "--packs",
+        packs.to_str().unwrap(),
+    ];
+
+    let output = run(&home, &args);
+    assert!(output.status.success(), "{output:?}");
+    let text = std::fs::read_to_string(&config).unwrap();
+    assert!(text.contains("name = \"notes\""));
+    assert!(text.contains("name = \"calendar\""));
+    assert_eq!(text.matches("read_only = true").count(), 2);
+    assert!(packs.join("notes/server.py").is_file());
+    assert!(packs.join("calendar/server.py").is_file());
+
+    let refused = run(&home, &args);
+    assert!(!refused.status.success());
+    assert!(String::from_utf8_lossy(&refused.stderr).contains("--force"));
+    let mut forced = args.to_vec();
+    forced.push("--force");
+    assert!(run(&home, &forced).status.success());
+
+    let parsed = McpConfig::load(&config).unwrap();
+    let servers = parsed.validated().unwrap();
+    let limit = Duration::from_secs(5);
+    let host = McpHost::mount(&servers, limit).await.expect("mount");
+    let notes_hit = host
+        .call("mcp__notes__search_notes", json!({"query": "rust"}), limit)
+        .await
+        .expect("notes");
+    assert!(notes_hit.ok);
+    assert!(notes_hit.output.contains("a.md"));
+    let calendar_hit = host
+        .call(
+            "mcp__calendar__search_events",
+            json!({"query": "roadmap"}),
+            limit,
+        )
+        .await
+        .expect("calendar");
+    assert!(calendar_hit.ok);
+    assert!(calendar_hit.output.contains("Standup"));
+    host.shutdown().await.unwrap();
 }
 
 #[test]

@@ -7,6 +7,7 @@ mod evidence;
 mod goals;
 mod journal;
 mod loops;
+mod mcp;
 mod memory;
 mod plan;
 mod profile;
@@ -22,6 +23,7 @@ pub use goals::{goals_add, goals_done, goals_list};
 pub use goals::{goals_add_one, goals_close};
 pub use journal::{journal_add, journal_search, journal_show};
 pub use loops::{loops_add, loops_done, loops_list};
+pub use mcp::{init as mcp_init, InitOptions as McpInitOptions};
 pub use memory::{
     mem_add, mem_confirm, mem_edit, mem_forget, mem_list, mem_prune, mem_review, mem_search,
     mem_show,

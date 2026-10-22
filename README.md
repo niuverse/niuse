@@ -190,18 +190,19 @@ Memory candidates become accept/edit/discard prompts after the turn; conflicts o
 
 ## MCP
 
-All paths mount niucode's read-only MCP servers. Put trusted servers in
-`~/.niucode/mcp.toml` (or point `NIUSE_MCP_CONFIG` at a manifest); each must
-declare `read_only = true`. Tools appear to the model as
-`mcp__<server>__<tool>`. The TUI also accepts `--mcp-config`.
+All paths mount niucode's read-only MCP servers. The quick start installs both
+bundled packs and writes `~/.niucode/mcp.toml`:
 
-```toml
-[[server]]
-name = "notes"
-command = "python3"
-args = ["/home/me/notes-server.py"]
-read_only = true
+```sh
+niuse mcp init --notes ~/notes --calendar ~/calendar.ics
+niuse tui
 ```
+
+`mcp init` copies the bundled servers to `~/.niuse/packs/`, resolves an
+absolute `python3`, and writes only `read_only = true` entries. Pass `--force`
+to replace an existing manifest (it does not merge). You can also write the
+manifest by hand; tools appear as `mcp__<server>__<tool>`, and the TUI accepts
+`--mcp-config`.
 
 A broken manifest or a server that fails to start prints a warning and disables
 MCP for that run; it does not take down the session. A read-only notes pack is
