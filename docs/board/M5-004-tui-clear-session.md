@@ -1,13 +1,13 @@
 +++
 id = "M5-004"
 title = "Adopt the TUI's new session after /clear"
-status = "blocked"
+status = "done"
 milestone = "M5"
 module = "cli"
 size = "M"
 priority = "P1"
 updated = "2026-10-22"
-blocked_reason = "Niucode's TUI /clear creates a new timestamped session file; niuse hooks still hold thread.jsonl. A session factory or on_session_start hook is needed before /new is safe in niuse."
+completed = "2026-10-22"
 depends_on = ["M5-001"]
 docs = ["roadmap"]
 +++
@@ -38,13 +38,16 @@ Consequences while the TUI runs:
 
 ## Acceptance
 
-- [ ] `/new` creates a niuse-understood active thread.
-- [ ] `/evidence` after `/new` reads the new session.
-- [ ] `/verify` and plan commands append to the new session.
-- [ ] The old thread is archived under `threads/`.
-- [ ] A PTY regression covers archive and context isolation.
+- [x] `/new` creates a niuse-understood active thread.
+- [x] `/evidence` after `/new` reads the new session.
+- [x] `/verify` and plan commands append to the new session.
+- [x] The old thread is archived under `threads/`.
+- [x] A PTY regression covers archive and context isolation.
 
 ## Notes
 
-The niucode alias itself is tested at the parser level. It is not safe to
-advertise `/new` in niuse until this card is done.
+2026-10-22: fixed by niucode `323a158`. `TurnHooks::new_session_path` archives
+`thread.jsonl`, returns the same active path, and `on_session_start` updates the
+hooks. `/clear` and `/reset` both use it. The PTY test starts a second thread,
+sees only `SECOND_ANSWER` in `thread.jsonl`, and finds `FIRST_ANSWER` in the
+archived file.

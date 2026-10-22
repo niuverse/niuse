@@ -183,7 +183,7 @@ and commit agree.
 | 49 | M5-002 TUI gate | doing | 1/10 TUI days; two gates may overlap |
 | 50 | M3-004 publish state | done | Docs match crates.io and the MCP blocker |
 | 51 | niucode M8-003 MCP preflight | ready | Missing crate is packageable; upload awaits human |
-| 52 | M5-004 TUI clear session | blocked | /clear creates a session niuse cannot yet adopt |
+| 52 | M5-004 TUI clear session | done | /new archives and resets thread.jsonl |
 
 ## The round ritual
 

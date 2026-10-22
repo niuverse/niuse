@@ -3,7 +3,7 @@
 //! Prototype: not wired into a `niuse tui` command yet. The unit tests exercise
 //! the full capture → parse → write path without a terminal.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use anyhow::Result;
 use niucode::{AgentEvent, RunOutcome, TurnHooks, TurnPrompt};
@@ -249,6 +249,16 @@ impl TurnHooks for CompanionHooks {
     }
 
     fn on_event(&mut self, _event: &AgentEvent) {}
+
+    fn new_session_path(&mut self) -> Result<Option<PathBuf>> {
+        let threads = self.root.join("threads");
+        crate::driver::archive_thread(&self.thread, &threads)?;
+        Ok(Some(self.root.join("thread.jsonl")))
+    }
+
+    fn on_session_start(&mut self, path: &Path) {
+        self.thread = path.to_path_buf();
+    }
 
     fn commands(&self) -> Vec<(String, String)> {
         vec![
@@ -662,6 +672,25 @@ mod tests {
         let (mut hooks, prompt) = conflict_prompt(&store);
         hooks.on_answer(&prompt.id, 1);
         assert_eq!(store.memories().unwrap().len(), 2);
+    }
+
+    #[test]
+    fn new_session_archives_the_old_thread_and_updates_the_pointer() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        std::fs::write(
+            store.session_path(),
+            "{\"type\":\"session_end\",\"ts\":1}\n",
+        )
+        .unwrap();
+        let mut hooks = CompanionHooks::new(&store).unwrap();
+        let new_path = hooks.new_session_path().unwrap().expect("custom path");
+        assert_eq!(new_path, store.session_path());
+        assert!(!store.session_path().exists());
+        assert!(store.threads_dir().read_dir().unwrap().next().is_some());
+        hooks.on_session_start(&new_path);
+        assert_eq!(hooks.thread, new_path);
     }
 
     #[test]
