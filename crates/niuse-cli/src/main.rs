@@ -622,6 +622,8 @@ async fn run_tui(cli: &Cli, store: &Store, replay: Option<PathBuf>) -> Result<()
         approval: settings.approval,
         network: settings.network,
         replay,
+        approval_keys: niucode::ApprovalKeys::custom('y', 'n', 's')
+            .expect("distinct approval keys"),
         ..niucode::TuiOptions::default()
     };
     niucode::run_tui_with_hooks(options, Box::new(hooks)).await

@@ -46,7 +46,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 
 ## In progress
 
-- **M5 · Harness-native companion** — M5-001 is blocked on the approval key contract: the REPL uses `y/n` with `d` for the full diff, while the TUI pager uses `a/d/s` where `d` denies. Resolve that upstream before the dogfood gate (M5-002).
+- **M5 · Harness-native companion** — M5-001 is in progress: niucode `2d12360` adds configurable approval keys and niuse now uses `y`/`n`/`s`, so `d` no longer denies. The PTY approval test and usage-line comparison remain before the dogfood gate (M5-002).
 - **M6 · Compounding context** — startup brief (M6-001), project registry (M6-002), and session digest (M6-003, in review) landed; on-demand recall follows in [roadmap](roadmap.md).
 - **M2 dogfood** continues in parallel; it is not a blocker for product work, but it still decides whether the memory layer pays for itself.
 

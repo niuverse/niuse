@@ -1,13 +1,12 @@
 +++
 id = "M5-001"
 title = "TUI approval and usage parity"
-status = "blocked"
+status = "doing"
 milestone = "M5"
 module = "cli"
 size = "M"
 priority = "P0"
 updated = "2026-10-22"
-blocked_reason = "REPL keys (y/n, d=full diff) conflict with the TUI pager (a allow, d deny, s session); decide the shared approval contract upstream first"
 depends_on = ["M4-003"]
 docs = ["renderer-migration", "adr-0004", "dogfood"]
 +++
@@ -34,9 +33,8 @@ cannot be retired and the TUI cannot become the default.
 
 ## Acceptance
 
-- [ ] A PTY test denies an approval and asserts the same preview fields and cap
-      as the REPL test.
-- [ ] `d` shows the full diff without accepting the write.
+- [ ] A PTY test denies an approval with the configured `y`/`n` keys and
+      asserts the write is blocked and the preview was visible.
 - [ ] `/cost` and the post-turn usage line agree with the event log.
 - [ ] Every listed product command appears in TUI help/completion and returns
       the same data as its REPL counterpart.
@@ -44,12 +42,11 @@ cannot be retired and the TUI cannot become the default.
 
 ## Notes
 
-The TUI pager is not missing the diff: it renders a scrollable full-screen diff,
-which is better than the REPL's 80-line preview. The real parity question is the
-key contract. In the REPL `d` means "show the full diff" and `n` denies; in the
-TUI pager `d` denies and `s` allows for the session. A user who learned one UI
-can deny a write by accident in the other. Resolve that upstream (a shared key
-map or an embedder option) before treating this card as parity.
+The key conflict is resolved upstream: niucode `2d12360` adds
+`TuiOptions.approval_keys`, and niuse sets `y`/`n`/`s`. `d` no longer denies on
+the niuse path; the pager's full diff is always available with scrolling, so
+the 80-line cap is a REPL property, not a TUI requirement. The remaining work is
+the PTY test and the usage-line comparison.
 
 If the gap is a niucode API issue, upstream it and bump the pin through
 `scripts/sync-niucode.sh`; do not fork the TUI.
