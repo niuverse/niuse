@@ -38,6 +38,7 @@ agent-dispatch tests. No API key, network, or model call is involved.
 | `mcp_init_writes_a_mountable_read_only_config` | Generated config mounts and both packs answer |
 | `calendar_pack_lists_and_searches_without_network` | A second read-only pack lists, searches, and excludes out-of-window events |
 | `stats_json_reports_cache_hit_and_tokens_per_turn` | Cost signals are derived from token totals, not guessed |
+| `volatile_sections_do_not_change_the_cacheable_prefix` | Date, promises, and journal stay out of the cache prefix |
 | `a_fat_store_stays_under_the_prompt_budget` | A 200-memory store stays under 4.2k tokens |
 | `plan_injection_caps_at_six_steps` | A 50-step plan injects six, not all |
 | `memory_is_truncated_before_it_can_dominate_the_prompt` | 500 memories are dropped, not appended |

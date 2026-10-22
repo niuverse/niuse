@@ -163,6 +163,7 @@ and commit agree.
 | 29 | M2-095 dogfood checker | done | The gate cannot be claimed from a malformed table |
 | 30 | M2-096 dogfood command | done | The row comes from metrics, not hand arithmetic |
 | 31 | M2-097 weekly report | done | One read-only view for the weekly review |
+| 32 | M9-007 prompt prefix | done | Cacheable bytes are pinned; protocol heading deduped |
 
 ## The round ritual
 

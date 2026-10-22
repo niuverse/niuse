@@ -21,6 +21,9 @@ cargo test -p niuse --test cli plan_steps -- --nocapture
 echo "== prompt budget =="
 cargo test -p niuse --test prompt_budget -- --nocapture
 
+echo "== prompt prefix =="
+cargo test -p niuse --test prompt_cache -- --nocapture
+
 echo "== cost signals =="
 cargo test -p niuse --test cli stats_json_reports -- --nocapture
 

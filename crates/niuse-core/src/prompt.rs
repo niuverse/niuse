@@ -25,8 +25,7 @@ pub const BASE: &str = "你是一个长期陪伴这位用户的工程伙伴。\n
 - 不确定就去查；查不到就说不知道，不要补全。\n\
 - 记忆是偏好，不是法律。与当前证据冲突时以证据为准，并指出你不同意哪一条。";
 
-pub const PROTOCOL: &str = "## 记忆协议\n\
-你可以在回答的最后输出以下块。运行时会解析它们，并从用户看到的文本里剥离；不要在正文里提到这些块。\n\n\
+pub const PROTOCOL: &str = "你可以在回答的最后输出以下块。运行时会解析它们，并从用户看到的文本里剥离；不要在正文里提到这些块。\n\n\
 <<niuse:memory kind=preference tags=rust,testing>>\n\
 一句能独立看懂、跨项目仍然成立的结论\n\
 <</niuse:memory>>\n\n\
