@@ -8,6 +8,9 @@ mod export;
 mod render;
 mod repl;
 mod settings;
+#[cfg(feature = "tui")]
+#[allow(dead_code)]
+mod tui_hook;
 
 use std::path::PathBuf;
 

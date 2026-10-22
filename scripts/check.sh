@@ -17,6 +17,10 @@ RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps
 echo "== tests =="
 cargo test --workspace
 
+echo "== tui feature =="
+cargo test -p niuse --features tui
+cargo clippy -p niuse --features tui --all-targets -- -D warnings
+
 echo "== dogfood =="
 cargo build -p niuse
 bash scripts/dogfood_test.sh
