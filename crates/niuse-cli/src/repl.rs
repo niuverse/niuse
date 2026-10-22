@@ -1360,7 +1360,7 @@ mod tests {
         assert_eq!(start, "/mem show ".len());
         assert_eq!(fragment, &first.id[..2]);
 
-        let prefixed = id_candidates(&store, IdScope::Memory, &format!("m-{}", &first.id[..2]));
+        let prefixed = id_candidates(&store, IdScope::Memory, &format!("m-{}", first.id));
         assert_eq!(prefixed.len(), 1);
         assert_eq!(prefixed[0].replacement, format!("m-{}", first.id));
 
