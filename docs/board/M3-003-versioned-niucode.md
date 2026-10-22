@@ -1,7 +1,7 @@
 +++
 id = "M3-003"
 title = "Niucode crates as versioned dependencies"
-status = "doing"
+status = "done"
 milestone = "M3"
 module = "cli"
 size = "S"
@@ -24,7 +24,7 @@ docs = ["distribution"]
 - [x] niucode crates share 0.1.0 and list the publish order.
 - [x] `niuse-core` is also a versioned dependency of the binary.
 - [x] Publish `niucode-core` and its dependents to crates.io (all seven at 0.1.0).
-- [ ] Verify `cargo package -p niuse` against the registry afterwards.
+- [x] Verify `cargo package -p niuse` against the registry afterwards; it succeeds and the binary installs from crates.io.
 
 `cargo package -p niuse` now gets past manifest validation and stops at the expected `no matching package named niucode-agent` until the registry upload exists.
 

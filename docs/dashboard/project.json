@@ -46,7 +46,7 @@
     {
       "id": "M3",
       "title": "Distribution",
-      "status": "planned",
+      "status": "done",
       "goal": "Make the project installable, publishable, and maintainable.",
       "exit": [
         "the niucode dependency is versioned, or git install is the stated path",

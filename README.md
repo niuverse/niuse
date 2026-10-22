@@ -12,17 +12,18 @@ niuse is a personal engineering companion built on top of [niucode](https://gith
 
 ## Quick start
 
-Requires Rust 1.88+ and a local checkout of `../niuverse/niucode` (the current build uses path dependencies; a pinned git dependency is planned).
+Requires Rust 1.88+.
 
 ```sh
-cargo build --release
-
-./target/release/niuse                     # enter the REPL
-./target/release/niuse identity init       # eight questions, writes ~/.niuse/identity.md
-./target/release/niuse status              # inspect prompt size and store counts
-./target/release/niuse bootstrap --limit 5 # mine old niucode sessions for candidates
-./target/release/niuse review              # accept or discard them one by one
+cargo install niuse --version 0.1.0 --locked
+niuse                     # enter the REPL
+niuse identity init       # eight questions, writes ~/.niuse/identity.md
+niuse status              # inspect prompt size and store counts
+niuse bootstrap --limit 5 # mine old niucode sessions for candidates
+niuse review              # accept or discard them one by one
 ```
+
+From a checkout, use `cargo build --release`; the workspace still points at the sibling `../niuverse/niucode` for development, while the published crate resolves the released `niucode-*` crates.
 
 Model credentials are shared with niucode:
 
