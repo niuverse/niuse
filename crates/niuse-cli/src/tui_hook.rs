@@ -36,6 +36,10 @@ pub struct CompanionHooks {
     filter: StreamFilter,
     raw: String,
     pending: Vec<Option<PendingMemory>>,
+    turns: usize,
+    input_tokens: u64,
+    output_tokens: u64,
+    cached_tokens: u64,
 }
 
 impl CompanionHooks {
@@ -59,6 +63,10 @@ impl CompanionHooks {
             filter: StreamFilter::new(),
             raw: String::new(),
             pending: Vec::new(),
+            turns: 0,
+            input_tokens: 0,
+            output_tokens: 0,
+            cached_tokens: 0,
         })
     }
 
@@ -211,12 +219,20 @@ impl TurnHooks for CompanionHooks {
 
     fn on_event(&mut self, _event: &AgentEvent) {}
 
+    fn on_turn_end(&mut self, outcome: &RunOutcome) {
+        self.turns += outcome.turns;
+        self.input_tokens += outcome.usage.input_tokens;
+        self.output_tokens += outcome.usage.output_tokens;
+        self.cached_tokens += outcome.usage.cached_tokens;
+    }
+
     fn commands(&self) -> Vec<(String, String)> {
         vec![
             ("/mem".into(), "list memory; /mem show <id>".into()),
             ("/loops".into(), "list open promises".into()),
             ("/journal".into(), "show the last three journal days".into()),
             ("/status".into(), "identity, memory, and loop counts".into()),
+            ("/cost".into(), "session token usage".into()),
         ]
     }
 
@@ -284,6 +300,10 @@ impl TurnHooks for CompanionHooks {
                 }
                 Some(out.trim_end().to_string())
             }
+            "/cost" => Some(format!(
+                "session: {} turns · {} in · {} out · {} cached",
+                self.turns, self.input_tokens, self.output_tokens, self.cached_tokens
+            )),
             "/status" => Some(format!(
                 "identity: {}\nmemory: {}\nopen loops: {}",
                 if store.identity().ok().flatten().is_some() {
@@ -408,6 +428,17 @@ mod tests {
         assert!(hooks.command("/nope").is_none());
         let commands = hooks.commands();
         assert!(commands.iter().any(|(name, _)| name == "/mem"));
+
+        let mut usage = outcome();
+        usage.turns = 2;
+        usage.usage.input_tokens = 123;
+        usage.usage.output_tokens = 45;
+        usage.usage.cached_tokens = 100;
+        hooks.on_turn_end(&usage);
+        let cost = hooks.command("/cost").unwrap();
+        assert!(cost.contains("2 turns"));
+        assert!(cost.contains("123 in"));
+        assert!(cost.contains("100 cached"));
     }
 
     #[test]
