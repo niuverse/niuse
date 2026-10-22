@@ -84,7 +84,7 @@ pub fn compose(
         )),
         None => sections.push((
             "你是谁",
-            "当前还没有 identity.md。你还没有被命名；不要用产品名充数，也不要假装有身份。如果用户问你是谁，直接说明身份尚未定义，并建议运行 `niuse identity init`。".into(),
+            "当前还没有 identity.md。\n\n如果用户问「你是谁」「你叫什么」「介绍一下你自己」：只用一句话回答「我还没有名字。运行 `niuse identity init` 给我一个。」\n不要调用任何工具，不要用产品名充数，不要展开工作方式。\n\n其他情况下，你仍然是一个没有名字的工程伙伴。".into(),
         )),
     }
     if let Some(user) = user.map(str::trim).filter(|text| !text.is_empty()) {
@@ -318,7 +318,8 @@ mod tests {
     #[test]
     fn no_identity_does_not_invent_a_name() {
         let composition = compose(None, None, &[], &[], &[], date("2026-10-22"));
-        assert!(composition.system.contains("身份尚未定义"));
+        assert!(composition.system.contains("我还没有名字"));
+        assert!(composition.system.contains("不要调用任何工具"));
         assert!(!composition.system.contains("你是 niuse"));
         assert!(!composition.system.contains("niubot"));
     }

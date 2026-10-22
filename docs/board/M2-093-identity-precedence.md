@@ -29,7 +29,7 @@ docs = ["architecture"]
 - [x] `BASE` 不再包含「你是 niuse」。
 - [x] identity 节声明唯一真源。
 - [x] 真实模型在 identity 写 niubot 时直接答「我是 niubot」，无需纠正。
-- [x] 真实模型在 identity 缺失时说明「身份尚未定义」，不跑工具、不自报 niuse。
+- [x] 真实模型在 identity 缺失时只回一句「我还没有名字」，不跑工具、不自报 niuse；两次独立运行一致。
 - [x] 现有 prompt 顺序与预算测试不变。
 
 ## 备注

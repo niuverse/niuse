@@ -1,8 +1,12 @@
 # Changelog
 
+## 0.1.3 — 2026-10-22
+
+- When `identity.md` is missing, the prompt now gives an exact one-line answer and forbids tool calls, so "who are you" no longer turns into a glob/bash detour.
+
 ## 0.1.2 — 2026-10-22
 
-- Missing `identity.md` now yields an explicit "not named yet" section instead of letting the model invent a name or reach for tools.
+- Missing `identity.md` now yields an explicit "not named yet" section instead of letting the model invent a name.
 
 ## 0.1.1 — 2026-10-22
 
