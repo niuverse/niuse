@@ -252,7 +252,7 @@ niucode-provider / auth / tools
 - Two crates: `niuse-core` depends only on `anyhow` and `regex`, and its tests need no API key; `niuse-cli` owns the terminal, provider wiring, and driver.
 - The dependency points at a sibling checkout via `path` plus `version = "0.1.0"`. The chosen path is to publish the niucode crates first; until the upload exists, a fresh machine still needs the sibling checkout or the pinned revision.
 - A `NiucodeDriver`-style seam (about 200 lines) isolates API churn: config assembly, history projection, event forwarding.
-- `niucode-cli` is a binary with no library target, so the MVP does not reuse its TUI or renderer. It writes a minimal renderer and can swap later once upstream exposes a library or a hook.
+- At MVP time `niucode-cli` had no library target, so niuse wrote a minimal renderer. ADR-0032 has since added the library target and exported `TurnHooks`; invoking those hooks and migrating the renderer remain.
 - No changes to niucode's loop, no memory hook in the kernel. Memory is a product layer; the kernel stays minimal.
 
 ## 9. Three assumptions verified in W1

@@ -35,9 +35,12 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 
 ## Waiting on you
 
-1. **ADR-0032** — accept or reject the reusable TUI library and turn hooks. If accepted, the next step is the library target plus empty hooks, then moving niuse's renderer upstream. Discussion: [niuverse/niucode#1](https://github.com/niuverse/niucode/issues/1).
-2. **crates.io token** — the dual license is in place and publishing the niucode crates first is chosen at version 0.1.0. The remaining blocker is `CARGO_REGISTRY_TOKEN` (or `cargo login`). Details: [distribution](distribution.md) and niucode's `docs/release.md`.
-3. **Dogfood** — ten working days recorded in [dogfood](dogfood.md). `./scripts/dogfood.sh "note"` writes the day's row from `stats --days 1 --json`; only real use can close M2.
+1. **crates.io token** — the dual license is in place and publishing the niucode crates first is chosen at version 0.1.0. The remaining blocker is `CARGO_REGISTRY_TOKEN` (or `cargo login`). Details: [distribution](distribution.md) and niucode's `docs/release.md`.
+2. **Dogfood** — ten working days recorded in [dogfood](dogfood.md). `./scripts/dogfood.sh "note"` writes the day's row from `stats --days 1 --json`; only real use can close M2.
+
+## In progress
+
+- **ADR-0032 step 2** — the library target and `TurnHooks` are exported (`aac20a1`); wiring prompt augmentation, event observation, and turn-end into the TUI/exec paths, then migrating niuse's renderer, is next. Discussion: [niuverse/niucode#1](https://github.com/niuverse/niucode/issues/1).
 
 ## Not built
 

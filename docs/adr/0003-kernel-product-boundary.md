@@ -15,7 +15,7 @@ Upstream proposal: [niucode ADR-0032](https://github.com/niuverse/niucode/blob/m
 
 ## Context
 
-niuse currently drives niucode's turn loop itself and owns a small renderer, because `niucode-cli` is a binary with no library target. Reusing niucode's TUI would remove the duplicate front end, which raises the obvious question: if niuse reuses the TUI, why not merge it into niucode?
+At the time of writing, niuse drove niucode's turn loop itself and owned a small renderer, because `niucode-cli` was a binary with no library target. ADR-0032 has since added that library target and exported `TurnHooks`; the hook invocation and renderer migration are still ahead. Reusing niucode's TUI would remove the duplicate front end, which raises the obvious question: if niuse reuses the TUI, why not merge it into niucode?
 
 Two facts make the merge tempting:
 

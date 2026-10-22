@@ -146,7 +146,8 @@
       "contract": "niucode-cli exposes a library and hooks for prompt augmentation, turn-end observation, and session lifecycle; niuse implements them.",
       "paths": [],
       "notes": [
-        "Blocked on niucode M6 terminal ownership.",
+        "ADR-0032 accepted; library target and TurnHooks exported in niucode aac20a1.",
+        "Hooks are not yet invoked; niuse still owns the renderer.",
         "The hook surface must stay generic; memory policy remains in niuse."
       ]
     },

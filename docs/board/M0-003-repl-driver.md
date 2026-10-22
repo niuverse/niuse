@@ -29,4 +29,4 @@ docs = ["architecture"]
 
 ## Notes
 
-`niucode-cli` is a binary with no library target, so its TUI and renderer cannot be reused. The MVP ships a minimal renderer and can swap later once upstream exposes a library or a hook.
+At MVP time `niucode-cli` was a binary with no library target, so its TUI and renderer could not be reused. ADR-0032 has since added the library target and `TurnHooks`; the MVP still ships a minimal renderer until those hooks are wired and the front end moves.
