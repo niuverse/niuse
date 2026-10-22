@@ -22,7 +22,8 @@ The contract is deliberately small: `run_with_history`, `AgentConfig`, `project_
 
 | niuse | niucode | status | updated |
 |---|---|---|---|
-| 0.1.2 | `40d6cd8` | current pin; full TUI hooks released | 2026-10-22 |
+| 0.1.2 | `3ec224d` | current pin; filter_text on main, unreleased | 2026-10-22 |
+| 0.1.2 | `40d6cd8` | previous pin; full TUI hooks released | 2026-10-22 |
 | 0.1.1 | `a4420cb` | previous pin; full TUI hooks on main | 2026-10-22 |
 | 0.1.1 | `21148ca` | previous pin; 0.1.1 published | 2026-10-22 |
 | 0.1.0 | `5d94b0d` | previous pin; CJK spacing and TUI prompt hook | 2026-10-22 |

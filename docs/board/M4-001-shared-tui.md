@@ -18,7 +18,8 @@ docs = ["adr-0003", "compat"]
 - niuse implements the hooks: identity / memory injection, candidate extraction, journal and loop writes.
 - Delete niuse's renderer and its per-turn `AgentConfig` assembly once the shared path is stable.
 - Step 1 is done in niucode `aac20a1`: `niucode-cli` exports `run()`, `TurnHooks`, and `NoHooks`.
-- Step 2 is done for both entry points: the exec path invokes all three hooks through `run_exec_with_hooks`; the TUI path has `TuiOptions` / `run_tui_with_hooks` and invokes prompt, event, and turn-end through a shared hook cell. The renderer has not moved yet.
+- Step 2 is done for both entry points: the exec path invokes all three hooks through `run_exec_with_hooks`; the TUI path has `TuiOptions` / `run_tui_with_hooks` and invokes prompt, event, and turn-end through a shared hook cell. `filter_text` adds the streaming seam.
+- Renderer migration is analysed in [M4-002](M4-002-renderer-gap.md); the files do not move until the confirmation and command seams exist.
 
 ## Acceptance
 
