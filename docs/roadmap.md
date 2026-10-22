@@ -73,7 +73,7 @@ starts, without adding a database.
 - A session digest turns a finished thread into a journal entry with evidence.
 - Memory has an explicit on-demand recall path beyond the injected budget.
 
-**Cards:** M6-001, M6-002, M6-003, M6-004.
+**Cards:** M6-001, M6-002, M6-003, M6-004, M6-005.
 
 ### M7 · Long-horizon work (planned)
 
@@ -131,8 +131,9 @@ and commit agree.
 | 3 | M5-001 TUI parity | done | PTY deny/allow and event-log `/cost` verified |
 | 4 | M5-002 TUI dogfood | ready | Product proof for the new default |
 | 5 | M6-003 session digest | review | Turns finished work into reusable experience |
-| 6 | M6-004 memory recall | backlog | Deep recall beyond the prompt budget |
-| 7 | M7-001 persistent goals | backlog | First long-horizon primitive |
+| 6 | M6-004 unified recall | done | Human path; agent tool follows |
+| 7 | M6-005 agent recall | backlog | Needs a generic tool seam |
+| 8 | M7-001 persistent goals | backlog | First long-horizon primitive |
 
 ## The round ritual
 

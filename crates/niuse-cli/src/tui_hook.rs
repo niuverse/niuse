@@ -249,6 +249,7 @@ impl TurnHooks for CompanionHooks {
     fn commands(&self) -> Vec<(String, String)> {
         vec![
             ("/brief".into(), "what needs attention today".into()),
+            ("/recall".into(), "search memory, journal, and loops".into()),
             ("/mem".into(), "list memory; /mem show <id>".into()),
             ("/loops".into(), "list open promises".into()),
             ("/journal".into(), "show the last three journal days".into()),
@@ -269,6 +270,14 @@ impl TurnHooks for CompanionHooks {
         let name = parts.next()?;
         match name {
             "/brief" => crate::commands::brief_text(&store, &self.cwd).ok(),
+            "/recall" => {
+                let query = parts.collect::<Vec<_>>().join(" ");
+                if query.is_empty() {
+                    Some("usage: /recall <query>".into())
+                } else {
+                    crate::commands::recall_text(&store, &query, 20).ok()
+                }
+            }
             "/mem" => match parts.next() {
                 None | Some("list") => {
                     let memories = store.memories().ok()?;
@@ -546,6 +555,8 @@ mod tests {
         assert!(status.contains("memory: 1"));
         let brief = hooks.command("/brief").unwrap();
         assert!(brief.contains("niuse brief"));
+        let recalled = hooks.command("/recall rust").unwrap();
+        assert!(recalled.contains("Rust projects use cargo test"));
         assert_eq!(hooks.command("/loops").unwrap(), "(no open loops)");
         assert_eq!(hooks.command("/journal").unwrap(), "(journal is empty)");
         assert!(!hooks.command("/prompt").unwrap().is_empty());
@@ -568,6 +579,7 @@ mod tests {
             "/identity",
             "/user",
             "/brief",
+            "/recall",
         ] {
             assert!(
                 commands.iter().any(|(listed, _)| listed == name),

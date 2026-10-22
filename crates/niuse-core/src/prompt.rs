@@ -38,6 +38,7 @@ pub const PROTOCOL: &str = "## 记忆协议\n\
 - 每轮最多一个 memory 块；没有值得记的就不要输出，连续多轮没有候选是正常的。\n\
 - 只记「跨会话仍然有用、在仓库里 grep 不出来、一句话说得清」的内容。\n\
 - memory 写偏好、决策、踩坑；不要写代码事实、环境配置、别人的信息。\n\
+- 如果怀疑有一条旧记忆没有注入，向用户请求 `/recall <关键词>`；不要凭印象补全。\n\
 - 绝不把密钥、token、密码、客户名写进任何块。\n\
 - journal 只写与上次不同的东西；「今天修了个 bug」这种流水账不要写。";
 
@@ -313,6 +314,13 @@ mod tests {
         assert!(composition.system.contains("niubot"));
         assert!(composition.system.contains("唯一真源"));
         assert!(composition.system.contains("产品名不是你的名字"));
+    }
+
+    #[test]
+    fn protocol_offers_a_recall_escape_hatch() {
+        let composition = compose(None, None, &[], &[], &[], date("2026-10-22"));
+        assert!(composition.system.contains("/recall <关键词>"));
+        assert!(composition.system.contains("不要凭印象补全"));
     }
 
     #[test]

@@ -152,6 +152,46 @@ fn brief_json_reports_actionable_context() {
 }
 
 #[test]
+fn recall_finds_memory_journal_and_loops() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+
+    let added = run(
+        &home,
+        &[
+            "mem",
+            "add",
+            "Rust projects use cargo nextest",
+            "--tags",
+            "rust",
+        ],
+    );
+    assert!(added.status.success(), "{added:?}");
+    let promise = run(&home, &["loops", "add", "finish the rust recall path"]);
+    assert!(promise.status.success(), "{promise:?}");
+    let journal = run(
+        &home,
+        &["journal", "--add", "decided the rust recall design"],
+    );
+    assert!(journal.status.success(), "{journal:?}");
+
+    let output = run(&home, &["recall", "rust", "--json"]);
+    assert!(output.status.success(), "{output:?}");
+    let recall: serde_json::Value = serde_json::from_slice(&output.stdout).expect("valid JSON");
+    let hits = recall["hits"].as_array().unwrap();
+    let kinds: Vec<&str> = hits.iter().filter_map(|hit| hit["kind"].as_str()).collect();
+    assert!(kinds.contains(&"memory"));
+    assert!(kinds.contains(&"journal"));
+    assert!(kinds.contains(&"loop"));
+
+    let text = run(&home, &["recall", "rust"]);
+    assert!(text.status.success(), "{text:?}");
+    let stdout = String::from_utf8_lossy(&text.stdout);
+    assert!(stdout.contains("recall \"rust\""));
+    assert!(stdout.contains("cargo nextest"));
+}
+
+#[test]
 fn projects_json_filters_and_limits() {
     let directory = tempfile::tempdir().unwrap();
     let niucode = directory.path().join("niucode-home");

@@ -195,6 +195,17 @@ enum Command {
         #[arg(long)]
         json: bool,
     },
+    /// Search memory, journal, and loops
+    Recall {
+        /// Search terms
+        query: String,
+        /// Maximum number of hits
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+        /// Emit JSON
+        #[arg(long)]
+        json: bool,
+    },
     /// List recent niucode projects
     Projects {
         /// Maximum number to show
@@ -578,6 +589,9 @@ async fn main() -> Result<()> {
         Some(Command::Brief { json }) => {
             let cwd = config::resolve_cwd(cli.cwd.clone())?;
             commands::brief(&store, &cwd, json)
+        }
+        Some(Command::Recall { query, limit, json }) => {
+            commands::recall(&store, &query, limit, json)
         }
         Some(Command::Projects { limit, all, json }) => commands::projects(limit, all, json),
         Some(Command::Status { json }) => {

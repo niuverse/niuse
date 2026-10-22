@@ -1,12 +1,13 @@
 +++
 id = "M6-004"
-title = "On-demand memory recall"
-status = "backlog"
+title = "Unified recall across stores"
+status = "done"
 milestone = "M6"
 module = "cli"
 size = "M"
 priority = "P1"
 updated = "2026-10-22"
+completed = "2026-10-22"
 depends_on = ["M6-001"]
 docs = ["roadmap", "adr-0001"]
 +++
@@ -14,28 +15,28 @@ docs = ["roadmap", "adr-0001"]
 ## Problem
 
 Full injection is capped at about 2k tokens; entries outside the cap or past
-expiry are invisible to the model even though they are still searchable by the
-human. The companion cannot say "I remember a decision about this" unless it
-happened to fit in the prompt.
+expiry are invisible to the model even though they are still in the stores. A
+human can search memory one command at a time, but not memory, journal, and
+promises together, and the model has no honest way to ask for an old entry.
 
 ## Scope
 
-- Expose a bounded recall path the model can invoke during a turn, returning at
-  most a few entries with ids, dates, and expiry state.
-- Keep full injection as the default; recall is additive and read-only.
-- Decide the seam: a niucode tool registered by niuse, or a product command the
-  user invokes. Do not add personal schema to `niucode-core`.
-- Budget the result and never dump the whole store into context.
+- One bounded, read-only search over memory (including expired), journal
+  bullets, and loops.
+- `niuse recall <query> [--limit N] [--json]`, `/recall` in the REPL and TUI.
+- Rank with the existing lexical score, label freshness, and cap the result.
+- Tell the model in the protocol that it may ask the user to run
+  `/recall <关键词>` when it suspects a missing old memory; it must not guess.
 
 ## Acceptance
 
-- [ ] A turn can retrieve an expired entry by keyword and cite its id.
-- [ ] The result is capped and labelled with its freshness.
-- [ ] The model cannot write, delete, or confirm memory through recall.
-- [ ] Offline tests cover hit, miss, empty store, and budget truncation.
-- [ ] The prompt size stays within the existing budget.
+- [x] A query returns hits from all three stores with ids, dates, and detail.
+- [x] Expired memory is included and labelled.
+- [x] The result is capped and JSON is available for scripts.
+- [x] Offline tests cover hit, miss, empty store, and the limit.
+- [x] The model is told to request `/recall` instead of inventing a memory.
 
 ## Notes
 
-Prefer a generic tool seam upstream in niucode; the memory semantics stay in
-niuse.
+This is the human-facing half. The model still cannot invoke recall by itself;
+that needs a generic tool seam in niucode and is tracked as M6-005.

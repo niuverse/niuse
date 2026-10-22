@@ -31,6 +31,7 @@ const SLASH_COMMANDS: &[&str] = &[
     "/mem recall",
     "/mem show",
     "/mem review",
+    "/recall",
     "/remember",
     "/forget",
     "/loops",
@@ -680,6 +681,13 @@ impl App {
                     println!("{error}");
                 }
             }
+            "/recall" => {
+                if argument.is_empty() {
+                    println!("用法：/recall <关键词>");
+                } else {
+                    print!("{}", commands::recall_text(&self.store, argument, 20)?);
+                }
+            }
             "/loops" => commands::loops_list(&self.store, false, false, false)?,
             "/loop" => {
                 if argument.is_empty() {
@@ -1162,6 +1170,7 @@ const HELP: &str = r#"对话
   /mem recall <query>     检索记忆，包含已过期条目
   /mem show <id>          查看单条记忆的全部字段
   /mem review             复核过期条目（y 保留 / e 编辑 / d 删除 / s 跳过）
+  /recall <query>         跨记忆、日记、承诺检索（含已过期）
   /remember <一句话>      直接记住一条偏好
   /forget <id>            删除一条记忆
 

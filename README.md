@@ -88,6 +88,7 @@ niuse exec "<task>"           run one turn; candidates are printed, never writte
 niuse identity init|show|edit
 niuse user show|edit
 niuse mem list|search|show|edit|add|forget|confirm|review|prune
+niuse recall <query> [--limit N] [--json]  search memory, journal, and loops
 niuse loops list|add|done         (list --overdue for late promises)
 niuse journal [--days N] [--search QUERY] [--add TEXT]
 niuse threads                   list the active thread and archived chapters
