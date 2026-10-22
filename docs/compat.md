@@ -22,7 +22,8 @@ The contract is deliberately small: `run_with_history`, `AgentConfig`, `project_
 
 | niuse | niucode | status | updated |
 |---|---|---|---|
-| 0.1.0 | `1753d05` | current pin; release workflow added | 2026-10-22 |
+| 0.1.0 | `3508a94` | current pin; release workflow tests before publish | 2026-10-22 |
+| 0.1.0 | `1753d05` | previous pin; release workflow added | 2026-10-22 |
 | 0.1.0 | `b7e75b0` | previous pin; crates prepared for 0.1.0 publishing | 2026-10-22 |
 | 0.1.0 | `f3711b1` | previous pin; session files created 0600 | 2026-10-22 |
 | 0.1.0 | `f65ca7a` | previous pin; forward-compat tests | 2026-10-22 |
