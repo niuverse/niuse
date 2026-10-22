@@ -51,7 +51,7 @@ jobs:
         with:
           repository: niuverse/niucode
           ref: ${{ steps.niucode.outputs.rev }}
-          path: niuverse/niucode
+          path: niucode
 
       - name: Install Rust 1.88
         uses: dtolnay/rust-toolchain@stable

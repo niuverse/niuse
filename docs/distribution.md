@@ -14,13 +14,12 @@ niuse builds from a workspace containing both checkouts at the expected relative
 ```text
 workspace/
   niuse/          this repository
-  niuverse/
-    niucode/      the pinned checkout
+  niucode/        the pinned checkout
 ```
 
 ```sh
 git clone https://github.com/niuverse/niuse
-git clone https://github.com/niuverse/niucode niuverse/niucode
+git clone https://github.com/niuverse/niucode
 cd niuse
 cargo build --release
 # or install the binary from the checkout
@@ -31,7 +30,7 @@ Verified on 2026-10-22: `cargo install --path crates/niuse-cli --root /tmp/niuse
 
 ## Why `cargo install --git` does not work
 
-`cargo install --git https://github.com/niuverse/niuse` clones only niuse. The dependencies `niucode-agent`, `niucode-core`, and the other `niucode-*` crates are declared as `path = "../niuverse/niucode/crates/..."`, so a clean clone has no such directory and Cargo cannot fetch it.
+`cargo install --git https://github.com/niuverse/niuse` clones only niuse. The dependencies `niucode-agent`, `niucode-core`, and the other `niucode-*` crates are declared as `path = "../niucode/crates/..."`, so a clean clone has no such directory and Cargo cannot fetch it.
 
 Verified on 2026-10-22 by cloning the repository into `/tmp` and running `cargo metadata`:
 
@@ -40,7 +39,7 @@ error: failed to load manifest for workspace member `.../crates/niuse-cli`
 Caused by: failed to load manifest for dependency `niucode-agent`
 ```
 
-The README quick start therefore requires a local checkout of `../niuverse/niucode`; that requirement is real, not a temporary convenience.
+The README quick start therefore requires a local checkout of `../niucode`; that requirement is real, not a temporary convenience.
 
 ## Why crates.io is blocked
 

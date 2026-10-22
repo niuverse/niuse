@@ -3,7 +3,7 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-repo="${NIUCODE_DIR:-$root/../niuverse/niucode}"
+repo="${NIUCODE_DIR:-$root/../niucode}"
 rev="${1:-$(git -C "$repo" rev-parse HEAD)}"
 
 if ! git -C "$repo" rev-parse --verify "${rev}^{commit}" >/dev/null 2>&1; then

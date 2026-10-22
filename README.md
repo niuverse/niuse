@@ -23,7 +23,7 @@ niuse bootstrap --limit 5 # mine old niucode sessions for candidates
 niuse review              # accept or discard them one by one
 ```
 
-From a checkout, use `cargo build --release`; the workspace still points at the sibling `../niuverse/niucode` for development, while the published crate resolves the released `niucode-*` crates.
+From a checkout, use `cargo build --release`; the workspace still points at the sibling `../niucode` for development, while the published crate resolves the released `niucode-*` crates.
 
 Model credentials are shared with niucode:
 

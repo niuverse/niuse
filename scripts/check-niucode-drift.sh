@@ -3,7 +3,7 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-repo="${NIUCODE_DIR:-$root/../niuverse/niucode}"
+repo="${NIUCODE_DIR:-$root/../niucode}"
 pinned="$(cat "$root/niucode.rev")"
 local_rev="$(git -C "$repo" rev-parse HEAD)"
 

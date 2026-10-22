@@ -14,7 +14,7 @@ docs = ["distribution"]
 
 ## Problem
 
-`docs/distribution.md` claimed `cargo install --git https://github.com/niuverse/niuse` worked. A clean clone has no sibling niucode, and the `path = "../niuverse/niucode/..."` dependencies cannot be fetched, so the command fails before building.
+`docs/distribution.md` claimed `cargo install --git https://github.com/niuverse/niuse` worked. A clean clone has no sibling niucode, and the `path = "../niucode/..."` dependencies cannot be fetched, so the command fails before building.
 
 ## Evidence
 

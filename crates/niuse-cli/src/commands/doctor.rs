@@ -270,7 +270,7 @@ fn pin_status() -> Option<PinStatus> {
     let Some(parent) = root.parent() else {
         return Some(PinStatus::Missing);
     };
-    let checkout = parent.join("niuverse").join("niucode");
+    let checkout = parent.join("niucode");
     if !checkout.is_dir() {
         return Some(PinStatus::Missing);
     }

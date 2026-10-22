@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: niuverse/niucode
-          path: niuverse/niucode
+          path: niucode
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
