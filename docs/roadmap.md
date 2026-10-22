@@ -189,6 +189,7 @@ and commit agree.
 | 55 | M5-006 TUI resume pointer | done | /verify after /resume hits the right thread |
 | 56 | ADR-0007 active thread | done | /resume is session-scoped; one active line |
 | 57 | M5-008 TUI fork pointer | done | /verify after /fork hits the destination |
+| 58 | M5-009 TUI memory prompt | done | Accept/discard works through a real terminal |
 
 ## The round ritual
 

@@ -28,6 +28,8 @@ agent-dispatch tests. No API key, network, or model call is involved.
 | `an_unfinished_delegation_is_not_reported_as_success` | A spawn without a result is `?`, not ✓ |
 | `report_json_combines_metrics_stores_and_dogfood` | One read-only weekly review covers cost, stores, and the log |
 | `dogfood_writes_and_replaces_todays_row_from_metrics` | The daily row comes from metrics; same-day rerun replaces |
+| `pty_memory_accept_stores_the_candidate` | The TUI memory prompt stores an accepted candidate |
+| `pty_memory_discard_does_not_store_the_candidate` | Discard leaves the store unchanged |
 | `pty_fork_moves_hooks_to_the_destination` | `/fork` moves hooks; `/verify` lands in the fork file |
 | `pty_resume_moves_hooks_to_the_resumed_session` | `/resume` moves hooks; `/verify` lands in the resumed log |
 | `pty_reset_archives_and_clears_context` | `/reset` archives the old thread and keeps the live path clean |
