@@ -887,6 +887,85 @@ mod docs_tests {
     }
 
     #[test]
+    fn readme_cli_flags_exist_on_the_documented_command() {
+        let root = Cli::command();
+        let mut checked = 0;
+        let mut fenced = false;
+        for line in README.lines() {
+            let line = line.trim();
+            if line.starts_with("```") {
+                fenced = !fenced;
+                continue;
+            }
+            if !fenced {
+                continue;
+            }
+            let Some(rest) = line.strip_prefix("niuse ") else {
+                continue;
+            };
+            if rest.starts_with(char::is_whitespace) {
+                continue;
+            }
+            let tokens: Vec<&str> = rest.split_whitespace().collect();
+            let Some(first) = tokens.first() else {
+                continue;
+            };
+            if first.starts_with('-') || first.starts_with('#') || *first == "tui" {
+                continue;
+            }
+            let Some(command) = root.find_subcommand(first).cloned() else {
+                continue;
+            };
+            let mut commands = vec![command.clone()];
+            commands.extend(command.get_subcommands().cloned());
+            let mut valid: HashSet<String> = commands
+                .iter()
+                .flat_map(|command| command.get_arguments())
+                .filter_map(|argument| argument.get_long().map(ToString::to_string))
+                .collect();
+            valid.extend(
+                root.get_arguments()
+                    .filter_map(|argument| argument.get_long().map(ToString::to_string)),
+            );
+            for flag in flags_in(line) {
+                if flag == "help" || flag == "version" {
+                    continue;
+                }
+                assert!(
+                    valid.contains(&flag),
+                    "README flag `--{flag}` is not valid for `niuse {first}`; valid: {valid:?}"
+                );
+                checked += 1;
+            }
+        }
+        assert!(checked >= 5, "expected documented flags, saw {checked}");
+    }
+
+    fn flags_in(line: &str) -> Vec<String> {
+        let mut flags = Vec::new();
+        let mut chars = line.chars().peekable();
+        while let Some(character) = chars.next() {
+            if character != '-' || chars.peek() != Some(&'-') {
+                continue;
+            }
+            chars.next();
+            let mut flag = String::new();
+            while let Some(next) = chars.peek().copied() {
+                if next.is_ascii_alphanumeric() || next == '-' {
+                    flag.push(next);
+                    chars.next();
+                } else {
+                    break;
+                }
+            }
+            if !flag.is_empty() {
+                flags.push(flag);
+            }
+        }
+        flags
+    }
+
+    #[test]
     fn readme_repl_commands_are_registered() {
         let line = README
             .lines()

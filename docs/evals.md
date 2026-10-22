@@ -29,6 +29,7 @@ agent-dispatch tests. No API key, network, or model call is involved.
 | `report_json_combines_metrics_stores_and_dogfood` | One read-only weekly review covers cost, stores, and the log |
 | `dogfood_writes_and_replaces_todays_row_from_metrics` | The daily row comes from metrics; same-day rerun replaces |
 | `pty_tui_closes_a_step_only_after_tagged_verification` | The full TUI plan/verify flow works in a terminal |
+| `readme_cli_flags_exist_on_the_documented_command` | README flags are checked against clap |
 | `read_only_commands_read_the_store` | TUI `/steps`, `/report`, and tagged `/verify` share the CLI paths |
 | `a_failed_verification_keeps_the_step_open_until_a_pass` | Failure stays visible, blocks done, then a pass closes it |
 | `steps_execute_one_at_a_time_and_vanish_after_verification` | A closed step leaves the next prompt; the remaining step stays |
