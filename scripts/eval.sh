@@ -66,6 +66,10 @@ cargo test -p niuse --test cli dogfood_writes -- --nocapture
 echo "== TUI plan/verify PTY =="
 cargo test -p niuse --features tui --test tui_plan -- --nocapture
 
+echo "== TUI session isolation =="
+cargo test -p niuse --features tui --test tui_new -- --nocapture
+cargo test -p niuse --features tui --test tui_resume -- --nocapture
+
 if [[ -d "$root/../niucode" ]]; then
   echo "== MCP client boundaries =="
   (cd "$root/../niucode" && cargo test -p niucode-mcp --tests -- --nocapture)
