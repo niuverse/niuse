@@ -46,7 +46,7 @@ until the memory layer proves itself. M5–M9 are implementation tracks: their
 cards can be `ready` or `done` while the gate is open. This is deliberate — the
 product keeps moving, but the board does not pretend the proof is finished.
 
-### M5 · Harness-native companion (next)
+### M5 · Harness-native companion (active)
 
 **Goal:** make the existing harness the companion's default working surface
 instead of maintaining a parallel front end.
@@ -59,7 +59,7 @@ instead of maintaining a parallel front end.
 - Ten real TUI dogfood days are recorded, one real task per day.
 - The renderer is retired only after that gate, per ADR-0004.
 
-**Cards:** M5-001, M5-002.
+**Cards:** M5-001 done; M5-002 is 1/10 TUI days.
 
 ### M6 · Compounding context (done)
 
@@ -180,6 +180,7 @@ and commit agree.
 | 46 | M6-011 failed-check digest | done | Failure then repair is journal-worthy |
 | 47 | M6-012 unresolved failure | done | A failed check is never written as success |
 | 48 | M6-013 restated memory | done | Restating memory is not a new change |
+| 49 | M5-002 TUI gate | doing | 1/10 TUI days; two gates may overlap |
 
 ## The round ritual
 

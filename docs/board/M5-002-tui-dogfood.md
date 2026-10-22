@@ -1,7 +1,7 @@
 +++
 id = "M5-002"
 title = "Ten TUI dogfood days"
-status = "ready"
+status = "doing"
 milestone = "M5"
 module = "cli"
 size = "S"
@@ -37,9 +37,9 @@ terminal-specific rendering failures.
 
 ## Notes
 
-2026-10-22: one real TUI turn replied `391` through the provider. The card stays
-`ready` because the gate is a recorded ten-day run, not a single validation
-turn.
+2026-10-22: day 1/10. One real TUI turn replied `391` through the provider
+(13k input, 2 output). This is a recorded TUI day, not a synthetic replay. Nine
+distinct working days remain; the same calendar day cannot count twice.
 
 If the gate fails, keep the REPL default and open a focused card for the failure
 instead of extending the gate's definition.

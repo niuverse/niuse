@@ -22,13 +22,13 @@ planned while its card was doing.
 
 - Parse milestone statuses and card frontmatter.
 - Reject:
-  - multiple active milestones;
   - a done milestone with a non-done card;
   - a doing card in a planned milestone;
   - done without `completed`;
   - blocked without `blocked_reason`;
   - unknown milestones or statuses.
 - Fix the two stale states: M3 is planned again; M4-001 is blocked on M5-002.
+- Allow multiple active milestones after M2 and M5 gates legitimately overlap.
 - Run live plus a deterministic self-test in `check.sh`.
 
 ## Acceptance
@@ -42,5 +42,6 @@ planned while its card was doing.
 
 ## Notes
 
-This checks state, not judgement. A milestone can still be marked done too early
-with all cards done; only evidence and review catch that.
+Multiple active milestones are allowed: M2 dogfood and M5 TUI dogfood run in
+parallel. The earlier one-active rule was too strict. This checks state, not
+judgement; a milestone can still be marked done too early with all cards done.

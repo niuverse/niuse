@@ -68,7 +68,7 @@
     {
       "id": "M5",
       "title": "Harness-native companion",
-      "status": "planned",
+      "status": "active",
       "goal": "Make the existing niucode harness the companion's default working surface instead of a parallel front end.",
       "exit": [
         "TUI approval and usage parity with the REPL contract",

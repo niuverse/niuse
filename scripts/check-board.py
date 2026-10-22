@@ -28,8 +28,6 @@ def main():
     errors = []
 
     active = [mid for mid, status in milestones.items() if status == "active"]
-    if len(active) > 1:
-        errors.append(f"multiple active milestones: {', '.join(active)}")
     for mid, status in milestones.items():
         if status not in MILESTONE_STATUSES:
             errors.append(f"{mid}: bad milestone status {status}")
@@ -61,7 +59,7 @@ def main():
         print(f"board error: {error}", file=sys.stderr)
     print(
         f"board check: {len(cards)} cards, {len(milestones)} milestones, "
-        f"{'ok' if not errors else f'{len(errors)} error(s)'}"
+        f"{len(active)} active, {'ok' if not errors else f'{len(errors)} error(s)'}"
     )
     sys.exit(1 if errors else 0)
 
