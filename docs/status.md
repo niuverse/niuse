@@ -36,8 +36,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 
 ## Waiting on you
 
-1. **crates.io token** — the dual license is in place and publishing the niucode crates first is chosen at version 0.1.0. The remaining blocker is `CARGO_REGISTRY_TOKEN` (or `cargo login`). Details: [distribution](distribution.md) and niucode's `docs/release.md`.
-2. **Dogfood** — ten working days recorded in [dogfood](dogfood.md). `./scripts/dogfood.sh "note"` writes the day's row from `stats --days 1 --json`; only real use can close M2.
+1. **Dogfood** — ten working days recorded in [dogfood](dogfood.md). `./scripts/dogfood.sh "note"` writes the day's row from `stats --days 1 --json`; only real use can close M2.
 
 ## In progress
 
