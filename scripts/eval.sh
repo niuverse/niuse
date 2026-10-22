@@ -51,7 +51,10 @@ cargo test -p niuse --features tui --bin niuse read_only_commands -- --nocapture
 echo "== multi-turn plan execution =="
 cargo test -p niuse --test plan_execution -- --nocapture
 
-echo "== dogfood row ==
+echo "== weekly report =="
+cargo test -p niuse --test cli report_json -- --nocapture
+
+echo "== dogfood row =="
 cargo test -p niuse --test cli dogfood_writes -- --nocapture
 
 echo "== TUI plan/verify PTY =="

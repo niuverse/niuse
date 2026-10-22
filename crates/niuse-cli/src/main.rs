@@ -116,6 +116,18 @@ enum Command {
         #[command(subcommand)]
         command: MemCommand,
     },
+    /// Read-only weekly review across metrics, stores, and dogfood
+    Report {
+        /// Window in days
+        #[arg(long, default_value_t = 7)]
+        days: u64,
+        /// Dogfood table (defaults to docs/dogfood.md when present)
+        #[arg(long)]
+        dogfood: Option<PathBuf>,
+        /// Emit JSON
+        #[arg(long)]
+        json: bool,
+    },
     /// Record today's dogfood row from local metrics
     Dogfood {
         /// Markdown file with the dogfood table (defaults to ~/.niuse/dogfood.md)
@@ -563,6 +575,17 @@ async fn main() -> Result<()> {
             MemCommand::Review => commands::mem_review(&store),
             MemCommand::Prune { apply } => commands::mem_prune(&store, apply),
         },
+        Some(Command::Report {
+            days,
+            dogfood,
+            json,
+        }) => {
+            let dogfood = dogfood.or_else(|| {
+                let path = PathBuf::from("docs/dogfood.md");
+                path.is_file().then_some(path)
+            });
+            commands::report(&store, days, dogfood, json)
+        }
         Some(Command::Dogfood { file, note, json }) => commands::dogfood(&store, file, note, json),
         Some(Command::Loops { command }) => match command {
             LoopsCommand::List { all, json, overdue } => {

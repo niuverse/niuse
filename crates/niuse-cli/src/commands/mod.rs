@@ -14,6 +14,7 @@ mod plan;
 mod profile;
 mod projects;
 mod recall;
+mod report;
 mod session;
 mod verify;
 pub use doctor::doctor;
@@ -34,6 +35,7 @@ pub use plan::{plan_add, plan_done, plan_list};
 pub use profile::{identity_edit, identity_init, identity_show, user_edit, user_show};
 pub use projects::projects;
 pub use recall::{recall, recall_text};
+pub use report::report;
 #[cfg(feature = "tui")]
 pub(crate) use session::write_export;
 pub use session::{export, sessions, thread_at, threads};

@@ -103,6 +103,7 @@ niuse digest [--thread PATH] [--dry-run] [--limit N]  summarize the thread into 
 niuse doctor [--json]            check home, identity, credentials, sandbox, pin
 niuse config init|show|effective
 niuse stats [--days N] [--trend] [--json] local acceptance counters
+niuse report [--days N] [--json]        weekly review: turns, cost, stores, dogfood
 niuse evidence [--thread PATH] [--json] tools, files, checks, failures, and delegated runs
 niuse verify -- <command>          record a check in the thread and exit with it
 niuse brief [--json]            what needs attention today

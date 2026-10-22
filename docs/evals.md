@@ -26,6 +26,7 @@ agent-dispatch tests. No API key, network, or model call is involved.
 | `brief_surfaces_overdue_promises_and_stale_memory` | The startup brief reports overdue promises, stale memory, and the review queue |
 | `reports_files_checks_failures_and_denials` | Includes a completed delegation's task and summary |
 | `an_unfinished_delegation_is_not_reported_as_success` | A spawn without a result is `?`, not ✓ |
+| `report_json_combines_metrics_stores_and_dogfood` | One read-only weekly review covers cost, stores, and the log |
 | `dogfood_writes_and_replaces_todays_row_from_metrics` | The daily row comes from metrics; same-day rerun replaces |
 | `pty_tui_closes_a_step_only_after_tagged_verification` | The full TUI plan/verify flow works in a terminal |
 | `read_only_commands_read_the_store` | TUI `/steps` and tagged `/verify` share the CLI gate |

@@ -542,6 +542,46 @@ fn dogfood_writes_and_replaces_todays_row_from_metrics() {
 }
 
 #[test]
+fn report_json_combines_metrics_stores_and_dogfood() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    std::fs::create_dir_all(&home).unwrap();
+    let now = Date::today().start_millis_local() + 1;
+    std::fs::write(
+        home.join("metrics.jsonl"),
+        format!(
+            "{now}\tturn\tok\n{now}\tpropose\tx\n{now}\taccept\tm-1\n{now}\ttokens\t1000,200,500\n"
+        ),
+    )
+    .unwrap();
+    let dogfood = directory.path().join("dogfood.md");
+    std::fs::write(
+        &dogfood,
+        "| date | turns | proposed | accepted | note |\n|---|---|---|---|---|\n| 2026-10-22 | 1 | 1 | 1 | note |\n",
+    )
+    .unwrap();
+    let output = run(
+        &home,
+        &[
+            "report",
+            "--days",
+            "7",
+            "--dogfood",
+            dogfood.to_str().unwrap(),
+            "--json",
+        ],
+    );
+    assert!(output.status.success(), "{output:?}");
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(report["turns"], 1);
+    assert_eq!(report["acceptance_percent"], 100);
+    assert_eq!(report["cache_hit_percent"], 50);
+    assert_eq!(report["tokens_per_turn"], 1200);
+    assert_eq!(report["dogfood_days"], 1);
+    assert_eq!(report["dogfood_acceptance_percent"], 100);
+}
+
+#[test]
 fn projects_json_filters_and_limits() {
     let directory = tempfile::tempdir().unwrap();
     let niucode = directory.path().join("niucode-home");
