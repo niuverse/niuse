@@ -43,6 +43,11 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 - Operations: pinned niucode revision, contract tests, nightly main check, doctor, acceptance metrics.
 - Distribution: crates.io has `niuse`/`niuse-core` 0.1.11 and seven `niucode-*` crates at 0.1.5. The current tree added `niucode-mcp`; it packages and passes `cargo publish --dry-run`, and the publish order includes it, but it is not on crates.io yet. `cargo package -p niuse` still fails on that dependency; M3 remains planned until the authorized upload and a passing package verification.
 
+## Stage
+
+[Stage report · 2026-10-23](stage.md) records what is proven, the open gates,
+and the decisions waiting on a human.
+
 ## Waiting on you
 
 1. **Dogfood** — ten working days recorded in [dogfood](dogfood.md); started 2026-10-22 at 1/10 with a real read-only `exec` turn (README.md:106 citation, 11k in / 76 out / 3.5k cached) a real MCP turn (`mcp__notes__search_notes` found `launch.md`, 5k in / 95 out / 3.1k cached), a real TUI turn (`391`, 13k in / 2 out), a real approved write in a scratch workspace (3 steps, 7.1k in / 279 out / 6.3k cached), a real `NIUSE_MEMORY=off` A/B (on cited `m-3d0b`; off said `NO_INJECTED_MEMORY`), and one recorded disagreement: the companion argued against a third RSS pack and I dropped it. 2026-10-23 is 2/10: a real TUI task read `DAY_TWO_C.md` (27k in / 47 out / 13.4k cached) after the missing TUI `on_turn_end` metric was fixed. `niuse dogfood --file docs/dogfood.md --note "..."` (or `./scripts/dogfood.sh "note"`) writes the day's row from metrics; `niuse report --days 7` (also `/report [days]` in the REPL and TUI) assembles turns, tokens/cache, open goals/promises/plan, and dogfood progress; `niuse doctor` shows the active-day count; `scripts/dogfood-check.sh --complete` checks the table and criteria. Only real use and review can close M2.
