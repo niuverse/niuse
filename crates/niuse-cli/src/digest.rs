@@ -49,6 +49,14 @@ pub async fn run(
     let raw = complete(provider, model, DIGEST_SYSTEM, &input, 800).await?;
     let bullets = parse_bullets(&raw);
     if bullets.is_empty() {
+        if raw.trim().eq_ignore_ascii_case("NONE") {
+            if options.dry_run {
+                println!("digest dry run：没有可提炼的变化，不写入");
+            } else {
+                println!("digest：没有可提炼的变化，journal 未变");
+            }
+            return Ok(());
+        }
         bail!("模型没有返回 journal 条目；没有写入");
     }
     for bullet in &bullets {
@@ -272,10 +280,32 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn empty_answer_writes_nothing() {
+    async fn none_is_a_no_change_and_writes_nothing() {
         let (directory, thread) = thread_with(&["nothing durable"]);
         let store = store(directory.path());
         let provider = scripted("NONE");
+        run(
+            &store,
+            &provider,
+            "scripted",
+            &thread,
+            "niuse",
+            DigestOptions {
+                dry_run: false,
+                limit: 20,
+            },
+        )
+        .await
+        .unwrap();
+        assert!(store.recent_journal(10).unwrap().is_empty());
+        assert!(!store.metrics().unwrap().contains("digest"));
+    }
+
+    #[tokio::test]
+    async fn malformed_answer_is_still_an_error() {
+        let (directory, thread) = thread_with(&["nothing durable"]);
+        let store = store(directory.path());
+        let provider = scripted("just some prose, no bullets");
         let error = run(
             &store,
             &provider,

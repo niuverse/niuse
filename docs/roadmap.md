@@ -171,6 +171,7 @@ and commit agree.
 | 37 | M9-011 README flags | done | Documented flags must exist on the command |
 | 38 | M2-001 first real day | doing | 1/10; exec, MCP, TUI, write, A/B, disagreement |
 | 39 | M6-003 real digest review | doing | 3/10 dry-runs reviewed; opt-in stays |
+| 40 | M6-006 digest no-change | done | NONE exits cleanly; malformed still fails |
 
 ## The round ritual
 
