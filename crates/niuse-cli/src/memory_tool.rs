@@ -132,6 +132,15 @@ mod tests {
     #[tokio::test]
     async fn a_turn_can_call_memory_search() {
         let (directory, root) = store();
+        let mut expired = MemoryEntry::new(
+            MemoryKind::Lesson,
+            "Rust expired recall marker",
+            vec!["rust".into()],
+            Date::today(),
+            None,
+        );
+        expired.confirmed = Date::today().plus_days(-100);
+        Store::at(root.clone()).add_memory(expired).unwrap();
         let provider = ScriptedProvider::from_turns(vec![
             vec![
                 StreamEvent::ToolCallDelta(ToolCallDelta {
@@ -180,6 +189,11 @@ mod tests {
             })
             .expect("tool result event");
         assert!(tool_output.contains("cargo nextest"), "{tool_output}");
+        assert!(
+            tool_output.contains("Rust expired recall marker"),
+            "{tool_output}"
+        );
+        assert!(tool_output.contains("expired"), "{tool_output}");
         assert!(tool_output.contains("m-"), "{tool_output}");
     }
 }

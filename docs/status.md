@@ -53,7 +53,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 - **M6 · Compounding context** — startup brief (M6-001), project registry (M6-002), session digest (M6-003, in review), unified recall (M6-004), and agent-invoked `memory_search` (M6-005) landed. The remaining M6 item is real digest review.
 - **M7 · Long-horizon work** — the human-owned goal store (M7-001) and read-only REPL/`exec` plan mode (M7-002) landed; execute → verify with recorded evidence and delegated work are next.
 - **M8 · Connected agent** — niucode M8-001 (read-only stdio MCP with explicit trust) is done; niuse mounts it in the TUI, REPL, and `exec`, and ships a read-only notes pack. The next step is evaluation and, later, a mutating capability with approval.
-- **M9 · Proof** — `./scripts/eval.sh` runs the first named offline cases: memory-on/off A/B, goal injection, the startup brief, and the notes MCP pack. Recall, MCP failure, and a dogfood trend gate are next.
+- **M9 · Proof** — `./scripts/eval.sh` runs memory-on/off A/B, goal injection, the startup brief, agent recall (fresh + expired), the notes MCP pack, and MCP timeout/read-only refusal. A dogfood trend gate is the remaining M9-001 item.
 - **M2 dogfood** continues in parallel; it is not a blocker for product work, but it still decides whether the memory layer pays for itself.
 
 ## Not built

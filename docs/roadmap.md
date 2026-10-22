@@ -119,7 +119,7 @@ that way.
 - A memory-on/off A/B case shows a behavioural difference.
 - Regressions in dogfood metrics block a release.
 
-**Cards:** M9-001 (offline personal-agent eval); recall, MCP failure, and dogfood-trend cases follow.
+**Cards:** M9-001 (offline personal-agent eval): briefs, goals, memory A/B, recall, and MCP boundaries are covered; the dogfood trend gate follows.
 
 ## Current sprint
 

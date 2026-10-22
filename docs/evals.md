@@ -13,8 +13,9 @@ summary = "Named offline cases for memory injection, goal lifecycle, the startup
 ./scripts/eval.sh
 ```
 
-The script runs the Rust cases with `cargo test` and then the notes-pack MCP
-integration. No API key, network, or model call is involved.
+The script runs the Rust cases with `cargo test`, the notes-pack MCP
+integration, and (when the sibling checkout exists) niucode's MCP client and
+agent-dispatch tests. No API key, network, or model call is involved.
 
 ## Cases
 
@@ -23,7 +24,10 @@ integration. No API key, network, or model call is involved.
 | `memory_on_off_changes_the_answer...` | A remembered judgement changes the answer; the same provider without it does not cite it |
 | `goal_injection_survives_only_while_open` | An open goal is injected; a closed goal disappears from the prompt |
 | `brief_surfaces_overdue_promises_and_stale_memory` | The startup brief reports overdue promises, stale memory, and the review queue |
+| `a_turn_can_call_memory_search` | The model calls `memory_search` and receives both fresh and expired memory with ids |
 | `notes_pack_searches_reads_and_refuses_escape` | A real MCP pack searches, reads, and rejects a path escape |
+| `a_hung_tool_times_out_and_kills_the_server` | A hung MCP server cannot stall the session |
+| `a_writable_server_is_refused_before_spawn` | A non-read-only manifest never starts |
 
 Each case is named for the capability, so a red test says what regressed
 instead of only which file changed.
@@ -37,7 +41,5 @@ instead of only which file changed.
 
 ## Next cases
 
-- Recall across all six stores through the model's `memory_search` tool.
-- MCP timeout and read-only refusal through the same eval runner.
 - A dogfood trend check that blocks a release when acceptance or token trends
-  regress.
+  regress. This needs real days, not a scripted provider.

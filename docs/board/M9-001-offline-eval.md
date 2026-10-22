@@ -32,10 +32,12 @@ cover modules; they do not cover the prompt → turn → answer chain as one cas
 - [x] The brief reports overdue promises, stale memory, and the inbox.
 - [x] The notes MCP pack is part of the runner.
 - [x] `./scripts/eval.sh` passes offline.
-- [ ] Recall through `memory_search`, MCP timeout/refusal, and a dogfood trend
-      gate are added.
+- [x] Recall through `memory_search` (fresh and expired) is covered.
+- [x] MCP timeout and read-only refusal are covered by the runner.
+- [ ] A dogfood trend gate blocks a release on a real regression.
 
 ## Notes
 
 Cases use a scripted provider, so this is a plumbing and prompt regression
-suite. Real usefulness still needs dogfood.
+suite. The MCP client/agent cases come from the sibling niucode workspace and
+are skipped if it is absent. Real usefulness still needs dogfood.
