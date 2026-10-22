@@ -105,7 +105,9 @@ connector instead of one-off shell commands.
 
 **Cards:** niucode M8-001 is done: read-only stdio v1 with explicit trust,
 config mounting in `exec`/TUI, and offline tests. niuse mounts the host in the
-TUI, REPL, and `exec` (M8-002) and ships the read-only notes pack (M8-003).
+TUI, REPL, and `exec` and ships the read-only notes pack. Mutating MCP is
+proposed in [ADR-0034](https://github.com/niuverse/niucode/blob/main/docs/adr/0034-mutating-mcp.md)
+and blocked on human sign-off; do not implement it before that.
 
 ### M9 · Proof (planned)
 
