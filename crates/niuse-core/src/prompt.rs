@@ -74,14 +74,18 @@ pub fn compose(
 ) -> Composition {
     let mut sections: Vec<(&str, String)> = Vec::new();
 
-    if let Some(identity) = identity.map(str::trim).filter(|text| !text.is_empty()) {
-        sections.push((
+    match identity.map(str::trim).filter(|text| !text.is_empty()) {
+        Some(identity) => sections.push((
             "你是谁",
             format!(
                 "以下是你名字、语气与边界的唯一真源；如果本 prompt 的其他段落（包括产品名）与本段冲突，以本段为准。\n\n{}",
                 truncate_to_tokens(identity, IDENTITY_BUDGET)
             ),
-        ));
+        )),
+        None => sections.push((
+            "你是谁",
+            "当前还没有 identity.md。你还没有被命名；不要用产品名充数，也不要假装有身份。如果用户问你是谁，直接说明身份尚未定义，并建议运行 `niuse identity init`。".into(),
+        )),
     }
     if let Some(user) = user.map(str::trim).filter(|text| !text.is_empty()) {
         sections.push(("你在和谁一起工作", truncate_to_tokens(user, USER_BUDGET)));
@@ -309,6 +313,14 @@ mod tests {
         assert!(composition.system.contains("niubot"));
         assert!(composition.system.contains("唯一真源"));
         assert!(composition.system.contains("产品名不是你的名字"));
+    }
+
+    #[test]
+    fn no_identity_does_not_invent_a_name() {
+        let composition = compose(None, None, &[], &[], &[], date("2026-10-22"));
+        assert!(composition.system.contains("身份尚未定义"));
+        assert!(!composition.system.contains("你是 niuse"));
+        assert!(!composition.system.contains("niubot"));
     }
 
     #[test]

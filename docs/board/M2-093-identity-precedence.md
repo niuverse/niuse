@@ -21,13 +21,15 @@ docs = ["architecture"]
 - `BASE` 不再自称名字，只描述工作方式，并明确「名字、语气与边界由后面的『你是谁』一节定义；产品名不是你的名字」。
 - identity 节增加「唯一真源」优先级：与本 prompt 其他段落（包括产品名）冲突时，以 identity 为准。
 - 协议段把「niuse 会解析」改成「运行时会解析」，减少产品名被当作人格线索。
-- 新增测试 `identity_is_the_only_name_source`：断言 `BASE` 不含硬编码名字，identity 的 `niubot` 与优先级文本都出现。
+- identity 缺失时注入明确说明：尚未命名，不要用产品名充数，建议运行 `niuse identity init`。
+- 新增测试 `identity_is_the_only_name_source` 与 `no_identity_does_not_invent_a_name`。
 
 ## 验收
 
 - [x] `BASE` 不再包含「你是 niuse」。
 - [x] identity 节声明唯一真源。
 - [x] 真实模型在 identity 写 niubot 时直接答「我是 niubot」，无需纠正。
+- [x] 真实模型在 identity 缺失时说明「身份尚未定义」，不跑工具、不自报 niuse。
 - [x] 现有 prompt 顺序与预算测试不变。
 
 ## 备注

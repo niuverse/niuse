@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2 — 2026-10-22
+
+- Missing `identity.md` now yields an explicit "not named yet" section instead of letting the model invent a name or reach for tools.
+
 ## 0.1.1 — 2026-10-22
 
 - `identity.md` is now the only name source; the persona no longer hardcodes "you are niuse", and identity precedence is explicit.
