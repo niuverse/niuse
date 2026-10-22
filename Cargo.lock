@@ -1574,6 +1574,7 @@ name = "niucode-agent"
 version = "0.1.5"
 dependencies = [
  "anyhow",
+ "async-trait",
  "futures-util",
  "ignore",
  "niucode-core",
@@ -1655,6 +1656,7 @@ name = "niuse"
 version = "0.1.11"
 dependencies = [
  "anyhow",
+ "async-trait",
  "clap",
  "clap_complete",
  "futures-util",

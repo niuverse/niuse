@@ -25,9 +25,11 @@ niucode-auth         AuthStore
 niucode-tools        SandboxPolicy / ApprovalMode
 ```
 
-Only `driver.rs` touches `niucode-agent` directly. Everything else is either pure domain logic or only knows `niuse-core` types. When niucode upgrades, the required changes are confined to one file.
+Only `driver.rs` and `memory_tool.rs` touch `niucode-agent` directly. Everything else is either pure domain logic or only knows `niuse-core` types. When niucode upgrades, the required changes are confined to those adapters.
 
 niuse does not fork niucode and does not add a memory hook to its loop. Memory is a product layer; the kernel stays minimal.
+
+niucode exposes a read-only `EmbedderTool` seam (ADR-0032): niuse registers `memory_search` through it in the REPL, `exec`, and TUI. The tool reuses unified recall, is advertised as read-only, and cannot write, delete, or confirm memory.
 
 niucode now exposes a library target and the generic `TurnHooks` trait (ADR-0032). Both `run_exec_with_hooks` and `run_tui_with_hooks` invoke prompt, event, and turn-end hooks; the renderer migration remains. niuse keeps its REPL and renderer deliberately rather than accidentally until that migration lands.
 

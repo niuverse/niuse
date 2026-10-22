@@ -24,7 +24,8 @@ One read-only exception: `niuse projects` reads niucode's workspace metadata at 
 
 | niuse | niucode | status | updated |
 |---|---|---|---|
-| 0.1.11 | `2d12360` | current pin; configurable approval keys | 2026-10-22 |
+| 0.1.11 | `eaece28` | current pin; read-only embedder tools | 2026-10-22 |
+| 0.1.11 | `2d12360` | previous pin; configurable approval keys | 2026-10-22 |
 | 0.1.5 | `76fec7b` | previous pin; command registration released | 2026-10-22 |
 | 0.1.4 | `9ffed27` | previous pin; post-turn prompts released | 2026-10-22 |
 | 0.1.3 | `54df537` | previous pin; filter and command hooks released | 2026-10-22 |

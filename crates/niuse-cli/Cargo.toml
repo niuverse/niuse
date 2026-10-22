@@ -18,6 +18,7 @@ tui = ["dep:niucode"]
 [dependencies]
 niucode = { workspace = true, optional = true }
 anyhow.workspace = true
+async-trait.workspace = true
 clap.workspace = true
 clap_complete.workspace = true
 futures-util.workspace = true

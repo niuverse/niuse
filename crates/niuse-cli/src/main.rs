@@ -6,6 +6,7 @@ mod config;
 mod digest;
 mod driver;
 mod export;
+mod memory_tool;
 mod projects;
 mod render;
 mod repl;
@@ -638,6 +639,7 @@ async fn run_tui(cli: &Cli, store: &Store, replay: Option<PathBuf>) -> Result<()
         replay,
         approval_keys: niucode::ApprovalKeys::custom('y', 'n', 's')
             .expect("distinct approval keys"),
+        extra_tools: memory_tool::tools(store.root().to_path_buf()),
         ..niucode::TuiOptions::default()
     };
     niucode::run_tui_with_hooks(options, Box::new(hooks)).await

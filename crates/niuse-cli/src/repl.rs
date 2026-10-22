@@ -509,7 +509,7 @@ impl App {
                 continue;
             }
 
-            let config = driver::agent_config(
+            let mut config = driver::agent_config(
                 &self.provider_id,
                 &self.model,
                 &self.cwd,
@@ -519,6 +519,7 @@ impl App {
                 self.allow_unsandboxed,
                 self.max_steps,
             );
+            config.extra_tools = crate::memory_tool::tools(self.store.root().to_path_buf());
             let mut renderer = Renderer::new();
             let result = driver::run_turn(
                 self.provider.as_ref(),
@@ -1004,7 +1005,7 @@ pub async fn run_exec(app: App, prompt: String) -> Result<()> {
     };
     driver::append_start(&log, &meta)?;
 
-    let config = driver::agent_config(
+    let mut config = driver::agent_config(
         &app.provider_id,
         &app.model,
         &app.cwd,
@@ -1014,6 +1015,7 @@ pub async fn run_exec(app: App, prompt: String) -> Result<()> {
         app.allow_unsandboxed,
         app.max_steps,
     );
+    config.extra_tools = crate::memory_tool::tools(app.store.root().to_path_buf());
     let mut renderer = Renderer::new();
     let mut log = log;
     let result = driver::run_turn(

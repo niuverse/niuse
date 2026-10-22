@@ -30,7 +30,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 - Digest: `niuse digest [--thread PATH] [--dry-run] [--limit N]` compresses recent user/assistant prose into at most five journal bullets with one tool-free model call; tool output never enters the prompt, secrets refuse the whole write, and the path stays opt-in until ten real digests are reviewed.
 - `niuse tui` (optional feature): niucode's TUI with `CompanionHooks`; protocol stripping, journal/loops, memory accept/edit/replace/keep, read-only commands, `/brief`, `/export`, `y`/`n`/`s` approval keys, and `/cost` read from the thread event log.
 - Memory: search including expired entries, kind filter, kind counts, show/edit, review with metrics, prune with backup and freed-byte report, duplicate guard, secret scan, soft expiry.
-- Recall: `niuse recall <query> [--json]` and `/recall` search memory (including expired), journal, and loops together; the protocol tells the model to ask for `/recall` instead of inventing a missing memory.
+- Recall: `niuse recall <query> [--json]` and `/recall` search memory (including expired), journal, and loops together; the agent can also call the read-only `memory_search` tool during a turn, and the protocol tells it to request `/recall` when no tool is available.
 - Dates: journal, memory, and stats day labels follow the local calendar; event timestamps stay UTC.
 - Journal and loops: model-written blocks plus manual entry and manual promises.
 - Bootstrap: dry-run preview, candidate merge into the inbox, optional `user.md` draft.
@@ -48,7 +48,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 ## In progress
 
 - **M5 · Harness-native companion** — M5-001 is done: configurable `y`/`n`/`s` approval keys, an offline PTY deny/allow test, product commands in TUI help/completion, and `/cost` computed from the thread event log. M5-002 starts the ten-day TUI dogfood gate.
-- **M6 · Compounding context** — startup brief (M6-001), project registry (M6-002), session digest (M6-003, in review), and unified recall (M6-004) landed; agent-invoked recall (M6-005) needs a generic tool seam upstream.
+- **M6 · Compounding context** — startup brief (M6-001), project registry (M6-002), session digest (M6-003, in review), unified recall (M6-004), and agent-invoked `memory_search` (M6-005) landed. The remaining M6 item is real digest review.
 - **M2 dogfood** continues in parallel; it is not a blocker for product work, but it still decides whether the memory layer pays for itself.
 
 ## Not built
