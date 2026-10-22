@@ -217,6 +217,8 @@ History (`~/.niuse/history`) contains the prompts you typed, and thread/session 
 ```sh
 ./scripts/check.sh   # fmt, clippy, docs, tests, package, dashboard
 ./scripts/eval.sh    # offline personal-agent eval + notes MCP pack
+./scripts/dogfood-trend.sh          # compare the last two weeks of real use
+./scripts/dogfood-trend.sh --strict # warnings also fail
 ```
 
 Repository rules and commands for future sessions live in [AGENTS.md](AGENTS.md).

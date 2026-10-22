@@ -41,6 +41,12 @@ if [ -n "$(git status --porcelain)" ]; then
     exit 1
 fi
 
+echo "== dogfood trend =="
+if ! bash "$root/scripts/dogfood-trend.sh"; then
+    echo "refusing to publish: dogfood regression" >&2
+    exit 1
+fi
+
 for crate in "${order[@]}"; do
     prefix="${crate:0:2}/${crate:2:2}"
     if curl -fsSL "https://index.crates.io/$prefix/$crate" 2>/dev/null \

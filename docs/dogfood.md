@@ -46,6 +46,13 @@ niuse stats --days 7 --trend
 
 Look for the direction, not the absolute number: acceptance should rise as the store matures, and the notes should become more specific.
 
+`scripts/dogfood-trend.sh` automates the look: it compares the last seven
+active days with the previous seven and fails when acceptance drops by more
+than 20 points (once both windows have at least three active days and five
+proposals). `--strict` also fails on a token-per-turn blow-up or a shrinking
+day count. `scripts/publish-niuse.sh` runs it before publishing and refuses on
+a regression.
+
 ## Done
 
 Ten rows, acceptance at or above 60%, at least three cited judgements, at least one recorded disagreement. Then M2-001 can move to review, and the next milestone is decided from the notes rather than from the backlog.

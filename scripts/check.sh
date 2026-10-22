@@ -25,6 +25,9 @@ echo "== dogfood =="
 cargo build -p niuse
 bash scripts/dogfood_test.sh
 
+echo "== dogfood trend self-test =="
+bash scripts/dogfood-trend_test.sh
+
 echo "== package =="
 cargo package -p niuse-core --allow-dirty --offline
 

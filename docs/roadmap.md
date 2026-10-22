@@ -119,7 +119,7 @@ that way.
 - A memory-on/off A/B case shows a behavioural difference.
 - Regressions in dogfood metrics block a release.
 
-**Cards:** M9-001 (offline personal-agent eval): briefs, goals, memory A/B, recall, and MCP boundaries are covered; the dogfood trend gate follows.
+**Cards:** M9-001 is done: briefs, goals, memory A/B, recall, MCP boundaries, and the dogfood trend gate are covered.
 
 ## Current sprint
 
@@ -138,7 +138,7 @@ and commit agree.
 | 8 | M7-001 persistent goals | done | Human-owned goals injected across sessions |
 | 9 | M7-002 REPL plan mode | done | Safe read-only planning without the TUI |
 | 10 | M8-003 notes pack | done | First real personal MCP connector |
-| 11 | M9-001 offline eval | doing | Named regressions for the personal layer |
+| 11 | M9-001 offline eval | done | Named regressions + dogfood trend gate |
 
 ## The round ritual
 

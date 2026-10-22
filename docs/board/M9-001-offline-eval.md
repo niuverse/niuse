@@ -1,12 +1,13 @@
 +++
 id = "M9-001"
 title = "Offline personal-agent eval"
-status = "doing"
+status = "done"
 milestone = "M9"
 module = "cli"
 size = "M"
 priority = "P1"
 updated = "2026-10-22"
+completed = "2026-10-22"
 docs = ["roadmap", "evals"]
 +++
 
@@ -34,7 +35,7 @@ cover modules; they do not cover the prompt → turn → answer chain as one cas
 - [x] `./scripts/eval.sh` passes offline.
 - [x] Recall through `memory_search` (fresh and expired) is covered.
 - [x] MCP timeout and read-only refusal are covered by the runner.
-- [ ] A dogfood trend gate blocks a release on a real regression.
+- [x] A dogfood trend gate blocks a release on a real regression.
 
 ## Notes
 

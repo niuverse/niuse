@@ -17,6 +17,7 @@ This repository is `niuse`, a personal engineering companion built on top of
 ```sh
 ./scripts/check.sh              # fmt, clippy, docs, tests, package, dashboard
 ./scripts/eval.sh               # offline personal-agent eval + notes MCP pack
+./scripts/dogfood-trend.sh      # acceptance/token trend over two weeks
 cargo xtask dashboard           # regenerate docs/index.html
 cargo xtask dashboard --check   # fail when the generated board is stale
 ./scripts/sync-niucode.sh <rev> # bump the pin, run tests, remind about compat
