@@ -211,6 +211,15 @@ impl TurnHooks for CompanionHooks {
 
     fn on_event(&mut self, _event: &AgentEvent) {}
 
+    fn commands(&self) -> Vec<(String, String)> {
+        vec![
+            ("/mem".into(), "list memory; /mem show <id>".into()),
+            ("/loops".into(), "list open promises".into()),
+            ("/journal".into(), "show the last three journal days".into()),
+            ("/status".into(), "identity, memory, and loop counts".into()),
+        ]
+    }
+
     fn command(&mut self, input: &str) -> Option<String> {
         let store = self.store();
         let mut parts = input.split_whitespace();
@@ -397,6 +406,8 @@ mod tests {
         let status = hooks.command("/status").unwrap();
         assert!(status.contains("memory: 1"));
         assert!(hooks.command("/nope").is_none());
+        let commands = hooks.commands();
+        assert!(commands.iter().any(|(name, _)| name == "/mem"));
     }
 
     #[test]
