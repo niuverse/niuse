@@ -24,7 +24,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 
 ## Works
 
-- `niuse` REPL: streaming, slash commands, line editing and history, Tab completion for commands/ids/paths, backslash continuation, `/new` chapters, `/cd`, `/model`, `/cost`, `/threads`, `/sessions`, `/resume`, `/export`, `/brief`, candidate confirm/edit/skip, conflict replace/keep.
+- `niuse` REPL: streaming, slash commands, line editing and history, Tab completion for commands/ids/paths, backslash continuation, `/new` chapters, `/cd`, `/model`, `/cost`, `/threads`, `/sessions`, `/resume`, `/export`, `/brief`, `/plan`, candidate confirm/edit/skip, conflict replace/keep.
 - Brief: `niuse brief [--json]`, `/brief` in the REPL and TUI, and a compact actionable block after the banner; no provider call and `NIUSE_BRIEF=off` restores the quiet start.
 - Projects: `niuse projects [--limit N] [--all] [--json]` reads niucode's recorded workspaces, sorts by recent activity, hides missing and temporary test checkouts by default, and shows the current project in `status`.
 - Digest: `niuse digest [--thread PATH] [--dry-run] [--limit N]` compresses recent user/assistant prose into at most five journal bullets with one tool-free model call; tool output never enters the prompt, secrets refuse the whole write, and the path stays opt-in until ten real digests are reviewed.
@@ -50,7 +50,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 
 - **M5 · Harness-native companion** — M5-001 is done: configurable `y`/`n`/`s` approval keys, an offline PTY deny/allow test, product commands in TUI help/completion, and `/cost` computed from the thread event log. M5-002 starts the ten-day TUI dogfood gate.
 - **M6 · Compounding context** — startup brief (M6-001), project registry (M6-002), session digest (M6-003, in review), unified recall (M6-004), and agent-invoked `memory_search` (M6-005) landed. The remaining M6 item is real digest review.
-- **M7 · Long-horizon work** — the human-owned goal store (M7-001) landed and is injected into every session; plan → execute → verify and delegated work are next.
+- **M7 · Long-horizon work** — the human-owned goal store (M7-001) and read-only REPL/`exec` plan mode (M7-002) landed; execute → verify with recorded evidence and delegated work are next.
 - **M2 dogfood** continues in parallel; it is not a blocker for product work, but it still decides whether the memory layer pays for itself.
 
 ## Not built

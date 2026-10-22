@@ -57,6 +57,9 @@ struct Cli {
     /// Maximum model turns per user request (0 = no hard cap); defaults from config
     #[arg(long, global = true)]
     max_steps: Option<usize>,
+    /// Start in read-only plan mode (read/grep/glob)
+    #[arg(long, global = true)]
+    plan: bool,
     #[command(subcommand)]
     command: Option<Command>,
 }
@@ -664,6 +667,7 @@ async fn run_tui(cli: &Cli, store: &Store, replay: Option<PathBuf>) -> Result<()
         approval: settings.approval,
         network: settings.network,
         replay,
+        plan: cli.plan,
         approval_keys: niucode::ApprovalKeys::custom('y', 'n', 's')
             .expect("distinct approval keys"),
         extra_tools: memory_tool::tools(store.root().to_path_buf()),

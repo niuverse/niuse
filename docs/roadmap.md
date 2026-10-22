@@ -88,7 +88,7 @@ session boundary.
   audit.
 - A three-day goal completes without re-explaining the task.
 
-**Cards:** M7-001; plan → execute → verify and delegation are next.
+**Cards:** M7-001, M7-002; execute → verify and delegation are next.
 
 ### M8 · Connected agent (planned)
 
@@ -134,6 +134,7 @@ and commit agree.
 | 6 | M6-004 unified recall | done | Human path; agent tool follows |
 | 7 | M6-005 agent recall | done | Read-only `memory_search` through niucode's embedder seam |
 | 8 | M7-001 persistent goals | done | Human-owned goals injected across sessions |
+| 9 | M7-002 REPL plan mode | done | Safe read-only planning without the TUI |
 
 ## The round ritual
 

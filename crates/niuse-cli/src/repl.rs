@@ -57,6 +57,7 @@ const SLASH_COMMANDS: &[&str] = &[
     "/cd",
     "/status",
     "/brief",
+    "/plan",
     "/prompt",
     "/model",
     "/cost",
@@ -293,6 +294,7 @@ pub struct App {
     pub prompt: String,
     pub prompt_tokens: usize,
     pub thread_path: PathBuf,
+    pub plan_mode: bool,
     memory_enabled: bool,
     suppress_candidates: bool,
     rejected_tags: HashSet<String>,
@@ -330,6 +332,7 @@ impl App {
             prompt: String::new(),
             prompt_tokens: 0,
             thread_path,
+            plan_mode: cli.plan,
             memory_enabled,
             suppress_candidates: false,
             rejected_tags: HashSet::new(),
@@ -525,6 +528,7 @@ impl App {
                 self.max_steps,
             );
             config.extra_tools = crate::memory_tool::tools(self.store.root().to_path_buf());
+            driver::apply_plan_mode(&mut config, self.plan_mode);
             let mut renderer = Renderer::new();
             let result = driver::run_turn(
                 self.provider.as_ref(),
@@ -600,10 +604,11 @@ impl App {
             .count();
 
         println!(
-            "niuse · {} · {} / {}",
+            "niuse · {} · {} / {}{}",
             self.model,
             self.policy.mode.as_str(),
-            self.approval.as_str()
+            self.approval.as_str(),
+            if self.plan_mode { " · plan" } else { "" }
         );
         println!(
             "{} 条记忆（{} 条待验证）· {} 个进行中的目标 · {} 条未完成承诺 · prompt ~{} tokens",
@@ -770,6 +775,21 @@ impl App {
                 }
                 println!("{line}");
             }
+            "/plan" => match argument.trim() {
+                "" => println!(
+                    "plan mode: {}（工具：read/grep/glob）",
+                    if self.plan_mode { "on" } else { "off" }
+                ),
+                "on" => {
+                    self.plan_mode = true;
+                    println!("plan mode: on（只读；/plan off 退出）");
+                }
+                "off" | "approve" => {
+                    self.plan_mode = false;
+                    println!("plan mode: off");
+                }
+                _ => println!("用法：/plan [on|off]"),
+            },
             "/model" => {
                 if argument.is_empty() {
                     println!("model: {} · provider {}", self.model, self.provider_id);
@@ -825,6 +845,12 @@ impl App {
     }
 
     fn handle_blocks(&mut self, blocks: Vec<Block>, source: &str) -> Result<()> {
+        if self.plan_mode {
+            if !blocks.is_empty() {
+                println!("plan mode：忽略本轮写入块。");
+            }
+            return Ok(());
+        }
         let today = Date::today();
         if !self.memory_enabled {
             // Journal and loops still record the session; memory candidates are
@@ -1038,6 +1064,7 @@ pub async fn run_exec(app: App, prompt: String) -> Result<()> {
         app.max_steps,
     );
     config.extra_tools = crate::memory_tool::tools(app.store.root().to_path_buf());
+    driver::apply_plan_mode(&mut config, app.plan_mode);
     let mut renderer = Renderer::new();
     let mut log = log;
     let result = driver::run_turn(
@@ -1058,20 +1085,29 @@ pub async fn run_exec(app: App, prompt: String) -> Result<()> {
         );
     }
 
-    for block in parsed.blocks {
-        match block {
-            Block::Memory { kind, tags, text } => {
-                eprintln!("[candidate:{}:{}] {text}", kind.as_str(), tags.join(","));
-            }
-            Block::Loop { due, text } => {
-                eprintln!(
-                    "[loop] {text}{}",
-                    due.map(|d| format!(" ({d})")).unwrap_or_default()
-                );
-            }
-            Block::Journal { bullets } => {
-                for bullet in bullets {
-                    eprintln!("[journal] {bullet}");
+    if app.plan_mode {
+        if !parsed.blocks.is_empty() {
+            eprintln!(
+                "plan mode: ignored {} protocol block(s)",
+                parsed.blocks.len()
+            );
+        }
+    } else {
+        for block in parsed.blocks {
+            match block {
+                Block::Memory { kind, tags, text } => {
+                    eprintln!("[candidate:{}:{}] {text}", kind.as_str(), tags.join(","));
+                }
+                Block::Loop { due, text } => {
+                    eprintln!(
+                        "[loop] {text}{}",
+                        due.map(|d| format!(" ({d})")).unwrap_or_default()
+                    );
+                }
+                Block::Journal { bullets } => {
+                    for bullet in bullets {
+                        eprintln!("[journal] {bullet}");
+                    }
                 }
             }
         }
@@ -1211,6 +1247,7 @@ const HELP: &str = r#"对话
 
 会话
   /brief                  今天需要处理什么（逾期/审查/过期）
+  /plan [on|off]          只读计划模式（工具限制为 read/grep/glob）
   /export [path]          导出当前主线为 Markdown
   /new                    归档当前主线并开始一条新的
   /cd <path>              切换工作目录（下一个 turn 生效）

@@ -198,9 +198,37 @@ fn set_private(_path: &Path) -> Result<()> {
     Ok(())
 }
 
+/// Narrow an agent config to read-only planning tools. Turning plan mode off
+/// leaves any explicit tool allowlist in place.
+pub fn apply_plan_mode(config: &mut AgentConfig, plan: bool) {
+    config.plan_mode = plan;
+    if plan {
+        config.allowed_tools = Some(
+            ["read", "grep", "glob"]
+                .into_iter()
+                .map(str::to_string)
+                .collect(),
+        );
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn plan_mode_narrows_tools_and_does_not_widen_on_exit() {
+        let mut config = AgentConfig::new("test", ".");
+        apply_plan_mode(&mut config, true);
+        assert!(config.plan_mode);
+        assert_eq!(
+            config.allowed_tools.as_ref().unwrap(),
+            &["read".to_string(), "grep".to_string(), "glob".to_string()]
+        );
+        apply_plan_mode(&mut config, false);
+        assert!(!config.plan_mode);
+        assert_eq!(config.allowed_tools.as_ref().unwrap().len(), 3);
+    }
 
     #[cfg(unix)]
     #[test]
