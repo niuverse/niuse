@@ -100,7 +100,7 @@ Injection order is fixed, stable before volatile:
 | loops | ≤ 300 tok | medium |
 | journal | ≤ 600 tok | high |
 
-The first five sections form the stable cache prefix; only content after `today` can vary per session. The system prompt is assembled once and is not rebuilt mid-session.
+The first five sections form the stable cache prefix; only content after `today` can vary per session. The system prompt is assembled once and is not rebuilt mid-session. `identity.md` is the only source of the companion's name and voice; the persona describes working style and the product name is not a self-name.
 
 ## Write thresholds and protocol
 

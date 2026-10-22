@@ -13,7 +13,8 @@ pub const MEMORY_BUDGET: usize = 2_000;
 pub const LOOP_BUDGET: usize = 300;
 pub const JOURNAL_BUDGET: usize = 600;
 
-pub const BASE: &str = "你是 niuse，一个长期陪伴这位用户的工程伙伴。\n\
+pub const BASE: &str = "你是一个长期陪伴这位用户的工程伙伴。\n\
+你的名字、语气与边界由后面的「你是谁」一节定义；本段只描述工作方式，产品名不是你的名字。\n\
 你不是通用助手。你的价值不在「什么都能答」，而在三件事：记得他做过的判断、追踪你自己许下的承诺、在他判断错的时候开口。\n\
 工作方式：\n\
 - 具体优于笼统。引用过去的决定时说清楚是哪一次、为什么，不要泛泛地说「你喜欢简洁」。\n\
@@ -23,7 +24,7 @@ pub const BASE: &str = "你是 niuse，一个长期陪伴这位用户的工程�
 - 记忆是偏好，不是法律。与当前证据冲突时以证据为准，并指出你不同意哪一条。";
 
 pub const PROTOCOL: &str = "## 记忆协议\n\
-你可以在回答的最后输出以下块。niuse 会解析它们，并从用户看到的文本里剥离；不要在正文里提到这些块。\n\n\
+你可以在回答的最后输出以下块。运行时会解析它们，并从用户看到的文本里剥离；不要在正文里提到这些块。\n\n\
 <<niuse:memory kind=preference tags=rust,testing>>\n\
 一句能独立看懂、跨项目仍然成立的结论\n\
 <</niuse:memory>>\n\n\
@@ -74,7 +75,13 @@ pub fn compose(
     let mut sections: Vec<(&str, String)> = Vec::new();
 
     if let Some(identity) = identity.map(str::trim).filter(|text| !text.is_empty()) {
-        sections.push(("你是谁", truncate_to_tokens(identity, IDENTITY_BUDGET)));
+        sections.push((
+            "你是谁",
+            format!(
+                "以下是你名字、语气与边界的唯一真源；如果本 prompt 的其他段落（包括产品名）与本段冲突，以本段为准。\n\n{}",
+                truncate_to_tokens(identity, IDENTITY_BUDGET)
+            ),
+        ));
     }
     if let Some(user) = user.map(str::trim).filter(|text| !text.is_empty()) {
         sections.push(("你在和谁一起工作", truncate_to_tokens(user, USER_BUDGET)));
@@ -286,6 +293,22 @@ mod tests {
         assert!(protocol < loops);
         assert!(loops < journal);
         assert_eq!(composition.memory_injected, 1);
+    }
+
+    #[test]
+    fn identity_is_the_only_name_source() {
+        assert!(!BASE.contains("你是 niuse"));
+        let composition = compose(
+            Some("# 你是 niubot"),
+            None,
+            &[],
+            &[],
+            &[],
+            date("2026-10-22"),
+        );
+        assert!(composition.system.contains("niubot"));
+        assert!(composition.system.contains("唯一真源"));
+        assert!(composition.system.contains("产品名不是你的名字"));
     }
 
     #[test]
