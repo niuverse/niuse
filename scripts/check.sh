@@ -35,6 +35,10 @@ bash scripts/dogfood-check_test.sh
 echo "== package =="
 cargo package -p niuse-core --allow-dirty --offline
 
+echo "== links =="
+python3 scripts/check-links.py
+bash scripts/check-links_test.sh
+
 echo "== dashboard =="
 cargo xtask dashboard --check
 

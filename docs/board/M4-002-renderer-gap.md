@@ -29,4 +29,4 @@ docs = ["adr-0003", "renderer-migration"]
 
 ## 备注
 
-详见 [renderer-migration](renderer-migration.md)。去留已写成 [ADR-0004](adr/0004-renderer-deferred.md)：TUI 先 opt-in，十个真实狗粮日后再删 renderer。
+详见 [renderer-migration](../renderer-migration.md)。去留已写成 [ADR-0004](../adr/0004-renderer-deferred.md)：TUI 先 opt-in，十个真实狗粮日后再删 renderer。

@@ -165,6 +165,7 @@ and commit agree.
 | 31 | M2-097 weekly report | done | One read-only view for the weekly review |
 | 32 | M9-007 prompt prefix | done | Cacheable bytes are pinned; protocol heading deduped |
 | 33 | M2-098 report commands | done | The weekly review is available in-session |
+| 34 | M9-008 link check | done | Docs cannot rot into broken relative links |
 
 ## The round ritual
 
