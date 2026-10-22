@@ -24,7 +24,7 @@ use rustyline::history::FileHistory;
 use rustyline::validate::{ValidationContext, ValidationResult, Validator};
 use rustyline::{Context as RlContext, Editor, Helper};
 
-const SLASH_COMMANDS: &[&str] = &[
+pub(crate) const SLASH_COMMANDS: &[&str] = &[
     "/help",
     "/quit",
     "/exit",
@@ -62,6 +62,9 @@ const SLASH_COMMANDS: &[&str] = &[
     "/verify",
     "/brief",
     "/plan",
+    "/steps",
+    "/steps add",
+    "/steps done",
     "/prompt",
     "/model",
     "/cost",
@@ -713,6 +716,41 @@ impl App {
                     println!("{error}");
                 }
             }
+            "/steps" => {
+                let report = crate::evidence::from_thread(&thread.path).unwrap_or_default();
+                match argument.split_whitespace().next() {
+                    None | Some("list") => {
+                        let steps = self.store.plan()?;
+                        let open: Vec<&niuse_core::PlanStep> =
+                            steps.iter().filter(|step| !step.done).collect();
+                        if open.is_empty() {
+                            println!("没有进行中的步骤。");
+                        }
+                        for step in open {
+                            println!(
+                                "[ ] {} {} — {}",
+                                step.label(),
+                                step.text,
+                                report.step_state(step)
+                            );
+                        }
+                    }
+                    Some("add") => {
+                        let text = argument["add".len()..].trim();
+                        let step = commands::plan_add(&self.store, text)?;
+                        println!("added {}", step.label());
+                    }
+                    Some("done") => {
+                        let id = argument["done".len()..]
+                            .trim()
+                            .parse::<u32>()
+                            .map_err(|_| anyhow::anyhow!("用法：/steps done <N>"))?;
+                        let step = commands::plan_done(&self.store, &thread.path, id)?;
+                        println!("done {}", step.label());
+                    }
+                    _ => println!("用法：/steps [add <text>|done <N>]"),
+                }
+            }
             "/recall" => {
                 if argument.is_empty() {
                     println!("用法：/recall <关键词>");
@@ -1283,6 +1321,7 @@ const HELP: &str = r#"对话
   /brief                  今天需要处理什么（逾期/审查/过期）
   /evidence               本 thread 的工具调用、文件、检查与失败
   /report [days]          周报：turn、成本、store、dogfood
+  /steps [add|done]       计划步骤：列表、添加、完成
   /verify <command>       运行检查并把结果写入 thread
   /plan [on|off]          只读计划模式（工具限制为 read/grep/glob）
   /export [path]          导出当前主线为 Markdown

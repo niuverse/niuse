@@ -167,6 +167,7 @@ and commit agree.
 | 33 | M2-098 report commands | done | The weekly review is available in-session |
 | 34 | M9-008 link check | done | Docs cannot rot into broken relative links |
 | 35 | M9-009 board check | done | Milestone and card states cannot contradict |
+| 36 | M9-010 README contract | done | Docs commands are checked against the binary |
 
 ## The round ritual
 

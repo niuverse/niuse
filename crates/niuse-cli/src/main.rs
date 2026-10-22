@@ -834,3 +834,78 @@ async fn run_tui(cli: &Cli, store: &Store, replay: Option<PathBuf>) -> Result<()
     };
     niucode::run_tui_with_hooks(options, Box::new(hooks)).await
 }
+
+#[cfg(test)]
+mod docs_tests {
+    use super::*;
+    use clap::CommandFactory;
+    use std::collections::HashSet;
+
+    const README: &str = include_str!("../../../README.md");
+
+    #[test]
+    fn readme_cli_examples_name_real_subcommands() {
+        let mut known: HashSet<String> = Cli::command()
+            .get_subcommands()
+            .map(|command| command.get_name().to_string())
+            .collect();
+        // `tui` is feature-gated; the docs are still correct for that build.
+        known.insert("tui".to_string());
+        let mut checked = 0;
+        let mut fenced = false;
+        for line in README.lines() {
+            let line = line.trim();
+            if line.starts_with("```") {
+                fenced = !fenced;
+                continue;
+            }
+            if !fenced {
+                continue;
+            }
+            let Some(rest) = line.strip_prefix("niuse ") else {
+                continue;
+            };
+            if rest.starts_with(char::is_whitespace) {
+                continue;
+            }
+            let Some(first) = rest.split_whitespace().next() else {
+                continue;
+            };
+            if first.starts_with('-') || first.starts_with('#') {
+                continue;
+            }
+            assert!(
+                known.contains(first),
+                "README example `niuse {first}` is not a subcommand; known: {known:?}"
+            );
+            checked += 1;
+        }
+        assert!(
+            checked >= 10,
+            "expected the README command table, saw {checked}"
+        );
+    }
+
+    #[test]
+    fn readme_repl_commands_are_registered() {
+        let line = README
+            .lines()
+            .find(|line| line.starts_with("Inside the REPL:"))
+            .expect("README has an inside-the-REPL line");
+        let mut checked = 0;
+        for token in line.split('`') {
+            let Some(command) = token.split_whitespace().next() else {
+                continue;
+            };
+            if !command.starts_with('/') {
+                continue;
+            }
+            assert!(
+                repl::SLASH_COMMANDS.contains(&command),
+                "README REPL command {command} is not registered"
+            );
+            checked += 1;
+        }
+        assert!(checked >= 10, "expected REPL commands, saw {checked}");
+    }
+}
