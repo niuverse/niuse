@@ -19,6 +19,14 @@ niuse stats --days 1 --json
 
 Append one row below. `proposed` / `accepted` come from the JSON; `note` is a concrete memory win, a disagreement, or `-`. Do not reconstruct a missed day later; a gap is honest data.
 
+Or record it from the repo root:
+
+```sh
+./scripts/dogfood.sh "one concrete memory win, disagreement, or -"
+```
+
+The script runs `niuse stats --days 1 --json`, uses the local calendar date, and inserts or replaces today's row in this table. Run it at the end of a real working day, not to fill a gap.
+
 | date | turns | proposed | accepted | note |
 |---|---|---|---|---|
 | YYYY-MM-DD | 0 | 0 | 0 | - |

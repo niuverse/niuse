@@ -20,6 +20,7 @@ cargo xtask dashboard --check   # fail when the generated board is stale
 ./scripts/sync-niucode.sh <rev> # bump the pin, run tests, remind about compat
 ./scripts/check-niucode-drift.sh
 cargo +1.88.0 check --workspace --all-targets   # MSRV; weekly workflow
+./scripts/dogfood.sh "note"     # record one real dogfood day
 ```
 
 `cargo xtask` is a workspace alias defined in `.cargo/config.toml`.
