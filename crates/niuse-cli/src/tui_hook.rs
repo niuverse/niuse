@@ -98,10 +98,14 @@ impl TurnHooks for CompanionHooks {
         for block in parsed.blocks {
             match block {
                 Block::Journal { bullets } => {
-                    let _ = store.append_journal(Date::today(), &bullets);
+                    if let Ok(true) = store.append_journal(Date::today(), &bullets) {
+                        let _ = store.append_metric("journal", &bullets.len().to_string());
+                    }
                 }
                 Block::Loop { due, text } => {
-                    let _ = store.add_loop(LoopItem::new(text, due));
+                    if let Ok(item) = store.add_loop(LoopItem::new(text, due)) {
+                        let _ = store.append_metric("loop", &item.id);
+                    }
                 }
                 Block::Memory { kind, tags, text } => {
                     if secret_reason(&text).is_some() {
@@ -349,6 +353,7 @@ mod tests {
         let mut hooks = CompanionHooks::new(&store).unwrap();
         let mut text = "hello\n\
             <<niuse:memory kind=preference tags=rust>>\nuse nextest\n<</niuse:memory>>\n\
+            <<niuse:journal>>\n- learned something\n<</niuse:journal>>\n\
             <<niuse:loop>>\ncheck the docs\n<</niuse:loop>>"
             .to_string();
         hooks.filter_text(&mut text);
@@ -363,6 +368,9 @@ mod tests {
         let memories = store.memories().unwrap();
         assert_eq!(memories.len(), 1);
         assert_eq!(memories[0].text, "use nextest");
+        let metrics = store.metrics().unwrap();
+        assert!(metrics.contains("\tjournal\t"));
+        assert!(metrics.contains("\tloop\t"));
     }
 
     fn seed(store: &Store) {
