@@ -24,6 +24,7 @@ agent-dispatch tests. No API key, network, or model call is involved.
 | `memory_on_off_changes_the_answer...` | A remembered judgement changes the answer; the same provider without it does not cite it |
 | `goal_injection_survives_only_while_open` | An open goal is injected; a closed goal disappears from the prompt |
 | `brief_surfaces_overdue_promises_and_stale_memory` | The startup brief reports overdue promises, stale memory, and the review queue |
+| `evidence_json_reports_files_and_checks` | A thread's write path, check, and failure are reported as JSON |
 | `a_turn_can_call_memory_search` | The model calls `memory_search` and receives both fresh and expired memory with ids |
 | `notes_pack_searches_reads_and_refuses_escape` | A real MCP pack searches, reads, and rejects a path escape |
 | `a_hung_tool_times_out_and_kills_the_server` | A hung MCP server cannot stall the session |

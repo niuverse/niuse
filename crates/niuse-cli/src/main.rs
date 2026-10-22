@@ -5,6 +5,7 @@ mod commands;
 mod config;
 mod digest;
 mod driver;
+mod evidence;
 mod export;
 mod memory_tool;
 mod projects;
@@ -195,6 +196,15 @@ enum Command {
         #[arg(long)]
         trend: bool,
         /// Emit JSON (summary plus per-day rows)
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show tool calls, files, checks, and failures from a thread
+    Evidence {
+        /// Thread JSONL to inspect (defaults to the main thread)
+        #[arg(long)]
+        thread: Option<PathBuf>,
+        /// Emit JSON
         #[arg(long)]
         json: bool,
     },
@@ -617,6 +627,10 @@ async fn main() -> Result<()> {
             }
         },
         Some(Command::Stats { days, trend, json }) => commands::stats(&store, days, trend, json),
+        Some(Command::Evidence { thread, json }) => {
+            let thread = config::resolve_thread(thread.or(cli.thread.clone()), &store)?;
+            commands::evidence(&thread, json)
+        }
         Some(Command::Brief { json }) => {
             let cwd = config::resolve_cwd(cli.cwd.clone())?;
             commands::brief(&store, &cwd, json)

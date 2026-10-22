@@ -220,6 +220,40 @@ fn recall_finds_memory_journal_loops_and_goals() {
 }
 
 #[test]
+fn evidence_json_reports_files_and_checks() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    let thread = directory.path().join("thread.jsonl");
+    std::fs::write(
+        &thread,
+        concat!(
+            "{\"type\":\"assistant_message\",\"text\":\"working\",\"tool_calls\":[",
+            "{\"id\":\"c1\",\"name\":\"write\",\"input\":{\"path\":\"src/lib.rs\",\"content\":\"x\"}},",
+            "{\"id\":\"c2\",\"name\":\"bash\",\"input\":{\"command\":\"cargo test\"}}",
+            "],\"ts\":1}\n",
+            "{\"type\":\"tool_result\",\"call_id\":\"c1\",\"ok\":true,\"output\":\"ok\",\"ts\":2}\n",
+            "{\"type\":\"tool_result\",\"call_id\":\"c2\",\"ok\":true,\"output\":\"ok\",\"ts\":3}\n",
+        ),
+    )
+    .unwrap();
+
+    let output = run(
+        &home,
+        &["evidence", "--thread", thread.to_str().unwrap(), "--json"],
+    );
+    assert!(output.status.success(), "{output:?}");
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).expect("valid JSON");
+    assert_eq!(report["tools"], 2);
+    assert_eq!(report["files"][0], "src/lib.rs");
+    assert_eq!(report["checks"][0]["command"], "cargo test");
+    assert_eq!(report["checks"][0]["ok"], true);
+
+    let text = run(&home, &["evidence", "--thread", thread.to_str().unwrap()]);
+    assert!(text.status.success(), "{text:?}");
+    assert!(String::from_utf8_lossy(&text.stdout).contains("evidence"));
+}
+
+#[test]
 fn projects_json_filters_and_limits() {
     let directory = tempfile::tempdir().unwrap();
     let niucode = directory.path().join("niucode-home");

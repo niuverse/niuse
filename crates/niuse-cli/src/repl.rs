@@ -57,6 +57,7 @@ const SLASH_COMMANDS: &[&str] = &[
     "/new",
     "/cd",
     "/status",
+    "/evidence",
     "/brief",
     "/plan",
     "/prompt",
@@ -817,6 +818,9 @@ impl App {
                 }
             }
             "/brief" => print!("{}", commands::brief_text(&self.store, &self.cwd)?),
+            "/evidence" => {
+                print!("{}", crate::evidence::from_thread(&thread.path)?.render());
+            }
             "/status" => {
                 commands::status(&self.store, &thread.path, &self.cwd, false)?;
                 let events = load(&thread.path)
@@ -1260,6 +1264,7 @@ const HELP: &str = r#"对话
 
 会话
   /brief                  今天需要处理什么（逾期/审查/过期）
+  /evidence               本 thread 的工具调用、文件、检查与失败
   /plan [on|off]          只读计划模式（工具限制为 read/grep/glob）
   /export [path]          导出当前主线为 Markdown
   /new                    归档当前主线并开始一条新的

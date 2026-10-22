@@ -252,6 +252,10 @@ impl TurnHooks for CompanionHooks {
         vec![
             ("/brief".into(), "what needs attention today".into()),
             (
+                "/evidence".into(),
+                "tools, files, checks, and failures".into(),
+            ),
+            (
                 "/goals".into(),
                 "list goals; /goals add <text>; /goals done <id>".into(),
             ),
@@ -276,6 +280,9 @@ impl TurnHooks for CompanionHooks {
         let name = parts.next()?;
         match name {
             "/brief" => crate::commands::brief_text(&store, &self.cwd).ok(),
+            "/evidence" => crate::evidence::from_thread(&self.thread)
+                .ok()
+                .map(|report| report.render()),
             "/goals" => match parts.next() {
                 None | Some("list") => Some(
                     store
@@ -620,6 +627,7 @@ mod tests {
             "/identity",
             "/user",
             "/brief",
+            "/evidence",
             "/recall",
             "/goals",
         ] {
@@ -641,6 +649,8 @@ mod tests {
         .unwrap();
         let cost = hooks.command("/cost").unwrap();
         assert!(cost.contains("2 turns"));
+        let evidence = hooks.command("/evidence").unwrap();
+        assert!(evidence.contains("evidence"));
         assert!(cost.contains("150 in"));
         assert!(cost.contains("40 cached"));
     }

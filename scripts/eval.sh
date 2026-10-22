@@ -8,6 +8,9 @@ cd "$root"
 echo "== personal-agent eval =="
 cargo test -p niuse --test personal_agent_eval -- --nocapture
 
+echo "== evidence report =="
+cargo test -p niuse --test cli evidence -- --nocapture
+
 echo "== agent recall =="
 cargo test -p niuse --bin niuse memory_tool::tests -- --nocapture
 

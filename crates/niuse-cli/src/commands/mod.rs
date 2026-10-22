@@ -3,6 +3,7 @@
 
 mod doctor;
 mod editor;
+mod evidence;
 mod goals;
 mod journal;
 mod loops;
@@ -13,6 +14,7 @@ mod recall;
 mod session;
 pub use doctor::doctor;
 pub(crate) use editor::{edit_markdown, edit_text};
+pub use evidence::evidence;
 pub use goals::{goals_add, goals_done, goals_list};
 #[cfg(feature = "tui")]
 pub use goals::{goals_add_one, goals_close};
