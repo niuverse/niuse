@@ -173,6 +173,7 @@ and commit agree.
 | 39 | M6-003 real digest review | doing | 4/10 dry-runs reviewed; opt-in stays |
 | 40 | M6-006 digest no-change | done | NONE exits cleanly; malformed still fails |
 | 41 | M6-007 digest gate | done | YES/NO pre-check stops activity summaries |
+| 42 | M6-008 gate old loops | done | Old-loop reminders are not new issues |
 
 ## The round ritual
 

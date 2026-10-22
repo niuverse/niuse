@@ -54,6 +54,9 @@ a memory strategy.
   so the gate correctly said YES; activity-only output remains a known limit.
 - trivial session (`1792683490175-471215-0`): the new pre-check said NO, so no
   digest call and no journal write.
+- old-loop routine (`1792683461440-469411-0`), after the gate revision: NO,
+  because the only "unresolved" item was a pre-existing loop reminder.
+- RSS decision session, re-run: YES, 3 bullets (down from 5, more concise).
 
 That is 4/10 real reviews; the path stays opt-in. Activity-only digests are a
 known limitation, not a reason to auto-write.
