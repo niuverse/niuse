@@ -22,7 +22,8 @@ The contract is deliberately small: `run_with_history`, `AgentConfig`, `project_
 
 | niuse | niucode | status | updated |
 |---|---|---|---|
-| 0.1.0 | `3d635cb` | current pin; exec hooks wired | 2026-10-22 |
+| 0.1.0 | `452f92a` | current pin; hook test works without bwrap | 2026-10-22 |
+| 0.1.0 | `3d635cb` | previous pin; exec hooks wired | 2026-10-22 |
 | 0.1.0 | `fb68b31` | previous pin; changelog corrected | 2026-10-22 |
 | 0.1.0 | `aac20a1` | previous pin; ADR-0032 library target landed | 2026-10-22 |
 | 0.1.0 | `d6d69f0` | previous pin; 0.1.0 changelog added | 2026-10-22 |
