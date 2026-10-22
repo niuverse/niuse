@@ -456,6 +456,16 @@
         "adr-0006",
         "M7-001"
       ]
+    },
+    {
+      "date": "2026-10-22",
+      "kind": "decision",
+      "title": "Keep thread.jsonl as the only active line",
+      "detail": "TUI /resume and /fork switch the live session and notify hooks, but do not change the next launch. No pointer file, no archive promotion; /new and /reset are the only cross-restart switches.",
+      "refs": [
+        "adr-0007",
+        "M5-007"
+      ]
     }
   ]
 }

@@ -187,6 +187,7 @@ and commit agree.
 | 53 | M5-005 TUI reset session | done | /reset gets the same isolation proof |
 | 54 | niucode M6-028 session notify | done | /resume and /fork update the hook pointer |
 | 55 | M5-006 TUI resume pointer | done | /verify after /resume hits the right thread |
+| 56 | ADR-0007 active thread | done | /resume is session-scoped; one active line |
 
 ## The round ritual
 

@@ -51,6 +51,14 @@ Terminal input uses `rustyline` only when stdin is a TTY; pipes keep the plain r
 | `stores` | State | six-store load / save and permissions |
 | `dashboard` | Engineering | offline board generation |
 
+## Active thread
+
+`thread.jsonl` is the only active line across restarts; `threads/*.jsonl` are
+archived chapters. TUI `/resume` and `/fork` switch the live session for that
+run and notify embedder hooks, but they do not change the file the next launch
+opens. `/new` and `/reset` archive the current line and start a new
+`thread.jsonl`. See [ADR-0007](adr/0007-active-thread.md).
+
 ## Turn data flow
 
 ```text
