@@ -22,7 +22,8 @@ The contract is deliberately small: `run_with_history`, `AgentConfig`, `project_
 
 | niuse | niucode | status | updated |
 |---|---|---|---|
-| 0.1.4 | `9ffed27` | current pin; post-turn prompts released | 2026-10-22 |
+| 0.1.5 | `76fec7b` | current pin; command registration released | 2026-10-22 |
+| 0.1.4 | `9ffed27` | previous pin; post-turn prompts released | 2026-10-22 |
 | 0.1.3 | `54df537` | previous pin; filter and command hooks released | 2026-10-22 |
 | 0.1.2 | `3ec224d` | previous pin; filter_text on main | 2026-10-22 |
 | 0.1.2 | `40d6cd8` | previous pin; full TUI hooks released | 2026-10-22 |

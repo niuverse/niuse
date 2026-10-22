@@ -23,7 +23,7 @@ Status: gap analysis, 2026-10-22. No renderer code has moved yet.
 
 The duplication is real, but it is not one renderer: niuse's candidate confirmation and memory commands are product UI, not terminal plumbing.
 
-## Seams now available (niucode 0.1.3+)
+## Seams now available (niucode 0.1.5+)
 
 - `run_tui_with_hooks(TuiOptions, Box<dyn TurnHooks>)`.
 - `augment_system_prompt` — memory/identity injection.
