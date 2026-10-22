@@ -17,6 +17,7 @@ pub use memory::{
     mem_show,
 };
 pub use profile::{identity_edit, identity_init, identity_show, user_edit, user_show};
+#[cfg(feature = "tui")]
 pub(crate) use session::write_export;
 pub use session::{export, sessions, thread_at, threads};
 
