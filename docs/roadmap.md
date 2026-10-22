@@ -136,7 +136,7 @@ and commit agree.
 | 2 | M6-002 project registry | done | Answers "where was I?" before planning work |
 | 3 | M5-001 TUI parity | done | PTY deny/allow and event-log `/cost` verified |
 | 4 | M5-002 TUI dogfood | ready | Product proof for the new default |
-| 5 | M6-003 session digest | review | 1/10 real reviews; turns work into experience |
+| 5 | M6-003 session digest | review | 3/10 real reviews; activity-only caveat |
 | 6 | M6-004 unified recall | done | Human path; agent tool follows |
 | 7 | M6-005 agent recall | done | Read-only `memory_search` through niucode's embedder seam |
 | 8 | M7-001 persistent goals | done | Human-owned goals injected across sessions |
@@ -170,7 +170,7 @@ and commit agree.
 | 36 | M9-010 README contract | done | Docs commands are checked against the binary |
 | 37 | M9-011 README flags | done | Documented flags must exist on the command |
 | 38 | M2-001 first real day | doing | 1/10; exec, MCP, TUI, write, A/B, disagreement |
-| 39 | M6-003 real digest review | doing | 1/10 dry-runs reviewed; opt-in stays |
+| 39 | M6-003 real digest review | doing | 3/10 dry-runs reviewed; opt-in stays |
 
 ## The round ritual
 

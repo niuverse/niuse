@@ -39,10 +39,18 @@ a memory strategy.
 
 ## Notes
 
-2026-10-22: reviewed one real `--dry-run` on the write session
-(`1792683203856-421044-0`): four bullets, source id present, task, decision,
-and the due loop survived, no code dump. That is 1/10 real reviews; the path
-stays opt-in.
+2026-10-22: reviewed three real `--dry-run` outputs:
+
+- write session (`1792683203856-421044-0`): 4 bullets, task, decision, and due
+  loop survived; no code dump.
+- MCP session (`1792683062106-403780-0`): 2 bullets, source id, no raw tool
+  output. Quality caveat: it summarizes activity rather than a change; a short
+  successful task has little to distill.
+- RSS disagreement session (`1792683287429-436740-0`): 5 bullets, captures the
+  decision, three reasons, and the newly identified network-egress risk.
+
+That is 3/10 real reviews; the path stays opt-in. Activity-only digests are a
+known limitation, not a reason to auto-write.
 
 The source thread is named in the command output and recorded in the `digest`
 metric; the journal itself stays plain bullets. Do not summarize every turn: the
