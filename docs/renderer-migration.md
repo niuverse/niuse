@@ -23,7 +23,7 @@ Status: gap analysis, 2026-10-22. No renderer code has moved yet.
 
 The duplication is real, but it is not one renderer: niuse's candidate confirmation and memory commands are product UI, not terminal plumbing.
 
-## Seams now available (niucode main, 3ec224d)
+## Seams now available (niucode 0.1.3+)
 
 - `run_tui_with_hooks(TuiOptions, Box<dyn TurnHooks>)`.
 - `augment_system_prompt` — memory/identity injection.
@@ -31,7 +31,7 @@ The duplication is real, but it is not one renderer: niuse's candidate confirmat
 - `filter_text` — mutate a text delta before display; the persisted event is untouched.
 - `on_turn_end` — observe the final `RunOutcome`.
 
-`filter_text` (on main, not yet in a published crate) is the first renderer seam: a niuse hook can run `StreamFilter` and strip protocol blocks before the TUI prints them, while capturing the raw deltas for parsing at turn end. The example `hooked_tui.rs` verifies the filter under a PTY.
+`filter_text` (published in niucode 0.1.3) is the first renderer seam: a niuse hook can run `StreamFilter` and strip protocol blocks before the TUI prints them, while capturing the raw deltas for parsing at turn end. The example `hooked_tui.rs` verifies the filter under a PTY.
 
 ## Gaps that still block deleting `render.rs`
 
