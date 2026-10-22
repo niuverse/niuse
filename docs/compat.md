@@ -20,7 +20,7 @@ The contract is deliberately small: `run_with_history`, `AgentConfig`, `project_
 
 One read-only exception: `niuse projects` reads niucode's workspace metadata at `~/.niucode/projects/*/project.toml` (schema 1: `cwd`, `last_seen`) and counts `sessions/*.jsonl`. This is a display view, not a second index; if niucode changes the layout, update `crates/niuse-cli/src/projects.rs` and its test.
 
-`niuse tui` inherits niucode's MCP mount: with a read-only `~/.niucode/mcp.toml`, the TUI exposes `mcp__*` tools. The REPL and `exec` build `AgentConfig` in niuse and do not mount them yet; that is a product follow-up.
+All niuse paths mount niucode's read-only MCP host: `niuse tui` inherits it, and the REPL/`exec` call `niucode-mcp::McpHost` through `driver::mount_mcp` from `NIUSE_MCP_CONFIG` or `~/.niucode/mcp.toml`. A broken manifest disables MCP for that run with a warning.
 
 ## Matrix
 

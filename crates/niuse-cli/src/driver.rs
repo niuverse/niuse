@@ -2,6 +2,8 @@
 
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
+use std::time::Duration;
 
 use anyhow::{Context, Result};
 use niucode_agent::{
@@ -9,6 +11,7 @@ use niucode_agent::{
     RunOutcome,
 };
 use niucode_core::{load, now_ms, Event, SessionLog};
+use niucode_mcp::{McpConfig, McpHost};
 use niucode_provider::{ChatMessage, Provider};
 use niucode_tools::SandboxPolicy;
 
@@ -198,6 +201,56 @@ fn set_private(_path: &Path) -> Result<()> {
     Ok(())
 }
 
+/// Mount read-only MCP servers from `NIUSE_MCP_CONFIG` or
+/// `~/.niucode/mcp.toml`. A broken manifest disables MCP for this run instead
+/// of failing the session.
+pub async fn mount_mcp() -> Option<Arc<McpHost>> {
+    let explicit = std::env::var_os("NIUSE_MCP_CONFIG").filter(|value| !value.is_empty());
+    let path = match &explicit {
+        Some(path) => PathBuf::from(path),
+        None => crate::projects::default_root().ok()?.join("mcp.toml"),
+    };
+    if explicit.is_some() && !path.is_file() {
+        eprintln!("warning: MCP config not found: {}", path.display());
+        return None;
+    }
+    mount_mcp_from(&path).await
+}
+
+/// Mount from a specific manifest; callers that resolve the default path use
+/// `mount_mcp`.
+pub async fn mount_mcp_from(path: &Path) -> Option<Arc<McpHost>> {
+    let parsed = match McpConfig::load(path) {
+        Ok(parsed) => parsed,
+        Err(error) => {
+            eprintln!("warning: MCP config: {error:#}");
+            return None;
+        }
+    };
+    let servers = match parsed.validated() {
+        Ok(servers) => servers,
+        Err(error) => {
+            eprintln!("warning: MCP disabled: {error:#}");
+            return None;
+        }
+    };
+    if servers.is_empty() {
+        return None;
+    }
+    match McpHost::mount(&servers, Duration::from_secs(10)).await {
+        Ok(host) => {
+            for mount in host.mounts() {
+                eprintln!("mcp: {} · {} tool(s)", mount.server, mount.tools.len());
+            }
+            Some(Arc::new(host))
+        }
+        Err(error) => {
+            eprintln!("warning: MCP disabled: {error:#}");
+            None
+        }
+    }
+}
+
 /// Narrow an agent config to read-only planning tools. Turning plan mode off
 /// leaves any explicit tool allowlist in place.
 pub fn apply_plan_mode(config: &mut AgentConfig, plan: bool) {
@@ -215,6 +268,40 @@ pub fn apply_plan_mode(config: &mut AgentConfig, plan: bool) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn mounts_a_read_only_mcp_server_from_a_manifest() {
+        let directory = tempfile::tempdir().unwrap();
+        let config = directory.path().join("mcp.toml");
+        let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../../niucode/crates/niucode-mcp/tests/fixture_server.py");
+        std::fs::write(
+            &config,
+            format!(
+                "[[server]]\nname = \"fixture\"\ncommand = \"python3\"\nargs = [\"{}\"]\nread_only = true\n\n[server.env]\nPATH = \"{}\"\n",
+                fixture.display(),
+                std::env::var("PATH").unwrap_or_else(|_| "/usr/bin:/bin".into())
+            ),
+        )
+        .unwrap();
+        let host = mount_mcp_from(&config).await.expect("mount");
+        let names: Vec<String> = host
+            .specs()
+            .into_iter()
+            .map(|spec| spec.function.name)
+            .collect();
+        assert!(names.contains(&"mcp__fixture__echo".to_string()));
+        let call = host
+            .call(
+                "mcp__fixture__echo",
+                serde_json::json!({"text": "from niuse"}),
+                Duration::from_secs(5),
+            )
+            .await
+            .expect("call");
+        assert_eq!(call.output, "from niuse");
+        host.shutdown().await.unwrap();
+    }
 
     #[test]
     fn plan_mode_narrows_tools_and_does_not_widen_on_exit() {

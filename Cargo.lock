@@ -1678,6 +1678,7 @@ dependencies = [
  "niucode-agent",
  "niucode-auth",
  "niucode-core",
+ "niucode-mcp",
  "niucode-provider",
  "niucode-tools",
  "niuse-core",

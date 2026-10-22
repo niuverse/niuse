@@ -9,6 +9,7 @@ use std::sync::{Arc, Mutex};
 use anyhow::{bail, Context, Result};
 use niucode_agent::ApprovalMode;
 use niucode_core::{load, Event};
+use niucode_mcp::McpHost;
 use niucode_provider::Provider;
 use niucode_tools::SandboxPolicy;
 use niuse_core::policy::{conflicts, secret_reason};
@@ -295,6 +296,7 @@ pub struct App {
     pub prompt_tokens: usize,
     pub thread_path: PathBuf,
     pub plan_mode: bool,
+    pub mcp_host: Option<Arc<McpHost>>,
     memory_enabled: bool,
     suppress_candidates: bool,
     rejected_tags: HashSet<String>,
@@ -333,6 +335,7 @@ impl App {
             prompt_tokens: 0,
             thread_path,
             plan_mode: cli.plan,
+            mcp_host: None,
             memory_enabled,
             suppress_candidates: false,
             rejected_tags: HashSet::new(),
@@ -378,6 +381,7 @@ impl App {
         };
         let mut thread = driver::open_thread(&path, &meta)?;
         let mut history = driver::history(&thread.path)?;
+        self.mcp_host = driver::mount_mcp().await;
         self.banner();
         if startup_brief_enabled() {
             if let Ok(lines) = commands::brief_startup(&self.store, &self.cwd) {
@@ -529,6 +533,7 @@ impl App {
             );
             config.extra_tools = crate::memory_tool::tools(self.store.root().to_path_buf());
             driver::apply_plan_mode(&mut config, self.plan_mode);
+            config.mcp_host = self.mcp_host.clone();
             let mut renderer = Renderer::new();
             let result = driver::run_turn(
                 self.provider.as_ref(),
@@ -577,6 +582,9 @@ impl App {
                 eprintln!("warning: cannot save history: {error}");
             }
             secure_history(&history_path);
+        }
+        if let Some(host) = &self.mcp_host {
+            let _ = host.shutdown().await;
         }
         Ok(())
     }
@@ -1042,7 +1050,8 @@ enum Flow {
     Quit,
 }
 
-pub async fn run_exec(app: App, prompt: String) -> Result<()> {
+pub async fn run_exec(mut app: App, prompt: String) -> Result<()> {
+    app.mcp_host = driver::mount_mcp().await;
     let log = driver::new_session(&app.store.root().join("sessions"))?;
     let meta = SessionMeta {
         cwd: &app.cwd,
@@ -1065,6 +1074,7 @@ pub async fn run_exec(app: App, prompt: String) -> Result<()> {
     );
     config.extra_tools = crate::memory_tool::tools(app.store.root().to_path_buf());
     driver::apply_plan_mode(&mut config, app.plan_mode);
+    config.mcp_host = app.mcp_host.clone();
     let mut renderer = Renderer::new();
     let mut log = log;
     let result = driver::run_turn(
@@ -1121,6 +1131,9 @@ pub async fn run_exec(app: App, prompt: String) -> Result<()> {
     app.metric("turn", status);
 
     driver::append_end(&log)?;
+    if let Some(host) = &app.mcp_host {
+        let _ = host.shutdown().await;
+    }
     println!("\nsession: {}", log.path().display());
     result.map(|_| ())
 }

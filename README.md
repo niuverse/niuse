@@ -186,11 +186,12 @@ cargo run --features tui -- tui
 
 Memory candidates become accept/edit/discard prompts after the turn; conflicts offer replace/keep both. Journal and loops are written automatically. `NIUSE_MEMORY=off` disables injection and candidates in the TUI too. `/brief`, `/goals`, `/plan`, `/recall`, `/mem`, `/mem show <id>`, `/loops`, `/journal`, `/status`, `/cost`, `/threads`, `/sessions`, `/export`, `/prompt`, `/identity`, and `/user` are handled by the embedder command hook and appear in `/help` and Tab completion. The default binary does not link the TUI. `--thread` also selects the TUI's active session.
 
-## MCP (TUI only)
+## MCP
 
-`niuse tui` inherits niucode's read-only MCP mount. Put trusted servers in
-`~/.niucode/mcp.toml` (or pass `--mcp-config`); each must declare
-`read_only = true`. Tools appear to the model as `mcp__<server>__<tool>`.
+All paths mount niucode's read-only MCP servers. Put trusted servers in
+`~/.niucode/mcp.toml` (or point `NIUSE_MCP_CONFIG` at a manifest); each must
+declare `read_only = true`. Tools appear to the model as
+`mcp__<server>__<tool>`. The TUI also accepts `--mcp-config`.
 
 ```toml
 [[server]]
@@ -200,8 +201,8 @@ args = ["/home/me/notes-server.py"]
 read_only = true
 ```
 
-The REPL and `exec` do not mount MCP yet; they build `AgentConfig` in niuse
-instead of going through niucode's mount helper. See niucode's
+A broken manifest or a server that fails to start prints a warning and disables
+MCP for that run; it does not take down the session. See niucode's
 [ADR-0033](https://github.com/niuverse/niucode/blob/main/docs/adr/0033-mcp-client.md).
 
 ## Privacy

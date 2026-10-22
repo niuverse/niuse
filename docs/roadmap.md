@@ -104,8 +104,8 @@ connector instead of one-off shell commands.
   without approval.
 
 **Cards:** niucode M8-001 is done: read-only stdio v1 with explicit trust,
-config mounting in `exec`/TUI, and offline tests. `niuse tui` inherits the
-mount; REPL/`exec` mounting and a personal pack follow.
+config mounting in `exec`/TUI, and offline tests. niuse mounts the host in the
+TUI, REPL, and `exec` (M8-002); a personal pack follows.
 
 ### M9 · Proof (planned)
 
