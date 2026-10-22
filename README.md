@@ -177,7 +177,7 @@ cargo run --features tui -- tui
 # or: cargo install niuse --features tui
 ```
 
-Memory candidates become accept/edit/discard prompts after the turn; conflicts offer replace/keep both. Journal and loops are written automatically. `NIUSE_MEMORY=off` disables injection and candidates in the TUI too. `/mem`, `/mem show <id>`, `/loops`, `/journal`, `/status`, `/cost`, `/threads`, `/sessions`, `/export`, `/prompt`, `/identity`, and `/user` are handled by the embedder command hook and appear in `/help` and Tab completion. The default binary does not link the TUI.
+Memory candidates become accept/edit/discard prompts after the turn; conflicts offer replace/keep both. Journal and loops are written automatically. `NIUSE_MEMORY=off` disables injection and candidates in the TUI too. `/mem`, `/mem show <id>`, `/loops`, `/journal`, `/status`, `/cost`, `/threads`, `/sessions`, `/export`, `/prompt`, `/identity`, and `/user` are handled by the embedder command hook and appear in `/help` and Tab completion. The default binary does not link the TUI. `--thread` also selects the TUI's active session.
 
 ## Privacy
 

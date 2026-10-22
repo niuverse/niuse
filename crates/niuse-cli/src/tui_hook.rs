@@ -33,6 +33,7 @@ struct PendingMemory {
 
 pub struct CompanionHooks {
     root: PathBuf,
+    thread: PathBuf,
     prompt: String,
     filter: StreamFilter,
     raw: String,
@@ -46,13 +47,17 @@ pub struct CompanionHooks {
 
 impl CompanionHooks {
     pub fn new(store: &Store) -> Result<Self> {
+        Self::new_with_thread(store, store.session_path())
+    }
+
+    pub fn new_with_thread(store: &Store, thread: PathBuf) -> Result<Self> {
         let enabled = std::env::var("NIUSE_MEMORY")
             .map(|value| value.trim().to_lowercase() != "off")
             .unwrap_or(true);
-        Self::with_memory(store, enabled)
+        Self::with_memory(store, enabled, thread)
     }
 
-    fn with_memory(store: &Store, memory_enabled: bool) -> Result<Self> {
+    fn with_memory(store: &Store, memory_enabled: bool, thread: PathBuf) -> Result<Self> {
         let memories = if memory_enabled {
             store.memories()?
         } else {
@@ -72,6 +77,7 @@ impl CompanionHooks {
         );
         Ok(Self {
             root: store.root().to_path_buf(),
+            thread,
             prompt: composition.system,
             filter: StreamFilter::new(),
             raw: String::new(),
@@ -345,7 +351,7 @@ impl TurnHooks for CompanionHooks {
             ),
             "/threads" => {
                 let mut out = String::new();
-                out.push_str(&format!("active: {}\n", store.session_path().display()));
+                out.push_str(&format!("active: {}\n", self.thread.display()));
                 if let Ok(entries) = std::fs::read_dir(store.threads_dir()) {
                     let mut names: Vec<String> = entries
                         .flatten()
@@ -385,7 +391,7 @@ impl TurnHooks for CompanionHooks {
                     }
                     None => std::env::current_dir().ok()?.join("export-thread.md"),
                 };
-                let loaded = niucode_core::load(&self.root.join("thread.jsonl")).ok()?;
+                let loaded = niucode_core::load(&self.thread).ok()?;
                 let title = loaded
                     .events
                     .iter()
@@ -551,7 +557,7 @@ mod tests {
         let directory = tempfile::tempdir().unwrap();
         let store = Store::at(directory.path().join(".niuse"));
         store.init().unwrap();
-        let mut hooks = CompanionHooks::with_memory(&store, false).unwrap();
+        let mut hooks = CompanionHooks::with_memory(&store, false, store.session_path()).unwrap();
         let mut text =
             "<<niuse:memory kind=preference tags=rust>>\nno candidate\n<</niuse:memory>>\n\
             <<niuse:journal>>\n- still journaled\n<</niuse:journal>>"
@@ -624,6 +630,36 @@ mod tests {
         let texts: Vec<&str> = memories.iter().map(|entry| entry.text.as_str()).collect();
         assert!(texts.contains(&"first"));
         assert!(texts.contains(&"second"));
+    }
+
+    #[test]
+    fn custom_thread_is_used_by_listing_and_export() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        let custom = directory.path().join("custom-thread.jsonl");
+        let log = niucode_core::SessionLog::create(directory.path()).unwrap();
+        log.append(&Event::UserMessage {
+            text: "custom prompt".into(),
+            ts: 1,
+        })
+        .unwrap();
+        let source = log.path().to_path_buf();
+        drop(log);
+        std::fs::rename(source, &custom).unwrap();
+
+        let mut hooks = CompanionHooks::new_with_thread(&store, custom.clone()).unwrap();
+        assert!(hooks
+            .command("/threads")
+            .unwrap()
+            .contains("custom-thread.jsonl"));
+        let target = directory.path().join("custom.md");
+        hooks
+            .command(&format!("/export {}", target.display()))
+            .unwrap();
+        assert!(std::fs::read_to_string(target)
+            .unwrap()
+            .contains("custom prompt"));
     }
 
     #[test]

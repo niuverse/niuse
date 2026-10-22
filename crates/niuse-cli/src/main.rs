@@ -537,7 +537,7 @@ async fn run_tui(cli: &Cli, store: &Store, replay: Option<PathBuf>) -> Result<()
         .model
         .clone()
         .unwrap_or_else(|| "deepseek-flash".to_string());
-    let thread = store.session_path();
+    let thread = config::resolve_thread(cli.thread.clone(), store)?;
     let meta = driver::SessionMeta {
         cwd: &cwd,
         model: &model,
@@ -547,7 +547,7 @@ async fn run_tui(cli: &Cli, store: &Store, replay: Option<PathBuf>) -> Result<()
     };
     drop(driver::open_thread(&thread, &meta)?);
 
-    let hooks = tui_hook::CompanionHooks::new(store)?;
+    let hooks = tui_hook::CompanionHooks::new_with_thread(store, thread.clone())?;
     let options = niucode::TuiOptions {
         preset: settings.provider,
         model: Some(model),
