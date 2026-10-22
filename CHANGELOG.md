@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.1 — 2026-10-22
 
 - `identity.md` is now the only name source; the persona no longer hardcodes "you are niuse", and identity precedence is explicit.
 
