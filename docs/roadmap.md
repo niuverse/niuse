@@ -128,9 +128,9 @@ and commit agree.
 |---|---|---|---|
 | 1 | M6-001 startup brief | done | Makes existing context actionable without new architecture |
 | 2 | M6-002 project registry | done | Answers "where was I?" before planning work |
-| 3 | M5-001 TUI parity | ready | Unblocks the default front end and renderer retirement |
+| 3 | M5-001 TUI parity | blocked | Approval key contract conflicts; resolve upstream first |
 | 4 | M5-002 TUI dogfood | ready | Product proof for the new default |
-| 5 | M6-003 session digest | backlog | Turns finished work into reusable experience |
+| 5 | M6-003 session digest | review | Turns finished work into reusable experience |
 | 6 | M6-004 memory recall | backlog | Deep recall beyond the prompt budget |
 | 7 | M7-001 persistent goals | backlog | First long-horizon primitive |
 

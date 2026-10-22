@@ -27,6 +27,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 - `niuse` REPL: streaming, slash commands, line editing and history, Tab completion for commands/ids/paths, backslash continuation, `/new` chapters, `/cd`, `/model`, `/cost`, `/threads`, `/sessions`, `/resume`, `/export`, `/brief`, candidate confirm/edit/skip, conflict replace/keep.
 - Brief: `niuse brief [--json]`, `/brief` in the REPL and TUI, and a compact actionable block after the banner; no provider call and `NIUSE_BRIEF=off` restores the quiet start.
 - Projects: `niuse projects [--limit N] [--all] [--json]` reads niucode's recorded workspaces, sorts by recent activity, hides missing and temporary test checkouts by default, and shows the current project in `status`.
+- Digest: `niuse digest [--thread PATH] [--dry-run] [--limit N]` compresses recent user/assistant prose into at most five journal bullets with one tool-free model call; tool output never enters the prompt, secrets refuse the whole write, and the path stays opt-in until ten real digests are reviewed.
 - `niuse tui` (optional feature): niucode's TUI with `CompanionHooks`; protocol stripping, journal/loops, memory accept/edit/replace/keep, read-only commands, `/brief`, `/export`, approval path.
 - Memory: search including expired entries, kind filter, kind counts, show/edit, review with metrics, prune with backup and freed-byte report, duplicate guard, secret scan, soft expiry.
 - Dates: journal, memory, and stats day labels follow the local calendar; event timestamps stay UTC.
@@ -41,11 +42,12 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 
 1. **Dogfood** — ten working days recorded in [dogfood](dogfood.md). `./scripts/dogfood.sh "note"` writes the day's row from `stats --days 1 --json`; only real use can close M2.
 2. **TUI dogfood** — ten real days on `niuse tui` for M5-002; this is also the ADR-0004 gate for retiring the REPL renderer.
+3. **Digest review** — review ten real `niuse digest` runs before treating it as automatic; the card stays in `review` until then.
 
 ## In progress
 
-- **M5 · Harness-native companion** — approval and usage parity are the next card (M5-001), followed by the TUI dogfood gate (M5-002).
-- **M6 · Compounding context** — the startup brief (M6-001) and project registry (M6-002) landed; the session digest and on-demand recall follow in [roadmap](roadmap.md).
+- **M5 · Harness-native companion** — M5-001 is blocked on the approval key contract: the REPL uses `y/n` with `d` for the full diff, while the TUI pager uses `a/d/s` where `d` denies. Resolve that upstream before the dogfood gate (M5-002).
+- **M6 · Compounding context** — startup brief (M6-001), project registry (M6-002), and session digest (M6-003, in review) landed; on-demand recall follows in [roadmap](roadmap.md).
 - **M2 dogfood** continues in parallel; it is not a blocker for product work, but it still decides whether the memory layer pays for itself.
 
 ## Not built

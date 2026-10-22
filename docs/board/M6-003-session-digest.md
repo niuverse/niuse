@@ -1,7 +1,7 @@
 +++
 id = "M6-003"
 title = "Session digest into the journal"
-status = "backlog"
+status = "review"
 milestone = "M6"
 module = "cli"
 size = "L"
@@ -30,13 +30,15 @@ a memory strategy.
 
 ## Acceptance
 
-- [ ] A scripted-provider test proves the summary is written once, with source
-      ids and no raw tool output.
-- [ ] `--dry-run` prints the entry without writing.
-- [ ] A failed or malformed response writes nothing and says why.
+- [x] A scripted-provider test proves the summary is written once, uses only
+      user/assistant text, and never writes tool output.
+- [x] `--dry-run` prints the entry without writing.
+- [x] A failed, empty, or malformed response writes nothing and says why.
 - [ ] Ten real digests are reviewed before the path becomes automatic.
-- [ ] The journal format and existing day-merging behaviour are unchanged.
+- [x] The journal format and existing day-merging behaviour are unchanged.
 
 ## Notes
 
-Do not summarize every turn. The journal records change, not activity.
+The source thread is named in the command output and recorded in the `digest`
+metric; the journal itself stays plain bullets. Do not summarize every turn: the
+journal records change, not activity.

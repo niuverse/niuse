@@ -96,6 +96,7 @@ niuse export [--out FILE] [--session PATH]
 niuse completions <shell>       print shell completions (bash, zsh, fish, …)
 niuse bootstrap [--limit N] [--since-days N] [--dry-run] [--profile] [--profile-only]
 niuse review
+niuse digest [--thread PATH] [--dry-run] [--limit N]  summarize the thread into the journal
 niuse doctor [--json]            check home, identity, credentials, sandbox, pin
 niuse config init|show|effective
 niuse stats [--days N] [--trend] [--json] local acceptance counters

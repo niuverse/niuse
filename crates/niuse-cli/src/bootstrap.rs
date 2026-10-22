@@ -486,7 +486,7 @@ fn profile_input(sessions: &[(PathBuf, String)], max_chars: usize) -> String {
     out
 }
 
-async fn complete(
+pub(crate) async fn complete(
     provider: &dyn Provider,
     model: &str,
     system: &str,
@@ -590,7 +590,7 @@ fn sessions_dir() -> Result<PathBuf> {
     Ok(PathBuf::from(home).join(".niucode").join("sessions"))
 }
 
-fn truncate(text: &str, max_chars: usize) -> String {
+pub(crate) fn truncate(text: &str, max_chars: usize) -> String {
     if text.chars().count() <= max_chars {
         return text.to_string();
     }

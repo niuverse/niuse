@@ -3,6 +3,7 @@
 mod bootstrap;
 mod commands;
 mod config;
+mod digest;
 mod driver;
 mod export;
 mod projects;
@@ -148,6 +149,18 @@ enum Command {
     },
     /// Review bootstrapped candidates
     Review,
+    /// Summarize the current thread into the journal
+    Digest {
+        /// Session JSONL to digest (defaults to the main thread)
+        #[arg(long)]
+        thread: Option<PathBuf>,
+        /// Print the bullets without writing
+        #[arg(long)]
+        dry_run: bool,
+        /// Maximum number of recent user/assistant messages to read
+        #[arg(long, default_value_t = 40)]
+        limit: usize,
+    },
     /// Check local setup without calling a model
     Doctor {
         /// Emit JSON
@@ -484,6 +497,29 @@ async fn main() -> Result<()> {
             .await
         }
         Some(Command::Review) => bootstrap::review(&store),
+        Some(Command::Digest {
+            thread,
+            dry_run,
+            limit,
+        }) => {
+            let settings = settings::resolve(&cli, &store)?;
+            let thread = config::resolve_thread(thread.or(cli.thread.clone()), &store)?;
+            let cwd = config::resolve_cwd(cli.cwd.clone())?;
+            let project = cwd
+                .file_name()
+                .map(|name| name.to_string_lossy().into_owned())
+                .unwrap_or_else(|| "unknown".to_string());
+            let app = repl::App::new(&cli, &settings, store)?;
+            digest::run(
+                &app.store,
+                app.provider.as_ref(),
+                &app.model,
+                &thread,
+                &project,
+                digest::DigestOptions { dry_run, limit },
+            )
+            .await
+        }
         Some(Command::Doctor { json }) => {
             let settings = settings::resolve(&cli, &store)?;
             commands::doctor(&store, &settings.provider, json)
