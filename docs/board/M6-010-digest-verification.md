@@ -36,6 +36,8 @@ could not say whether a step passed or failed.
 
 ## Notes
 
-Verification evidence is human-run and already bounded at write time; including
-it is not a tool-output leak. The gate still decides whether it is a durable
-change.
+2026-10-22 real plan+verify run: the `[verification] p-1 ok grep ...` line
+reached the transcript, but the digest kept the decision and open question
+instead. That is acceptable: a weak file existence check is not the change.
+Verification evidence is human-run and bounded at write time; including it is
+not a tool-output leak.

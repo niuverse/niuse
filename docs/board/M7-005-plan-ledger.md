@@ -39,5 +39,8 @@ proved.
 
 ## Notes
 
-The plan is not injected into the prompt yet; the agent sees it only when the
-human includes it. Prompt injection and delegation are the next M7 slices.
+2026-10-22 real run: with `p-1` injected (M7-006), the model read the file,
+refused to mark the step done because it had no verification evidence, and
+asked which direction to take. The human ran `verify --step p-1 -- grep ...`,
+the check passed, and `plan done 1` closed the step. This is the gate working
+against a real provider, not a scripted turn.

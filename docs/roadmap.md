@@ -176,6 +176,7 @@ and commit agree.
 | 42 | M6-008 gate old loops | done | Old-loop reminders are not new issues |
 | 43 | M6-009 gate reasons | done | Every YES/NO gate verdict is explained |
 | 44 | M6-010 digest evidence | done | Verdicts and step tags reach the digest |
+| 45 | M7-005 real gate | done | A real model refused to close an unverified step |
 
 ## The round ritual
 

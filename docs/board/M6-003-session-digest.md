@@ -66,8 +66,12 @@ RSS → `YES · 助手明确反对...`; trivial → `NO · 用户仅要求回复
 
 - trivial 391 (`1792683490175-471215-0`): NO, no change. Counted as the sixth
   real review.
+- plan+verify (`1792683740897-529410-0`): YES with reason. One bullet captured
+  the recommendation and the open rename/delete decision. The `[verification]`
+  line was available but the digest chose not to include it; a weak file check
+  is not the decision.
 
-That is 6/10 real reviews; the path stays opt-in. Activity-only digests are a
+That is 7/10 real reviews; the path stays opt-in. Activity-only digests are a
 known limitation, not a reason to auto-write.
 
 The source thread is named in the command output and recorded in the `digest`
