@@ -21,12 +21,21 @@ const MAX_TRANSCRIPT_CHARS: usize = 12_000;
 const MAX_BULLETS: usize = 5;
 
 const DIGEST_SYSTEM: &str =
-    "你是会话日记压缩器。根据下面这段 coding agent 与用户的会话，写 3-5 条 journal 条目。\n\
-只记录与上次不同的东西：做过的决定、转折点、未解决的问题、判断或情绪的变化。\n\
-每条都要脱离这段会话也能看懂，一句话，具体；不要写“修了 bug”这类活动日志，\n\
-不要复制代码或文件内容，不要重复偏好，不要写密钥或别人的信息。\n\
+    "你是会话日记压缩器。根据下面这段 coding agent 与用户的会话，写 1-5 条 journal 条目。\n\
+先判断：这段会话是否出现了一个决定、转折点、新出现的未解决问题、被说服、\n\
+或判断/情绪的变化。如果只是完成例行任务、没有改变任何方向，只输出 NONE。\n\
+不要写任务完成情况（“创建了/修复了/确认了 X”），也不要写工具调用过程；\n\
+活动不是 journal。\n\
+每条都要脱离这段会话也能看懂，一句话，具体；不要复制代码或文件内容，\n\
+不要重复偏好，不要写密钥或别人的信息。\n\
 没有值得记录的，就只输出 NONE。\n\
 只输出以 \"- \" 开头的条目，不要解释，不要代码围栏。";
+
+const DIGEST_GATE: &str =
+    "只回答 YES 或 NO。下面这段 coding agent 与用户的会话，是否包含一个新的决定、\n\
+转折点、新出现的未解决问题、被说服、或判断/情绪的变化？\n\
+如果只是任务完成、工具调用、确认结果、或提醒旧事项，回答 NO。\n\
+只输出 YES 或 NO。";
 
 #[derive(Debug, Clone, Copy)]
 pub struct DigestOptions {
@@ -46,6 +55,19 @@ pub async fn run(
         bail!("会话没有可压缩的用户或助手文本：{}", thread.display());
     };
     let input = format!("# 项目：{project}\n\n{transcript}");
+    let gate = complete(provider, model, DIGEST_GATE, &input, 8).await?;
+    match gate.trim().to_ascii_uppercase().as_str() {
+        "NO" => {
+            if options.dry_run {
+                println!("digest dry run：没有可提炼的变化，不写入");
+            } else {
+                println!("digest：没有可提炼的变化，journal 未变");
+            }
+            return Ok(());
+        }
+        "YES" => {}
+        other => bail!("digest 预检没有返回 YES/NO（{other}）；没有写入"),
+    }
     let raw = complete(provider, model, DIGEST_SYSTEM, &input, 800).await?;
     let bullets = parse_bullets(&raw);
     if bullets.is_empty() {
@@ -143,13 +165,17 @@ mod tests {
     use niucode_provider::{ScriptedProvider, StreamEvent};
     use std::path::PathBuf;
 
-    fn scripted(text: &str) -> ScriptedProvider {
-        ScriptedProvider::from_turns(vec![vec![
+    fn turn(text: &str) -> Vec<StreamEvent> {
+        vec![
             StreamEvent::TextDelta(text.into()),
             StreamEvent::Done {
                 finish_reason: Some("stop".into()),
             },
-        ]])
+        ]
+    }
+
+    fn scripted(text: &str) -> ScriptedProvider {
+        ScriptedProvider::from_turns(vec![turn("YES"), turn(text)])
     }
 
     fn thread_with(messages: &[&str]) -> (tempfile::TempDir, PathBuf) {
@@ -284,6 +310,28 @@ mod tests {
         let (directory, thread) = thread_with(&["nothing durable"]);
         let store = store(directory.path());
         let provider = scripted("NONE");
+        run(
+            &store,
+            &provider,
+            "scripted",
+            &thread,
+            "niuse",
+            DigestOptions {
+                dry_run: false,
+                limit: 20,
+            },
+        )
+        .await
+        .unwrap();
+        assert!(store.recent_journal(10).unwrap().is_empty());
+        assert!(!store.metrics().unwrap().contains("digest"));
+    }
+
+    #[tokio::test]
+    async fn gate_no_skips_the_digest_call() {
+        let (directory, thread) = thread_with(&["routine task"]);
+        let store = store(directory.path());
+        let provider = ScriptedProvider::from_turns(vec![turn("NO")]);
         run(
             &store,
             &provider,

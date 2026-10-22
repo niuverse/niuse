@@ -49,7 +49,13 @@ a memory strategy.
 - RSS disagreement session (`1792683287429-436740-0`): 5 bullets, captures the
   decision, three reasons, and the newly identified network-egress risk.
 
-That is 3/10 real reviews; the path stays opt-in. Activity-only digests are a
+- routine session (`1792683461440-469411-0`): 2 bullets, still activity-only
+  after prompt tightening. The session also contained an unresolved due loop,
+  so the gate correctly said YES; activity-only output remains a known limit.
+- trivial session (`1792683490175-471215-0`): the new pre-check said NO, so no
+  digest call and no journal write.
+
+That is 4/10 real reviews; the path stays opt-in. Activity-only digests are a
 known limitation, not a reason to auto-write.
 
 The source thread is named in the command output and recorded in the `digest`
