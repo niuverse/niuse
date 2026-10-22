@@ -1,12 +1,12 @@
 +++
 id = "M2-001"
 title = "Ten working days of dogfood"
-status = "ready"
+status = "doing"
 milestone = "M2"
 module = "repl"
 size = "M"
 priority = "P0"
-updated = "2026-10-21"
+updated = "2026-10-22"
 depends_on = ["M0-003", "M0-005"]
 docs = ["plan", "dogfood"]
 +++
@@ -27,5 +27,10 @@ docs = ["plan", "dogfood"]
 - [ ] At least 1 A/B case where `NIUSE_MEMORY=off` changes the answer.
 
 ## Notes
+
+2026-10-22: started. A real read-only `niuse exec` on this repository cited
+README.md:106 for `niuse report`; the turn used 2 steps, 11k input, 76 output,
+3.5k cached tokens. The dogfood table has 1/10 days. Ten days and the acceptance
+criteria are still open.
 
 Record one row per day in [the dogfood log](../dogfood.md). This card writes no code. Its job is to stop new features before the current ones are validated.

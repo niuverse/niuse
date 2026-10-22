@@ -45,7 +45,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 
 ## Waiting on you
 
-1. **Dogfood** — ten working days recorded in [dogfood](dogfood.md). `niuse dogfood --file docs/dogfood.md --note "..."` (or `./scripts/dogfood.sh "note"`) writes the day's row from metrics; `niuse report --days 7` (also `/report [days]` in the REPL and TUI) assembles turns, tokens/cache, open goals/promises/plan, and dogfood progress; `niuse doctor` shows the active-day count; `scripts/dogfood-check.sh --complete` checks the table and criteria. Only real use and review can close M2.
+1. **Dogfood** — ten working days recorded in [dogfood](dogfood.md); started 2026-10-22 at 1/10 with a real read-only `exec` turn (README.md:106 citation, 11k in / 76 out / 3.5k cached). `niuse dogfood --file docs/dogfood.md --note "..."` (or `./scripts/dogfood.sh "note"`) writes the day's row from metrics; `niuse report --days 7` (also `/report [days]` in the REPL and TUI) assembles turns, tokens/cache, open goals/promises/plan, and dogfood progress; `niuse doctor` shows the active-day count; `scripts/dogfood-check.sh --complete` checks the table and criteria. Only real use and review can close M2.
 2. **TUI dogfood** — ten real days on `niuse tui` for M5-002; this is also the ADR-0004 gate for retiring the REPL renderer.
 3. **Digest review** — review ten real `niuse digest` runs before treating it as automatic; the card stays in `review` until then.
 
@@ -56,7 +56,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 - **M7 · Long-horizon work — done.** Goals, plan mode, evidence, recorded verification, verification-gated steps, open-plan injection, and delegated-run evidence all landed. The next product phase is M8 connected agent and M9 proof.
 - **M8 · Connected agent** — niucode M8-001 (read-only stdio MCP with explicit trust) is done; niuse mounts it in the TUI, REPL, and `exec`, and ships read-only notes and calendar packs. A mutating capability is proposed in [ADR-0034](https://github.com/niuverse/niucode/blob/main/docs/adr/0034-mutating-mcp.md); it stays off until the human accepts that ADR.
 - **M9 · Proof** — `./scripts/eval.sh` covers memory-on/off A/B, goal and plan injection, the startup brief, agent recall, the notes and calendar MCP packs, MCP timeout/read-only refusal, prompt-size budgets, a stable cache-prefix invariant, a combined two-pack + plan + verification workflow, multi-turn step execution where closed steps leave the next prompt, and the failed-verification recovery path. `scripts/dogfood-trend.sh` compares two weeks of real use and blocks `publish-niuse.sh` on a regression; `scripts/check-links.py` keeps the docs' relative links honest; `scripts/check-board.py` rejects done milestones with open cards, doing cards in planned milestones, and missing blocked reasons; README CLI examples and flags are checked against clap in the test suite.
-- **M2 dogfood** continues in parallel; it is not a blocker for product work, but it still decides whether the memory layer pays for itself.
+- **M2 dogfood** is in progress: 1/10 days, acceptance 100% (1/1), no cited memory ids or disagreement yet. It still decides whether the memory layer pays for itself.
 
 ## Not built
 

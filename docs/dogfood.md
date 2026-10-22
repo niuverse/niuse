@@ -39,7 +39,7 @@ The script runs `niuse stats --days 1 --json`, uses the local calendar date, and
 
 | date | turns | proposed | accepted | note |
 |---|---|---|---|---|
-| 2026-10-22 | 5 | 0 | 0 | identity bug surfaced; fixed in 0.1.1 and verified |
+| 2026-10-22 | 12 | 1 | 1 | identity bug surfaced/fixed in 0.1.1; real exec cited README:106 for niuse report (2 steps, 11k in, 76 out, 3.5k cached) |
 
 ## Rules
 
