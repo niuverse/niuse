@@ -290,9 +290,11 @@ impl TurnHooks for CompanionHooks {
         let name = parts.next()?;
         match name {
             "/brief" => crate::commands::brief_text(&store, &self.cwd).ok(),
-            "/evidence" => crate::evidence::from_thread(&self.thread)
-                .ok()
-                .map(|report| report.render()),
+            "/evidence" => {
+                let mut report = crate::evidence::from_thread(&self.thread).ok()?;
+                report.plan = store.plan().ok()?;
+                Some(report.render())
+            }
             "/steps" => match parts.next() {
                 None | Some("list") => {
                     let report = crate::evidence::from_thread(&self.thread).unwrap_or_default();

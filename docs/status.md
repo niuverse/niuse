@@ -35,7 +35,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 - Recall: `niuse recall <query> [--json]` and `/recall` search memory (including expired), journal, loops, and goals together; the agent can also call the read-only `memory_search` tool during a turn, and the protocol tells it to request `/recall` when no tool is available.
 - Dates: journal, memory, and stats day labels follow the local calendar; event timestamps stay UTC.
 - Journal and loops: model-written blocks plus manual entry and manual promises.
-- Plan: `plan.md` holds human-owned steps with `p-N` labels; open steps are injected after goals and before memory. `niuse plan list|add|done` edits them, and `done` refuses without a passing `verification` event tagged with that step. The TUI exposes `/steps` (list/add/done) and `/verify p-N <command>` over the same gate. `niuse evidence` shows each step's verification status.
+- Plan: `plan.md` holds human-owned steps with `p-N` labels; open steps are injected after goals and before memory. `niuse plan list|add|done` edits them, and `done` refuses without a passing `verification` event tagged with that step. The TUI exposes `/steps` (list/add/done) and `/verify p-N <command>` over the same gate, with a PTY regression for the full flow. `niuse evidence` shows each step's verification status.
 - Goals: `goals.md` holds human-owned outcomes with `g-` ids; `niuse goals list|add|done` and `/goals` edit them, at most seven open, secret-scanned, and injected after user and before memory.
 - Bootstrap: dry-run preview, candidate merge into the inbox, optional `user.md` draft.
 - Sessions: derived thread titles, `threads` and `sessions` listings, Markdown export with a title, JSON output.

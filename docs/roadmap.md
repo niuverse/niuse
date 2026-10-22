@@ -158,6 +158,7 @@ and commit agree.
 | 24 | M7-008 TUI plan/verify | done | The ledger is usable without leaving the TUI |
 | 25 | M9-005 plan execution | done | Closed steps leave the next prompt |
 | 26 | M9-006 verification failure | done | A failed check is visible and blocks done |
+| 27 | M7-009 TUI plan PTY | done | The full TUI gate runs in a real terminal |
 
 ## The round ritual
 

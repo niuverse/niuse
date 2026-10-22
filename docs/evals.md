@@ -26,6 +26,7 @@ agent-dispatch tests. No API key, network, or model call is involved.
 | `brief_surfaces_overdue_promises_and_stale_memory` | The startup brief reports overdue promises, stale memory, and the review queue |
 | `reports_files_checks_failures_and_denials` | Includes a completed delegation's task and summary |
 | `an_unfinished_delegation_is_not_reported_as_success` | A spawn without a result is `?`, not ✓ |
+| `pty_tui_closes_a_step_only_after_tagged_verification` | The full TUI plan/verify flow works in a terminal |
 | `read_only_commands_read_the_store` | TUI `/steps` and tagged `/verify` share the CLI gate |
 | `a_failed_verification_keeps_the_step_open_until_a_pass` | Failure stays visible, blocks done, then a pass closes it |
 | `steps_execute_one_at_a_time_and_vanish_after_verification` | A closed step leaves the next prompt; the remaining step stays |

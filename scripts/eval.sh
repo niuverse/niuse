@@ -51,6 +51,9 @@ cargo test -p niuse --features tui --bin niuse read_only_commands -- --nocapture
 echo "== multi-turn plan execution =="
 cargo test -p niuse --test plan_execution -- --nocapture
 
+echo "== TUI plan/verify PTY =="
+cargo test -p niuse --features tui --test tui_plan -- --nocapture
+
 if [[ -d "$root/../niucode" ]]; then
   echo "== MCP client boundaries =="
   (cd "$root/../niucode" && cargo test -p niucode-mcp --tests -- --nocapture)
