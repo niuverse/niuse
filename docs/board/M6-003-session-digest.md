@@ -75,7 +75,11 @@ RSS → `YES · 助手明确反对...`; trivial → `NO · 用户仅要求回复
   change, YES with reason. Two bullets: the initial failure and the repaired
   pass. Before the change this session was a false NO.
 
-That is 8/10 real reviews; the path stays opt-in. Activity-only digests are a
+- unresolved failure (`1792683839496-548634-0`): YES because the failed
+  `p-1` check created an open decision. One bullet says the check failed and the
+  choice is README vs step, with no invented repair.
+
+That is 9/10 real reviews; the path stays opt-in. Activity-only digests are a
 known limitation, not a reason to auto-write.
 
 The source thread is named in the command output and recorded in the `digest`
