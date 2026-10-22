@@ -22,7 +22,8 @@ The contract is deliberately small: `run_with_history`, `AgentConfig`, `project_
 
 | niuse | niucode | status | updated |
 |---|---|---|---|
-| 0.1.0 | `cd311a8` | current pin; 0.1.0 published and install verified | 2026-10-22 |
+| 0.1.0 | `5d94b0d` | current pin; CJK spacing and TUI prompt hook | 2026-10-22 |
+| 0.1.0 | `cd311a8` | previous pin; 0.1.0 published and install verified | 2026-10-22 |
 | 0.1.0 | `28f867e` | previous pin; release retry and email preflight | 2026-10-22 |
 | 0.1.0 | `452f92a` | previous pin; hook test works without bwrap | 2026-10-22 |
 | 0.1.0 | `3d635cb` | previous pin; exec hooks wired | 2026-10-22 |
