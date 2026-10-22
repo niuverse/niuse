@@ -32,6 +32,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 - Sessions: derived thread titles, `threads` and `sessions` listings, Markdown export with a title, JSON output.
 - Machine output: JSON for memory (list/search/show), journal, threads, sessions, loops, status, doctor, stats, config effective, identity, and user; `stats` totals and trends include token usage.
 - Operations: pinned niucode revision, contract tests, nightly main check, doctor, acceptance metrics.
+- Distribution: the seven niucode crates are published at 0.1.0; `cargo install niucode --version 0.1.0 --locked` was verified from a clean root. niuse itself is not on crates.io yet.
 
 ## Waiting on you
 

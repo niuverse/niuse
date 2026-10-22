@@ -23,7 +23,7 @@ docs = ["distribution"]
 - [x] Workspace still builds and tests with path + version dependencies.
 - [x] niucode crates share 0.1.0 and list the publish order.
 - [x] `niuse-core` is also a versioned dependency of the binary.
-- [ ] Publish `niucode-core` and its dependents to crates.io.
+- [x] Publish `niucode-core` and its dependents to crates.io (all seven at 0.1.0).
 - [ ] Verify `cargo package -p niuse` against the registry afterwards.
 
 `cargo package -p niuse` now gets past manifest validation and stops at the expected `no matching package named niucode-agent` until the registry upload exists.
