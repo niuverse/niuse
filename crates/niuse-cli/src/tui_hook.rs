@@ -40,11 +40,23 @@ pub struct CompanionHooks {
     input_tokens: u64,
     output_tokens: u64,
     cached_tokens: u64,
+    memory_enabled: bool,
 }
 
 impl CompanionHooks {
     pub fn new(store: &Store) -> Result<Self> {
-        let memories = store.memories()?;
+        let enabled = std::env::var("NIUSE_MEMORY")
+            .map(|value| value.trim().to_lowercase() != "off")
+            .unwrap_or(true);
+        Self::with_memory(store, enabled)
+    }
+
+    fn with_memory(store: &Store, memory_enabled: bool) -> Result<Self> {
+        let memories = if memory_enabled {
+            store.memories()?
+        } else {
+            Vec::new()
+        };
         let loops = store.loops()?;
         let journal = store.recent_journal(3)?;
         let identity = store.identity()?;
@@ -67,6 +79,7 @@ impl CompanionHooks {
             input_tokens: 0,
             output_tokens: 0,
             cached_tokens: 0,
+            memory_enabled,
         })
     }
 
@@ -108,6 +121,9 @@ impl TurnHooks for CompanionHooks {
                     }
                 }
                 Block::Memory { kind, tags, text } => {
+                    if !self.memory_enabled {
+                        continue;
+                    }
                     if secret_reason(&text).is_some() {
                         let _ = store.append_metric("blocked", "secret");
                         continue;
@@ -448,6 +464,23 @@ mod tests {
         assert!(cost.contains("2 turns"));
         assert!(cost.contains("123 in"));
         assert!(cost.contains("100 cached"));
+    }
+
+    #[test]
+    fn memory_off_suppresses_candidates_but_keeps_journal() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        let mut hooks = CompanionHooks::with_memory(&store, false).unwrap();
+        let mut text =
+            "<<niuse:memory kind=preference tags=rust>>\nno candidate\n<</niuse:memory>>\n\
+            <<niuse:journal>>\n- still journaled\n<</niuse:journal>>"
+                .to_string();
+        hooks.filter_text(&mut text);
+        let prompts = hooks.after_turn(&outcome());
+        assert!(prompts.is_empty());
+        assert!(store.memories().unwrap().is_empty());
+        assert!(!store.recent_journal(1).unwrap().is_empty());
     }
 
     #[test]
