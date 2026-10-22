@@ -213,7 +213,7 @@ impl TurnHooks for CompanionHooks {
 
     fn command(&mut self, input: &str) -> Option<String> {
         let store = self.store();
-        let mut parts = input.trim().split_whitespace();
+        let mut parts = input.split_whitespace();
         let name = parts.next()?;
         match name {
             "/mem" => match parts.next() {
