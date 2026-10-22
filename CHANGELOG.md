@@ -2,7 +2,7 @@
 
 ## 0.1.4 — 2026-10-22
 
-- Optional `tui` feature: `niuse tui` runs niucode's TUI with `CompanionHooks`; protocol blocks are stripped, journal/loops are automatic, memory uses accept/edit/discard prompts, and conflicts offer replace/keep both.
+- Optional `tui` feature: `niuse tui` runs niucode's TUI with `CompanionHooks`; protocol blocks are stripped, journal/loops are automatic, memory uses accept/edit/discard prompts, conflicts offer replace/keep both, and read-only `/mem`, `/loops`, `/journal`, `/status` are handled through the command hook.
 
 ## 0.1.3 — 2026-10-22
 

@@ -210,6 +210,87 @@ impl TurnHooks for CompanionHooks {
     }
 
     fn on_event(&mut self, _event: &AgentEvent) {}
+
+    fn command(&mut self, input: &str) -> Option<String> {
+        let store = self.store();
+        let mut parts = input.trim().split_whitespace();
+        let name = parts.next()?;
+        match name {
+            "/mem" => match parts.next() {
+                None | Some("list") => {
+                    let memories = store.memories().ok()?;
+                    if memories.is_empty() {
+                        return Some("(no memory)".into());
+                    }
+                    let mut out = String::new();
+                    for entry in memories {
+                        out.push_str(&format!(
+                            "m-{} [{}] {}\n",
+                            entry.id,
+                            entry.kind.as_str(),
+                            entry.text
+                        ));
+                    }
+                    Some(out.trim_end().to_string())
+                }
+                Some("show") => {
+                    let id = parts.next()?;
+                    let memories = store.memories().ok()?;
+                    let entry = memories.iter().find(|entry| entry.id == id)?;
+                    let tag_text = entry.tags.join(",");
+                    Some(format!(
+                        "m-{}\nkind: {}\ntags: {}\ncreated: {}\nconfirmed: {}\n{}",
+                        entry.id,
+                        entry.kind.as_str(),
+                        if tag_text.is_empty() { "-" } else { &tag_text },
+                        entry.created.format(),
+                        entry.confirmed.format(),
+                        entry.text
+                    ))
+                }
+                _ => None,
+            },
+            "/loops" => {
+                let loops = store.loops().ok()?;
+                if loops.is_empty() {
+                    return Some("(no open loops)".into());
+                }
+                let mut out = String::new();
+                for item in loops.iter().filter(|item| !item.done) {
+                    out.push_str(&format!("l-{} {}\n", item.id, item.text));
+                }
+                Some(out.trim_end().to_string())
+            }
+            "/journal" => {
+                let days = store.recent_journal(3).ok()?;
+                if days.is_empty() {
+                    return Some("(journal is empty)".into());
+                }
+                let mut out = String::new();
+                for day in days {
+                    out.push_str(&format!("## {}\n", day.date.format()));
+                    for bullet in day.bullets {
+                        out.push_str(&format!("- {bullet}\n"));
+                    }
+                }
+                Some(out.trim_end().to_string())
+            }
+            "/status" => Some(format!(
+                "identity: {}\nmemory: {}\nopen loops: {}",
+                if store.identity().ok().flatten().is_some() {
+                    "set"
+                } else {
+                    "missing"
+                },
+                store.memories().map(|entries| entries.len()).unwrap_or(0),
+                store
+                    .loops()
+                    .map(|loops| loops.iter().filter(|item| !item.done).count())
+                    .unwrap_or(0)
+            )),
+            _ => None,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -298,6 +379,24 @@ mod tests {
         let (mut hooks, prompt) = conflict_prompt(&store);
         hooks.on_answer(&prompt.id, 1);
         assert_eq!(store.memories().unwrap().len(), 2);
+    }
+
+    #[test]
+    fn read_only_commands_read_the_store() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        seed(&store);
+        let mut hooks = CompanionHooks::new(&store).unwrap();
+
+        let listed = hooks.command("/mem").unwrap();
+        assert!(listed.contains("Rust projects use cargo test"));
+        let id = store.memories().unwrap()[0].id.clone();
+        let shown = hooks.command(&format!("/mem show {id}")).unwrap();
+        assert!(shown.contains("Rust projects use cargo test"));
+        let status = hooks.command("/status").unwrap();
+        assert!(status.contains("memory: 1"));
+        assert!(hooks.command("/nope").is_none());
     }
 
     #[test]
