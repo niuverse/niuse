@@ -61,7 +61,10 @@ a memory strategy.
 The gate now prints a one-line reason with every verdict. Real validation:
 RSS → `YES · 助手明确反对...`; trivial → `NO · 用户仅要求回复数字391...`.
 
-That is 4/10 real reviews; the path stays opt-in. Activity-only digests are a
+- README Q&A (`1792683015455-395814-0`): NO with reason “只是读取文档并复述
+  已有命令，没有新决定或转折”. A correct no-change.
+
+That is 5/10 real reviews; the path stays opt-in. Activity-only digests are a
 known limitation, not a reason to auto-write.
 
 The source thread is named in the command output and recorded in the `digest`
