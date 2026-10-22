@@ -59,7 +59,7 @@ instead of maintaining a parallel front end.
 - Ten real TUI dogfood days are recorded, one real task per day.
 - The renderer is retired only after that gate, per ADR-0004.
 
-**Cards:** M5-001 done; M5-002 is 1/10 TUI days.
+**Cards:** M5-001 done; M5-002 is 2/10 TUI days.
 
 ### M6 · Compounding context (done)
 
@@ -169,7 +169,7 @@ and commit agree.
 | 35 | M9-009 board check | done | Milestone and card states cannot contradict |
 | 36 | M9-010 README contract | done | Docs commands are checked against the binary |
 | 37 | M9-011 README flags | done | Documented flags must exist on the command |
-| 38 | M2-001 first real day | doing | 1/10; exec, MCP, TUI, write, A/B, disagreement |
+| 38 | M2-001 real days | doing | 2/10; exec, MCP, TUI, write, A/B, disagreement |
 | 39 | M6-003 real digest review | done | 10/10 dry-runs reviewed; opt-in stays |
 | 40 | M6-006 digest no-change | done | NONE exits cleanly; malformed still fails |
 | 41 | M6-007 digest gate | done | YES/NO pre-check stops activity summaries |
@@ -180,7 +180,7 @@ and commit agree.
 | 46 | M6-011 failed-check digest | done | Failure then repair is journal-worthy |
 | 47 | M6-012 unresolved failure | done | A failed check is never written as success |
 | 48 | M6-013 restated memory | done | Restating memory is not a new change |
-| 49 | M5-002 TUI gate | doing | 1/10 TUI days; two gates may overlap |
+| 49 | M5-002 TUI gate | doing | 2/10 TUI days; two gates may overlap |
 | 50 | M3-004 publish state | done | Docs match crates.io and the MCP blocker |
 | 51 | niucode M8-003 MCP preflight | ready | Missing crate is packageable; upload awaits human |
 | 52 | M5-004 TUI clear session | done | /new archives and resets thread.jsonl |
@@ -190,6 +190,7 @@ and commit agree.
 | 56 | ADR-0007 active thread | done | /resume is session-scoped; one active line |
 | 57 | M5-008 TUI fork pointer | done | /verify after /fork hits the destination |
 | 58 | M5-009 TUI memory prompt | done | Accept/discard works through a real terminal |
+| 59 | M5-010 TUI turn metrics | done | Real TUI turns reach stats and dogfood |
 
 ## The round ritual
 

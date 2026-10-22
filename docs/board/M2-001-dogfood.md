@@ -43,7 +43,7 @@ answer cited `m-3d0b`; with `NIUSE_MEMORY=off` it replied `NO_INJECTED_MEMORY`
 companion argued against it (network egress, M8 already met with two packs, the
 real blockers were 1/10 dogfood, zero digest reviews, and the unsigned
 ADR-0034). I dropped the pack and accepted the dogfood/digest/ADR order. The
-dogfood table still has 1/10 days and 1 cited id; ten days and two more
+dogfood table now has 2/10 days and 1 cited id; eight more days and two more
 citations remain open.
 
 Record one row per day in [the dogfood log](../dogfood.md). This card writes no code. Its job is to stop new features before the current ones are validated.

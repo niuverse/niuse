@@ -40,6 +40,7 @@ The script runs `niuse stats --days 1 --json`, uses the local calendar date, and
 | date | turns | proposed | accepted | note |
 |---|---|---|---|---|
 | 2026-10-22 | 19 | 1 | 1 | real exec/MCP/TUI/write; A/B cited m-3d0b; disagreement dropped RSS; 10/10 digests, M6 closed; M5 TUI day 1/10 |
+| 2026-10-23 | 1 | 0 | 0 | TUI day 2/10: read DAY_TWO*.md; fixed missing TUI on_turn_end; first recorded turn 27k in, 47 out, 13.4k cached |
 
 ## Rules
 

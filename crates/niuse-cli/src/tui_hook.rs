@@ -110,6 +110,25 @@ impl TurnHooks for CompanionHooks {
         *text = self.filter.push(text);
     }
 
+    fn on_turn_end(&mut self, outcome: &RunOutcome) {
+        let _ = std::fs::write(
+            self.store().root().join("on-turn-debug"),
+            format!("{:?}\n", outcome.usage),
+        );
+        let store = self.store();
+        let usage = &outcome.usage;
+        if usage.input_tokens + usage.output_tokens + usage.cached_tokens > 0 {
+            let _ = store.append_metric(
+                "tokens",
+                &format!(
+                    "{},{},{}",
+                    usage.input_tokens, usage.output_tokens, usage.cached_tokens
+                ),
+            );
+        }
+        let _ = store.append_metric("turn", "ok");
+    }
+
     fn after_turn(&mut self, _outcome: &RunOutcome) -> Vec<TurnPrompt> {
         let raw = std::mem::take(&mut self.raw);
         self.filter = StreamFilter::new();
@@ -672,6 +691,29 @@ mod tests {
         let (mut hooks, prompt) = conflict_prompt(&store);
         hooks.on_answer(&prompt.id, 1);
         assert_eq!(store.memories().unwrap().len(), 2);
+    }
+
+    #[test]
+    fn turn_end_writes_tokens_and_turn_metrics() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        let mut hooks: Box<dyn TurnHooks> = Box::new(CompanionHooks::new(&store).unwrap());
+        hooks.on_turn_end(&RunOutcome {
+            turns: 1,
+            usage: niucode_core::Usage {
+                input_tokens: 13_401,
+                output_tokens: 5,
+                cached_tokens: 13_184,
+                reasoning_tokens: 0,
+            },
+            final_text: "ok".into(),
+        });
+        let metrics = store.metrics().unwrap();
+        assert!(metrics
+            .lines()
+            .any(|line| line.contains("\ttokens\t13401,5,13184")));
+        assert!(metrics.lines().any(|line| line.contains("\tturn\tok")));
     }
 
     #[test]

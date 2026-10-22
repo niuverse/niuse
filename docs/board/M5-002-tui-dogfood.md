@@ -6,7 +6,7 @@ milestone = "M5"
 module = "cli"
 size = "S"
 priority = "P0"
-updated = "2026-10-22"
+updated = "2026-10-23"
 depends_on = ["M5-001"]
 docs = ["dogfood", "adr-0004"]
 +++
@@ -38,8 +38,12 @@ terminal-specific rendering failures.
 ## Notes
 
 2026-10-22: day 1/10. One real TUI turn replied `391` through the provider
-(13k input, 2 output). This is a recorded TUI day, not a synthetic replay. Nine
-distinct working days remain; the same calendar day cannot count twice.
+(13k input, 2 output). This is a recorded TUI day, not a synthetic replay.
+
+2026-10-23: day 2/10. A real TUI task read `DAY_TWO_C.md` and answered with its
+heading (27k input, 47 output, 13.4k cached). The turn initially recorded 0
+metrics; M5-010 added the missing `on_turn_end`. Eight distinct working days
+remain; the same calendar day cannot count twice.
 
 If the gate fails, keep the REPL default and open a focused card for the failure
 instead of extending the gate's definition.
