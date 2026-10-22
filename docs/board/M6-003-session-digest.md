@@ -71,7 +71,11 @@ RSS → `YES · 助手明确反对...`; trivial → `NO · 用户仅要求回复
   line was available but the digest chose not to include it; a weak file check
   is not the decision.
 
-That is 7/10 real reviews; the path stays opt-in. Activity-only digests are a
+- plan check failed then fixed (`1792683789646-539240-0`): after the gate rule
+  change, YES with reason. Two bullets: the initial failure and the repaired
+  pass. Before the change this session was a false NO.
+
+That is 8/10 real reviews; the path stays opt-in. Activity-only digests are a
 known limitation, not a reason to auto-write.
 
 The source thread is named in the command output and recorded in the `digest`

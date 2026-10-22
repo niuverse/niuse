@@ -39,7 +39,7 @@ The script runs `niuse stats --days 1 --json`, uses the local calendar date, and
 
 | date | turns | proposed | accepted | note |
 |---|---|---|---|---|
-| 2026-10-22 | 19 | 1 | 1 | real exec/MCP/TUI/write; A/B cited m-3d0b; disagreement dropped RSS; 7 digests reviewed; real plan+verify: model refused done before verification, then verify passed and digest captured the decision |
+| 2026-10-22 | 19 | 1 | 1 | real exec/MCP/TUI/write; A/B cited m-3d0b; disagreement dropped RSS; 8 digests reviewed; failed→fixed verification: gate YES, digest recorded failure and repair |
 
 ## Rules
 
