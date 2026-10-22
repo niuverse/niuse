@@ -257,6 +257,9 @@ impl TurnHooks for CompanionHooks {
             ("/export".into(), "export the thread as Markdown".into()),
             ("/threads".into(), "list archived thread chapters".into()),
             ("/sessions".into(), "list one-shot session logs".into()),
+            ("/prompt".into(), "print the composed system prompt".into()),
+            ("/identity".into(), "print identity.md".into()),
+            ("/user".into(), "print user.md".into()),
         ]
     }
 
@@ -325,6 +328,21 @@ impl TurnHooks for CompanionHooks {
                 }
                 Some(out.trim_end().to_string())
             }
+            "/prompt" => Some(self.prompt.clone()),
+            "/identity" => Some(
+                store
+                    .identity()
+                    .ok()
+                    .flatten()
+                    .unwrap_or_else(|| "(missing; run `niuse identity init`)".into()),
+            ),
+            "/user" => Some(
+                store
+                    .user()
+                    .ok()
+                    .flatten()
+                    .unwrap_or_else(|| "(missing; run `niuse user edit`)".into()),
+            ),
             "/threads" => {
                 let mut out = String::new();
                 out.push_str(&format!("active: {}\n", store.session_path().display()));
