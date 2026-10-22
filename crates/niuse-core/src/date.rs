@@ -27,6 +27,25 @@ impl Date {
         Self::from_days(days_from_civil(now.year() as i64, now.month(), now.day()))
     }
 
+    /// Local midnight at the start of this calendar day, as epoch milliseconds.
+    /// Used by `stats --days` so a one-day window means the local day, not a
+    /// rolling 24 hours.
+    pub fn start_millis_local(self) -> u64 {
+        let (year, month, day) = civil_from_days(self.days);
+        let Some(date) = chrono::NaiveDate::from_ymd_opt(year as i32, month, day) else {
+            return 0;
+        };
+        let Some(naive) = date.and_hms_opt(0, 0, 0) else {
+            return 0;
+        };
+        Local
+            .from_local_datetime(&naive)
+            .earliest()
+            .or_else(|| Local.from_local_datetime(&naive).latest())
+            .map(|datetime| datetime.timestamp_millis().max(0) as u64)
+            .unwrap_or(0)
+    }
+
     /// Local calendar day for an epoch-millisecond timestamp. Used by metrics
     /// trends so their labels agree with journal and memory dates.
     pub fn from_millis_local(millis: u64) -> Self {
@@ -109,6 +128,12 @@ fn days_from_civil(year: i64, month: u32, day: u32) -> i64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn local_day_start_round_trips() {
+        let today = Date::today();
+        assert_eq!(Date::from_millis_local(today.start_millis_local()), today);
+    }
 
     #[test]
     fn millis_map_to_the_local_calendar_day() {

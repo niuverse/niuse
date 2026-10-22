@@ -14,7 +14,7 @@ docs = ["architecture"]
 
 ## Scope
 
-- `niuse stats --trend` adds a per-day breakdown for the selected window.
+- `niuse stats --trend` adds a per-day breakdown for the selected window; the window is N local calendar days, not a rolling 24-hour clock.
 - Days are local calendar dates; each row shows turns, accepted/proposed, and acceptance.
 - At most the last fourteen active days are printed.
 - `/stats` keeps the summary view; the flag is CLI-only for now.

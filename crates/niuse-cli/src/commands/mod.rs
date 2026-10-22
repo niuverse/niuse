@@ -24,7 +24,6 @@ use niuse_core::prompt::compose;
 use niuse_core::{Date, MemoryKind, Store};
 use std::collections::BTreeMap;
 use std::path::Path;
-use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::Serialize;
 
@@ -174,13 +173,17 @@ impl Summary {
     }
 }
 
+fn window_start(days: u64) -> u64 {
+    if days == 0 {
+        return 0;
+    }
+    let span = i64::try_from(days - 1).unwrap_or(i64::MAX);
+    Date::today().plus_days(-span).start_millis_local()
+}
+
 pub fn stats(store: &Store, days: u64, trend: bool, json: bool) -> Result<()> {
     let metrics = parse_metrics(&store.metrics()?);
-    let since = if days == 0 {
-        0
-    } else {
-        now_ms().saturating_sub(days.saturating_mul(86_400_000))
-    };
+    let since = window_start(days);
     let summary = summarize(&metrics, since);
     let report = StatsReport::from_summary(&summary, days, daily_summary(&metrics, since));
 
@@ -447,13 +450,6 @@ fn summarize(metrics: &[Metric], since_ms: u64) -> Summary {
     summary
 }
 
-fn now_ms() -> u64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|elapsed| elapsed.as_millis() as u64)
-        .unwrap_or(0)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -506,6 +502,16 @@ mod tests {
         let second = days.get(&Date::from_millis_local(86_400_000)).unwrap();
         assert_eq!(second.turns, 1);
         assert_eq!(second.acceptance_percent(), None);
+    }
+
+    #[test]
+    fn stats_window_starts_at_local_midnight() {
+        assert_eq!(window_start(0), 0);
+        assert_eq!(window_start(1), Date::today().start_millis_local());
+        assert_eq!(
+            window_start(2),
+            Date::today().plus_days(-1).start_millis_local()
+        );
     }
 
     #[test]

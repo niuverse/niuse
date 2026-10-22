@@ -156,7 +156,7 @@ enum Command {
     },
     /// Show local acceptance counters
     Stats {
-        /// Window in days; 0 means all time
+        /// Window in local calendar days; 0 means all time
         #[arg(long, default_value_t = 7)]
         days: u64,
         /// Add a per-day breakdown
