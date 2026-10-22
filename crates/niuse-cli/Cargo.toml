@@ -23,7 +23,7 @@ clap_complete.workspace = true
 futures-util.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-niuse-core = { path = "../niuse-core", version = "0.1.8" }
+niuse-core = { path = "../niuse-core", version = "0.1.9" }
 niucode-agent.workspace = true
 niucode-auth.workspace = true
 niucode-core.workspace = true
