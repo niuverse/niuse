@@ -21,6 +21,7 @@ cargo xtask dashboard --check   # fail when the generated board is stale
 ./scripts/check-niucode-drift.sh
 cargo +1.88.0 check --workspace --all-targets   # MSRV; weekly workflow
 ./scripts/dogfood.sh "note"     # record one real dogfood day
+cargo test -p niuse --features tui   # opt-in TUI path
 ```
 
 `cargo xtask` is a workspace alias defined in `.cargo/config.toml`.
@@ -44,6 +45,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV; weekly workflow
   name. A chmod is only for pre-existing loose files. Directories are `0700`.
 - **Docs and README stay in English.** Runtime strings and the persona prompt
   may be Chinese; that is product behaviour, not documentation.
+- **TUI is opt-in.** `niuse tui` lives behind the `tui` feature; the default binary does not link niucode's TUI. `render.rs` stays until ADR-0004's ten real TUI dogfood days and parity gate.
 - **Commit and push after a verified increment.** Do not leave a green change
   uncommitted; do not push a red one.
 
@@ -51,7 +53,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV; weekly workflow
 
 ```text
 crates/niuse-core/   domain: dates, five stores, prompt, protocol, policy
-crates/niuse-cli/    REPL, subcommands, driver, bootstrap, export
+crates/niuse-cli/    REPL, subcommands, driver, bootstrap, export, tui_hook
 crates/xtask/        offline dashboard generator
 docs/                plan, architecture, ADRs, board cards, generated board
 scripts/             check, niucode sync, drift check
@@ -74,6 +76,9 @@ list them; `/threads`, `/sessions`, and `/resume <n>` do it inside the REPL.
   per-turn cwd, and approval denial.
 - Prefer a new focused test over a broad fixture. Edge cases in protocol
   parsing and secret scanning deserve a test each.
+- The `tui` feature has its own tests; `scripts/check.sh` and the MSRV job
+  both cover it. Keep `filter_text`/`after_turn`/`on_answer` parity with the
+  REPL in mind when changing the TUI adapter.
 - Session logs must stay forward-compatible: unknown event types warn while
   readable lines survive; unknown fields on known events are ignored. niucode
   pins both behaviors; niuse relies on them for the pinned revision.
