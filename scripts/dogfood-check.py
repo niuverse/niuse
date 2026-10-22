@@ -74,7 +74,10 @@ def main():
     proposed = sum(row["proposed"] for row in rows)
     accepted = sum(row["accepted"] for row in rows)
     acceptance = (100 * accepted // proposed) if proposed else None
-    cited = sum(1 for row in rows if MEMORY.search(row["note"]))
+    cited_ids = sorted(
+        {match.group(0).lower() for row in rows for match in MEMORY.finditer(row["note"])}
+    )
+    cited = len(cited_ids)
     disagreements = sum(
         1 for row in rows if "disagree" in row["note"].lower()
     )
@@ -98,6 +101,7 @@ def main():
         "accepted": accepted,
         "acceptance_percent": acceptance,
         "cited_memory_ids": cited,
+        "cited_ids": cited_ids,
         "disagreements": disagreements,
         "complete": not problems,
         "problems": problems,

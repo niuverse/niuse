@@ -26,15 +26,30 @@ fi
 
 {
     echo "$header"
-    for day in 01 02 03 04 05 06 07 08 09 10; do
-        note='cited m-abcd'
-        [[ "$day" == 02 ]] && note='cited m-abcd; disagreed about caching'
+    ids=(m-abcd m-abce m-abcf m-abcd m-abce m-abcf m-abcd m-abce m-abcf m-abcd)
+    for index in 0 1 2 3 4 5 6 7 8 9; do
+        day=$(printf '%02d' $((index + 1)))
+        note="cited ${ids[$index]}"
+        [[ "$day" == 02 ]] && note="${note}; disagreed about caching"
         echo "| 2026-10-${day} | 5 | 5 | 3 | $note |"
     done
 } > "$tmp/complete.md"
 "$root/scripts/dogfood-check.sh" --file "$tmp/complete.md" --today 2026-10-22 --complete >/dev/null
 out="$("$root/scripts/dogfood-check.sh" --file "$tmp/complete.md" --today 2026-10-22)"
 [[ "$out" == *"status:       complete"* ]] || { echo "$out" >&2; exit 1; }
+
+{
+    echo "$header"
+    for day in 01 02 03 04 05 06 07 08 09 10; do
+        note='cited m-abcd'
+        [[ "$day" == 02 ]] && note='cited m-abcd; disagreed about caching'
+        echo "| 2026-10-${day} | 5 | 5 | 3 | $note |"
+    done
+} > "$tmp/repeated.md"
+if "$root/scripts/dogfood-check.sh" --file "$tmp/repeated.md" --today 2026-10-22 --complete >/dev/null 2>&1; then
+    echo "repeated citation id passed --complete" >&2
+    exit 1
+fi
 
 write "$tmp/duplicate.md" \
     '| 2026-10-21 | 1 | 0 | 0 | - |' \

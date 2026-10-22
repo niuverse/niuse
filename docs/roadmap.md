@@ -169,7 +169,7 @@ and commit agree.
 | 35 | M9-009 board check | done | Milestone and card states cannot contradict |
 | 36 | M9-010 README contract | done | Docs commands are checked against the binary |
 | 37 | M9-011 README flags | done | Documented flags must exist on the command |
-| 38 | M2-001 real days | doing | 2/10; exec, MCP, TUI, write, A/B, disagreement |
+| 38 | M2-001 real days | doing | 2/10; 3 cited ids, A/B, disagreement |
 | 39 | M6-003 real digest review | done | 10/10 dry-runs reviewed; opt-in stays |
 | 40 | M6-006 digest no-change | done | NONE exits cleanly; malformed still fails |
 | 41 | M6-007 digest gate | done | YES/NO pre-check stops activity summaries |
@@ -191,6 +191,7 @@ and commit agree.
 | 57 | M5-008 TUI fork pointer | done | /verify after /fork hits the destination |
 | 58 | M5-009 TUI memory prompt | done | Accept/discard works through a real terminal |
 | 59 | M5-010 TUI turn metrics | done | Real TUI turns reach stats and dogfood |
+| 60 | M2-002 distinct citations | done | Three different ids, not three rows |
 
 ## The round ritual
 
