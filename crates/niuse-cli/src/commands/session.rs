@@ -243,7 +243,7 @@ pub fn export(store: &Store, out: Option<&Path>, session: Option<&Path>) -> Resu
     Ok(())
 }
 
-fn write_export(path: &Path, text: &str) -> Result<()> {
+pub(crate) fn write_export(path: &Path, text: &str) -> Result<()> {
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent)
             .with_context(|| format!("create directory {}", parent.display()))?;

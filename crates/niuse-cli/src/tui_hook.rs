@@ -7,6 +7,7 @@ use std::path::PathBuf;
 
 use anyhow::Result;
 use niucode::{AgentEvent, RunOutcome, TurnHooks, TurnPrompt};
+use niucode_core::Event;
 use niuse_core::candidate::{parse, Block, StreamFilter};
 use niuse_core::date::Date;
 use niuse_core::model::{LoopItem, MemoryEntry, MemoryKind};
@@ -253,6 +254,9 @@ impl TurnHooks for CompanionHooks {
             ("/journal".into(), "show the last three journal days".into()),
             ("/status".into(), "identity, memory, and loop counts".into()),
             ("/cost".into(), "session token usage".into()),
+            ("/export".into(), "export the thread as Markdown".into()),
+            ("/threads".into(), "list archived thread chapters".into()),
+            ("/sessions".into(), "list one-shot session logs".into()),
         ]
     }
 
@@ -320,6 +324,64 @@ impl TurnHooks for CompanionHooks {
                     }
                 }
                 Some(out.trim_end().to_string())
+            }
+            "/threads" => {
+                let mut out = String::new();
+                out.push_str(&format!("active: {}\n", store.session_path().display()));
+                if let Ok(entries) = std::fs::read_dir(store.threads_dir()) {
+                    let mut names: Vec<String> = entries
+                        .flatten()
+                        .filter_map(|entry| entry.file_name().into_string().ok())
+                        .collect();
+                    names.sort();
+                    for name in names {
+                        out.push_str(&format!("archived: {name}\n"));
+                    }
+                }
+                Some(out.trim_end().to_string())
+            }
+            "/sessions" => {
+                let mut names: Vec<String> = std::fs::read_dir(store.root().join("sessions"))
+                    .ok()
+                    .into_iter()
+                    .flatten()
+                    .flatten()
+                    .filter_map(|entry| entry.file_name().into_string().ok())
+                    .collect();
+                names.sort();
+                if names.is_empty() {
+                    Some("(no sessions)".into())
+                } else {
+                    Some(names.join("\n"))
+                }
+            }
+            "/export" => {
+                let path = match parts.next() {
+                    Some(path) => {
+                        let path = PathBuf::from(path);
+                        if path.is_absolute() {
+                            path
+                        } else {
+                            std::env::current_dir().ok()?.join(path)
+                        }
+                    }
+                    None => std::env::current_dir().ok()?.join("export-thread.md"),
+                };
+                let loaded = niucode_core::load(&self.root.join("thread.jsonl")).ok()?;
+                let title = loaded
+                    .events
+                    .iter()
+                    .find_map(|event| match event {
+                        Event::UserMessage { text, .. } => {
+                            Some(text.chars().take(60).collect::<String>().trim().to_string())
+                        }
+                        _ => None,
+                    })
+                    .filter(|text| !text.is_empty())
+                    .unwrap_or_else(|| "niuse thread".to_string());
+                let markdown = crate::export::render(&loaded.events, &title);
+                crate::commands::write_export(&path, &markdown).ok()?;
+                Some(format!("exported {}", path.display()))
             }
             "/cost" => Some(format!(
                 "session: {} turns · {} in · {} out · {} cached",
@@ -481,6 +543,48 @@ mod tests {
         assert!(prompts.is_empty());
         assert!(store.memories().unwrap().is_empty());
         assert!(!store.recent_journal(1).unwrap().is_empty());
+    }
+
+    #[test]
+    fn export_writes_the_thread() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        let log = niucode_core::SessionLog::create(store.root()).unwrap();
+        log.append(&Event::UserMessage {
+            text: "exported prompt".into(),
+            ts: 1,
+        })
+        .unwrap();
+        let source = log.path().to_path_buf();
+        drop(log);
+        std::fs::rename(source, store.session_path()).unwrap();
+
+        let mut hooks = CompanionHooks::new(&store).unwrap();
+        let target = directory.path().join("out.md");
+        let message = hooks
+            .command(&format!("/export {}", target.display()))
+            .unwrap();
+        assert!(message.contains("exported"));
+        let markdown = std::fs::read_to_string(&target).unwrap();
+        assert!(markdown.contains("exported prompt"));
+    }
+
+    #[test]
+    fn lists_threads_and_sessions() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        std::fs::create_dir_all(store.threads_dir()).unwrap();
+        std::fs::write(store.threads_dir().join("thread-1.jsonl"), "{}\n").unwrap();
+        std::fs::create_dir_all(store.root().join("sessions")).unwrap();
+        std::fs::write(store.root().join("sessions").join("s-1.jsonl"), "{}\n").unwrap();
+        let mut hooks = CompanionHooks::new(&store).unwrap();
+        assert!(hooks
+            .command("/threads")
+            .unwrap()
+            .contains("thread-1.jsonl"));
+        assert!(hooks.command("/sessions").unwrap().contains("s-1.jsonl"));
     }
 
     #[test]
