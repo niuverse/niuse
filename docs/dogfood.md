@@ -39,7 +39,7 @@ The script runs `niuse stats --days 1 --json`, uses the local calendar date, and
 
 | date | turns | proposed | accepted | note |
 |---|---|---|---|---|
-| 2026-10-22 | 16 | 1 | 1 | real exec/MCP/TUI/write all verified; real memory A/B: ON cited m-3d0b, OFF replied NO_INJECTED_MEMORY (1 step each, 3.5k/3.4k in) |
+| 2026-10-22 | 17 | 1 | 1 | real exec/MCP/TUI/write; memory A/B ON cited m-3d0b, OFF NO_INJECTED_MEMORY; disagreement: proposed a third RSS pack, the companion argued against (network egress, M8 already met, dogfood/digest/ADR blockers), I dropped it |
 
 ## Rules
 
