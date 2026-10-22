@@ -28,7 +28,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 - Brief: `niuse brief [--json]`, `/brief` in the REPL and TUI, and a compact actionable block after the banner; no provider call and `NIUSE_BRIEF=off` restores the quiet start.
 - Projects: `niuse projects [--limit N] [--all] [--json]` reads niucode's recorded workspaces, sorts by recent activity, hides missing and temporary test checkouts by default, and shows the current project in `status`.
 - Digest: `niuse digest [--thread PATH] [--dry-run] [--limit N]` compresses recent user/assistant prose into at most five journal bullets with one tool-free model call; tool output never enters the prompt, secrets refuse the whole write, and the path stays opt-in until ten real digests are reviewed.
-- `niuse tui` (optional feature): niucode's TUI with `CompanionHooks`; protocol stripping, journal/loops, memory accept/edit/replace/keep, read-only commands, `/brief`, `/export`, approval path.
+- `niuse tui` (optional feature): niucode's TUI with `CompanionHooks`; protocol stripping, journal/loops, memory accept/edit/replace/keep, read-only commands, `/brief`, `/export`, `y`/`n`/`s` approval keys, and `/cost` read from the thread event log.
 - Memory: search including expired entries, kind filter, kind counts, show/edit, review with metrics, prune with backup and freed-byte report, duplicate guard, secret scan, soft expiry.
 - Dates: journal, memory, and stats day labels follow the local calendar; event timestamps stay UTC.
 - Journal and loops: model-written blocks plus manual entry and manual promises.
@@ -46,7 +46,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 
 ## In progress
 
-- **M5 · Harness-native companion** — M5-001 is in progress: niucode `2d12360` adds configurable approval keys and niuse now uses `y`/`n`/`s`, so `d` no longer denies. The PTY approval test and usage-line comparison remain before the dogfood gate (M5-002).
+- **M5 · Harness-native companion** — M5-001 is done: configurable `y`/`n`/`s` approval keys, an offline PTY deny/allow test, product commands in TUI help/completion, and `/cost` computed from the thread event log. M5-002 starts the ten-day TUI dogfood gate.
 - **M6 · Compounding context** — startup brief (M6-001), project registry (M6-002), and session digest (M6-003, in review) landed; on-demand recall follows in [roadmap](roadmap.md).
 - **M2 dogfood** continues in parallel; it is not a blocker for product work, but it still decides whether the memory layer pays for itself.
 

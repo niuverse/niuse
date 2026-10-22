@@ -1058,14 +1058,14 @@ pub async fn run_exec(app: App, prompt: String) -> Result<()> {
 }
 
 #[derive(Debug, Default, PartialEq, Eq)]
-struct UsageTotals {
-    turns: usize,
-    input: u64,
-    output: u64,
-    cached: u64,
+pub(crate) struct UsageTotals {
+    pub(crate) turns: usize,
+    pub(crate) input: u64,
+    pub(crate) output: u64,
+    pub(crate) cached: u64,
 }
 
-fn usage_totals(events: &[Event]) -> UsageTotals {
+pub(crate) fn usage_totals(events: &[Event]) -> UsageTotals {
     let mut totals = UsageTotals::default();
     for event in events {
         match event {

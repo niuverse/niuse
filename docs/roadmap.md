@@ -128,7 +128,7 @@ and commit agree.
 |---|---|---|---|
 | 1 | M6-001 startup brief | done | Makes existing context actionable without new architecture |
 | 2 | M6-002 project registry | done | Answers "where was I?" before planning work |
-| 3 | M5-001 TUI parity | doing | Key contract resolved upstream; PTY test remains |
+| 3 | M5-001 TUI parity | done | PTY deny/allow and event-log `/cost` verified |
 | 4 | M5-002 TUI dogfood | ready | Product proof for the new default |
 | 5 | M6-003 session digest | review | Turns finished work into reusable experience |
 | 6 | M6-004 memory recall | backlog | Deep recall beyond the prompt budget |

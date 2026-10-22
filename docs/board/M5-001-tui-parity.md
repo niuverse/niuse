@@ -1,12 +1,13 @@
 +++
 id = "M5-001"
 title = "TUI approval and usage parity"
-status = "doing"
+status = "done"
 milestone = "M5"
 module = "cli"
 size = "M"
 priority = "P0"
 updated = "2026-10-22"
+completed = "2026-10-22"
 depends_on = ["M4-003"]
 docs = ["renderer-migration", "adr-0004", "dogfood"]
 +++
@@ -33,20 +34,26 @@ cannot be retired and the TUI cannot become the default.
 
 ## Acceptance
 
-- [ ] A PTY test denies an approval with the configured `y`/`n` keys and
+- [x] A PTY test denies an approval with the configured `y`/`n` keys and
       asserts the write is blocked and the preview was visible.
-- [ ] `/cost` and the post-turn usage line agree with the event log.
-- [ ] Every listed product command appears in TUI help/completion and returns
+- [x] `/cost` and the post-turn usage line agree with the event log.
+- [x] Every listed product command appears in TUI help/completion and returns
       the same data as its REPL counterpart.
-- [ ] `./scripts/check.sh` is green, including the `tui` feature.
+- [x] `./scripts/check.sh` is green, including the `tui` feature.
 
 ## Notes
 
 The key conflict is resolved upstream: niucode `2d12360` adds
 `TuiOptions.approval_keys`, and niuse sets `y`/`n`/`s`. `d` no longer denies on
 the niuse path; the pager's full diff is always available with scrolling, so
-the 80-line cap is a REPL property, not a TUI requirement. The remaining work is
-the PTY test and the usage-line comparison.
+the 80-line cap is a REPL property, not a TUI requirement.
+
+`tests/tui_approval.py` is the offline PTY proof: it sees the configured footer,
+checks that `d` is ignored, denies with `n` and confirms no file, then allows
+with `y` and confirms the write. `/cost` now reads the thread event log, the same
+source as the REPL, instead of accumulating a second total in the hook.
+
+The renderer stays until M5-002 records ten real TUI days (ADR-0004).
 
 If the gap is a niucode API issue, upstream it and bump the pin through
 `scripts/sync-niucode.sh`; do not fork the TUI.

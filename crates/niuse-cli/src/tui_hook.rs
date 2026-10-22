@@ -7,7 +7,7 @@ use std::path::PathBuf;
 
 use anyhow::Result;
 use niucode::{AgentEvent, RunOutcome, TurnHooks, TurnPrompt};
-use niucode_core::Event;
+use niucode_core::{load, Event};
 use niuse_core::candidate::{parse, Block, StreamFilter};
 use niuse_core::date::Date;
 use niuse_core::model::{LoopItem, MemoryEntry, MemoryKind};
@@ -39,10 +39,6 @@ pub struct CompanionHooks {
     filter: StreamFilter,
     raw: String,
     pending: Vec<Option<PendingMemory>>,
-    turns: usize,
-    input_tokens: u64,
-    output_tokens: u64,
-    cached_tokens: u64,
     memory_enabled: bool,
 }
 
@@ -85,10 +81,6 @@ impl CompanionHooks {
             filter: StreamFilter::new(),
             raw: String::new(),
             pending: Vec::new(),
-            turns: 0,
-            input_tokens: 0,
-            output_tokens: 0,
-            cached_tokens: 0,
             memory_enabled,
         })
     }
@@ -254,13 +246,6 @@ impl TurnHooks for CompanionHooks {
 
     fn on_event(&mut self, _event: &AgentEvent) {}
 
-    fn on_turn_end(&mut self, outcome: &RunOutcome) {
-        self.turns += outcome.turns;
-        self.input_tokens += outcome.usage.input_tokens;
-        self.output_tokens += outcome.usage.output_tokens;
-        self.cached_tokens += outcome.usage.cached_tokens;
-    }
-
     fn commands(&self) -> Vec<(String, String)> {
         vec![
             ("/brief".into(), "what needs attention today".into()),
@@ -417,10 +402,23 @@ impl TurnHooks for CompanionHooks {
                 crate::commands::write_export(&path, &markdown).ok()?;
                 Some(format!("exported {}", path.display()))
             }
-            "/cost" => Some(format!(
-                "session: {} turns · {} in · {} out · {} cached",
-                self.turns, self.input_tokens, self.output_tokens, self.cached_tokens
-            )),
+            "/cost" => {
+                let totals = crate::repl::usage_totals(&load(&self.thread).ok()?.events);
+                let mut line = format!(
+                    "session: {} turn{} · {} in · {} out",
+                    totals.turns,
+                    if totals.turns == 1 { "" } else { "s" },
+                    crate::render::compact_tokens(totals.input),
+                    crate::render::compact_tokens(totals.output)
+                );
+                if totals.cached > 0 {
+                    line.push_str(&format!(
+                        " · {} cached",
+                        crate::render::compact_tokens(totals.cached)
+                    ));
+                }
+                Some(line)
+            }
             "/status" => Some(format!(
                 "identity: {}\nmemory: {}\nopen loops: {}",
                 if store.identity().ok().flatten().is_some() {
@@ -548,21 +546,49 @@ mod tests {
         assert!(status.contains("memory: 1"));
         let brief = hooks.command("/brief").unwrap();
         assert!(brief.contains("niuse brief"));
+        assert_eq!(hooks.command("/loops").unwrap(), "(no open loops)");
+        assert_eq!(hooks.command("/journal").unwrap(), "(journal is empty)");
+        assert!(!hooks.command("/prompt").unwrap().is_empty());
+        assert!(hooks.command("/identity").unwrap().contains("missing"));
+        assert!(hooks.command("/user").unwrap().contains("missing"));
+        assert!(hooks.command("/threads").unwrap().contains("active:"));
+        assert_eq!(hooks.command("/sessions").unwrap(), "(no sessions)");
         assert!(hooks.command("/nope").is_none());
         let commands = hooks.commands();
-        assert!(commands.iter().any(|(name, _)| name == "/mem"));
-        assert!(commands.iter().any(|(name, _)| name == "/brief"));
+        for name in [
+            "/mem",
+            "/loops",
+            "/journal",
+            "/status",
+            "/cost",
+            "/export",
+            "/threads",
+            "/sessions",
+            "/prompt",
+            "/identity",
+            "/user",
+            "/brief",
+        ] {
+            assert!(
+                commands.iter().any(|(listed, _)| listed == name),
+                "{name} missing from TUI commands"
+            );
+        }
 
-        let mut usage = outcome();
-        usage.turns = 2;
-        usage.usage.input_tokens = 123;
-        usage.usage.output_tokens = 45;
-        usage.usage.cached_tokens = 100;
-        hooks.on_turn_end(&usage);
+        std::fs::write(
+            store.session_path(),
+            concat!(
+                "{\"type\":\"user_message\",\"text\":\"one\",\"ts\":1}\n",
+                "{\"type\":\"turn_end\",\"usage\":{\"input_tokens\":100,\"output_tokens\":10,\"cached_tokens\":40},\"ts\":2}\n",
+                "{\"type\":\"user_message\",\"text\":\"two\",\"ts\":3}\n",
+                "{\"type\":\"turn_end\",\"usage\":{\"input_tokens\":50,\"output_tokens\":5},\"ts\":4}\n",
+            ),
+        )
+        .unwrap();
         let cost = hooks.command("/cost").unwrap();
         assert!(cost.contains("2 turns"));
-        assert!(cost.contains("123 in"));
-        assert!(cost.contains("100 cached"));
+        assert!(cost.contains("150 in"));
+        assert!(cost.contains("40 cached"));
     }
 
     #[test]
