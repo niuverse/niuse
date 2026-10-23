@@ -205,6 +205,7 @@ and commit agree.
 | 69 | niucode M9-004 fences | done | Fences become a language label |
 | 70 | niucode M9-005 display math | done | $$ blocks lose fences and use Unicode |
 | 71 | niucode M9-006 motion | done | Streaming caret and per-tool elapsed |
+| 72 | niucode M9-007 web viewer | done | Loopback read-only session viewer |
 
 ## The round ritual
 
