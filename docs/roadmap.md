@@ -283,6 +283,7 @@ and commit agree.
 | 147 | M10-009 active thread | done | Active thread label in sidebar |
 | 148 | niucode M9-078 stream throttle | done | HTML render capped at 100ms/64B |
 | 149 | niucode M9-079 publish dry run | done | 8 crates package+verify, no upload |
+| 150 | M10-010 niuse dry run | done | Both niuse crates package+verify |
 
 ## The round ritual
 
