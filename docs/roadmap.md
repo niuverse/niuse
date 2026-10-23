@@ -229,6 +229,7 @@ and commit agree.
 | 93 | niucode M9-028 triple strings | done | Docstrings span lines |
 | 94 | niucode M9-029 sidebar filter | done | Collapsible/filterable context |
 | 95 | M10-004 live web context | done | Context re-read per request |
+| 96 | niucode M9-031 web composer | done | Enter sends, Shift+Enter newline |
 
 ## The round ritual
 
