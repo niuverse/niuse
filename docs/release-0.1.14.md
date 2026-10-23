@@ -51,7 +51,8 @@ grants.
 ./scripts/release-preflight.sh
 ```
 
-`--check` reports version/license/token/order. Preflight is expected to fail
+The kernel CI runs a real Xvfb observe → image → approved click → ButtonPress
+turn. `--check` reports version/license/token/order. Preflight is expected to fail
 until `niucode 0.1.8` is published, because its package step resolves the new
 crates from the registry.
 

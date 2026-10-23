@@ -321,6 +321,7 @@ and commit agree.
 | 185 | M10-021 web computer | done | Policy chip + status + vision warning |
 | 186 | niucode M9-104 attachment memory | done | Store reopen + resumed image part |
 | 187 | release 0.1.14 | done | Version/pin/preflight prepared; publish awaiting approval |
+| 188 | niucode M9-105 computer e2e | done | Xvfb observe→click→approval turn |
 
 ## The round ritual
 
