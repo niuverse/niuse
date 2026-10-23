@@ -3,7 +3,7 @@ resolver = "2"
 members = ["crates/niuse-core", "crates/niuse-cli", "crates/xtask"]
 
 [workspace.package]
-version = "0.1.13"
+version = "0.1.14"
 edition = "2021"
 rust-version = "1.88"
 repository = "https://github.com/niuverse/niuse"
@@ -27,14 +27,14 @@ walkdir = "2.5"
 
 # Local sibling checkout. A published build should pin a git revision instead;
 # see docs/plan.md §8.
-niucode-agent = { path = "../niucode/crates/niucode-agent", version = "0.1.7" }
-niucode-attachments = { path = "../niucode/crates/niucode-attachments", version = "0.1.7" }
-niucode-computer = { path = "../niucode/crates/niucode-computer", version = "0.1.7" }
-niucode-computer-x11 = { path = "../niucode/crates/niucode-computer-x11", version = "0.1.7" }
-niucode-computer-macos = { path = "../niucode/crates/niucode-computer-macos", version = "0.1.7" }
-niucode = { path = "../niucode/crates/niucode-cli", version = "0.1.7" }
-niucode-auth = { path = "../niucode/crates/niucode-auth", version = "0.1.7" }
-niucode-core = { path = "../niucode/crates/niucode-core", version = "0.1.7" }
-niucode-mcp = { path = "../niucode/crates/niucode-mcp", version = "0.1.7" }
-niucode-provider = { path = "../niucode/crates/niucode-provider", version = "0.1.7" }
-niucode-tools = { path = "../niucode/crates/niucode-tools", version = "0.1.7" }
+niucode-agent = { path = "../niucode/crates/niucode-agent", version = "0.1.8" }
+niucode-attachments = { path = "../niucode/crates/niucode-attachments", version = "0.1.8" }
+niucode-computer = { path = "../niucode/crates/niucode-computer", version = "0.1.8" }
+niucode-computer-x11 = { path = "../niucode/crates/niucode-computer-x11", version = "0.1.8" }
+niucode-computer-macos = { path = "../niucode/crates/niucode-computer-macos", version = "0.1.8" }
+niucode = { path = "../niucode/crates/niucode-cli", version = "0.1.8" }
+niucode-auth = { path = "../niucode/crates/niucode-auth", version = "0.1.8" }
+niucode-core = { path = "../niucode/crates/niucode-core", version = "0.1.8" }
+niucode-mcp = { path = "../niucode/crates/niucode-mcp", version = "0.1.8" }
+niucode-provider = { path = "../niucode/crates/niucode-provider", version = "0.1.8" }
+niucode-tools = { path = "../niucode/crates/niucode-tools", version = "0.1.8" }
