@@ -296,6 +296,7 @@ and commit agree.
 | 160 | M10-014 repo hygiene | done | Clean, formatted, pin matches |
 | 161 | M10-015 release candidate | done | Targets, order, gates, stop line |
 | 162 | M10-016 final validation | done | Clean-tree pass at beabb96/440b03e |
+| 163 | M3-008 publish 0.1.13 | done | niucode 0.1.7 + niuse 0.1.13 live |
 
 ## The round ritual
 

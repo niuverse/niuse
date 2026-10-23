@@ -2,16 +2,16 @@
 id = "release-013"
 title = "Release 0.1.13 (draft)"
 kind = "doc"
-status = "draft"
+status = "living"
 order = 32
 summary = "Draft notes for niuse 0.1.13: opt-in web companion, shared TUI rendering, and verification evidence."
 +++
 
 ## Status
 
-Release candidate. The workspace is now 0.1.13 and depends on `niucode 0.1.7`,
-which has been published. Publication of niuse is the remaining step in this
-release run.
+Published 2026-10-23. `niuse-core 0.1.13` and `niuse 0.1.13` are on crates.io,
+requiring the published `niucode 0.1.7`. See
+[published evidence](evidence/published-0.1.13.md).
 
 ## Why 0.1.13
 

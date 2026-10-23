@@ -2,10 +2,14 @@
 id = "release-candidate"
 title = "Release candidate · 0.1.13"
 kind = "doc"
-status = "draft"
+status = "living"
 order = 29
 summary = "Release-candidate stop line: technical scope and preview/security work are green; publication and the dogfood calendar are human gates."
 +++
+
+## Status
+
+Published 2026-10-23. This page is retained as the release-candidate record.
 
 ## Artifacts
 

@@ -41,7 +41,7 @@ cargo +1.88.0 check --workspace --all-targets   # MSRV, also run weekly
 - Sessions: derived thread titles, `threads` and `sessions` listings, Markdown export with a title, JSON output.
 - Machine output: JSON for memory (list/search/show), journal, threads, sessions, loops, status, doctor, stats, config effective, identity, and user; `stats` totals and trends include token usage, cache-hit percent, and tokens per turn.
 - Operations: pinned niucode revision, contract tests, nightly main check, doctor, acceptance metrics.
-- Distribution: `niuse`/`niuse-core` **0.1.12** and the eight `niucode-*` crates **0.1.6** are published. `cargo package -p niuse` passes against the registry; a clean-root `cargo install niuse --version 0.1.12 --locked` reports `niuse 0.1.12`. M3 is done; the [0.1.12 release page](release-0.1.12.md) records the preflight and the retry.
+- Distribution: `niuse`/`niuse-core` **0.1.13** and the eight `niucode-*` crates **0.1.7** are published. Clean installs report `niucode 0.1.7` and `niuse 0.1.13`; the [0.1.13 release page](release-0.1.13.md) records publication, and [published evidence](evidence/published-0.1.13.md) records installs.
 
 ## Stage
 
