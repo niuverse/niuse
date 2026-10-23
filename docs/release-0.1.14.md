@@ -28,10 +28,11 @@ vision capability probe, and web computer status).
 - **Vision warning**: text-only models warn before a screenshot is requested.
 - **Web**: policy chip, `/api/status` computer state, and token-gated
   arm/stop; browser approvals remain the input gate.
-- **Privacy**: typed computer text is persisted only as length + SHA-256 by
-  default, with an explicit debug `--computer-log-input`; screenshots stay
-  ephemeral unless `--computer-keep-frames` is explicit; approvals show
-  coordinates/keys/typed length, never typed text.
+- **Privacy**: sensitive-window observation asks before returning an image;
+  typed computer text is persisted only as length + SHA-256 by default, with
+  an explicit debug `--computer-log-input`; screenshots stay ephemeral unless
+  `--computer-keep-frames` is explicit; approvals show coordinates/keys/typed
+  length, never typed text.
 - **Doctor**: `niuse doctor` reports X11 readiness/XTEST or macOS TCC and
   points at the kernel `niucode computer doctor`.
 - **Binding**: input rechecks window id/app/class/kind + geometry, not just

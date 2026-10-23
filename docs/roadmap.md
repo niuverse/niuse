@@ -332,6 +332,7 @@ and commit agree.
 | 196 | M10-026 doctor computer | done | niuse doctor computer check |
 | 197 | niucode M9-113 acceptance guide | done | Manual Linux/macOS evidence template |
 | 198 | niucode M9-114 window identity | done | id/app/class/kind recheck |
+| 199 | niucode M9-115 sensitive observe | done | Approval before sensitive screenshot |
 
 ## The round ritual
 
