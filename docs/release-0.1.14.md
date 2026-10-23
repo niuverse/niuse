@@ -41,6 +41,7 @@ vision capability probe, and web computer status).
   id, before dispatch; typed text/key/scroll have hard per-action caps.
 - **Red lines**: Super, Alt+Tab/Escape/F4, Ctrl+Alt+Delete/Backspace/F1-F12
   require approval in autonomous mode.
+- **TUI badge**: policy + armed/paused is visible in the footer; stop updates it.
 - **Audit**: a structured `computer_action` event records the captured/target
   window, observation id, purpose, result, and typed length + SHA-256, never
   text or images.

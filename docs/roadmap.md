@@ -342,6 +342,7 @@ and commit agree.
 | 206 | niucode M9-121 observe audit | done | Captured window/observation ids |
 | 207 | niucode M9-122 stop frame clear | done | Emergency stop drops thumbnail |
 | 208 | niucode M9-123 shortcut red lines | done | Alt+Tab/VT/X-server shortcuts |
+| 209 | niucode M9-124 TUI badge | done | Footer policy/armed state |
 
 ## The round ritual
 
