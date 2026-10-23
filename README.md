@@ -15,7 +15,7 @@ niuse is a personal engineering companion built on top of [niucode](https://gith
 Requires Rust 1.88+.
 
 ```sh
-cargo install niuse --version 0.1.11 --locked
+cargo install niuse --version 0.1.12 --locked
 niuse                     # enter the REPL
 niuse identity init       # eight questions, writes ~/.niuse/identity.md
 niuse status              # inspect prompt size and store counts
