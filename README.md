@@ -187,9 +187,10 @@ memory, goals, and plan prompt as the REPL:
 cargo run --features web --bin niuse -- web --port 8788
 ```
 
-The `web` feature is opt-in for the same reason as `tui`: the default binary
-does not link niucode. It reuses niucode's local SSE server, browser approvals,
-Markdown, and MathML. The session is `~/.niuse/thread.jsonl`. The sidebar shows
+The command prints a tokenized URL; open that exact URL. Bare loopback URLs are
+rejected so other local pages cannot drive the agent. The `web` feature is
+opt-in for the same reason as `tui`: the default binary does not link niucode.
+It reuses niucode's local SSE server, browser approvals, Markdown, and MathML. The session is `~/.niuse/thread.jsonl`. The sidebar shows
 identity, user, goals, plan, memory, open loops, and the 7-day report from the stores. Chat is
 workspace-write with explicit browser approval; there is no remote mode.
 

@@ -22,6 +22,8 @@ that the default binary does not link niucode's TUI.
 
 - **`niuse web --features web`**: loopback-only browser companion using the
   niuse product prompt (identity, user, goals, plan, memory, loops, journal).
+  Startup prints a random token URL; page/API/SSE are gated behind an HttpOnly
+  cookie.
 - **Live context**: the sidebar re-reads the Markdown stores per request and
   refreshes after turns/reports.
 - **Product report**: the 7-day report, including dogfood, is visible in the
