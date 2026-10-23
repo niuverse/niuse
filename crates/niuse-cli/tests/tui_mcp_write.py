@@ -118,7 +118,23 @@ PATH = {json.dumps(os.environ.get("PATH", "/usr/bin:/bin"))}
                 assert "approved body" in note.read_text()
             else:
                 assert not note.exists(), "denied write created the note"
-            print(f"PTY mutating MCP {mode}: preview shown, outcome correct")
+            pane.pump(0.2)
+            thread = root / "niuse-home" / "thread.jsonl"
+            deadline = time.monotonic() + 5
+            while not thread.exists() and time.monotonic() < deadline:
+                pane.pump(0.05)
+            events = [
+                json.loads(line)
+                for line in thread.read_text().splitlines()
+                if line.strip()
+            ]
+            mounts = [event for event in events if event.get("type") == "mcp_mount"]
+            assert mounts, f"no mcp_mount event: {events[-5:]!r}"
+            mount = mounts[0]
+            assert mount.get("server") == "notes"
+            assert mount.get("write_tools") == ["mcp__notes__create_note"]
+            assert len(mount.get("config_hash", "")) == 16, mount
+            print(f"PTY mutating MCP {mode}: preview, outcome, and mount audit correct")
         finally:
             pane.close()
 

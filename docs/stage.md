@@ -36,7 +36,9 @@ proven, what is still a gate, and what needs a human decision.
 - 2026-10-22: real `exec`, notes MCP, TUI, approved write, memory A/B, RSS
   disagreement, ten digest reviews.
 - 2026-10-23: real TUI tasks read `DAY_TWO*.md`; the missing TUI `on_turn_end`
-  was found and fixed, and the first metrics-backed TUI turn was recorded.
+  was found and fixed, and the first metrics-backed TUI turn was recorded. A
+  real model also called the notes `create_note` write tool with approval and
+  created `stage-write-home.md`.
 - Dogfood: **2/10 days**, acceptance **100% (1/1)**, **3 distinct cited memory
   ids** (`m-f356`, `m-5c68`, `m-3d0b`), **1 disagreement**.
 
