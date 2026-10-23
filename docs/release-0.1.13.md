@@ -9,9 +9,9 @@ summary = "Draft notes for niuse 0.1.13: opt-in web companion, shared TUI render
 
 ## Status
 
-Draft. Not published. The workspace is still 0.1.12. Publishing requires human
-approval and a coordinated `niucode 0.1.7` release first. Final clean-tree
-preflight passed at `23e23af` ([evidence](evidence/final-preflight.md)).
+Release candidate. The workspace is now 0.1.13 and depends on `niucode 0.1.7`,
+which has been published. Publication of niuse is the remaining step in this
+release run.
 
 ## Why 0.1.13
 
