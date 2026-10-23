@@ -281,6 +281,7 @@ and commit agree.
 | 145 | niucode M9-076 footnotes | done | Web footnote references |
 | 146 | niucode M9-077 GFM alerts | done | Styled NOTE/TIP/WARNING quotes |
 | 147 | M10-009 active thread | done | Active thread label in sidebar |
+| 148 | niucode M9-078 stream throttle | done | HTML render capped at 100ms/64B |
 
 ## The round ritual
 
