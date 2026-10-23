@@ -26,7 +26,7 @@ proven, what is still a gate, and what needs a human decision.
 - **Tests.** `./scripts/check.sh` and `./scripts/eval.sh` pass; the TUI suite
   covers approvals, session isolation, resume/fork pointers, memory prompts,
   and brief/report/steps composition.
-- **Board.** 163 cards and 18 docs are generated and link-checked.
+- **Board.** 165 cards and 19 docs are generated and link-checked.
 - **CI.** niucode `2b278fe` and niuse `ed54d6f` are green. niuse `c4282f3`
   passes local `check.sh`/`eval.sh`; GitHub CI is pending on a runner backlog,
   with no red run.
@@ -48,7 +48,7 @@ proven, what is still a gate, and what needs a human decision.
 |---|---|---|
 | M2 dogfood | 2/10 days; citations and disagreement met | eight distinct real working days |
 | M5-002 TUI | 2/10 days | eight more real TUI days |
-| M3 publish | `niucode-mcp` 0.1.5 published; niuse 0.1.12 prepared | publish `niuse-core` 0.1.12, then `niuse` 0.1.12 |
+| M3 publish | `niucode-mcp` 0.1.5 published; niuse 0.1.12 prepared; [runbook](release-0.1.12.md) | publish `niuse-core` 0.1.12, then `niuse` 0.1.12 |
 | M8-002 mutating MCP | ADR-0034 proposed | human acceptance before any write tools |
 
 ## Decisions waiting on a human

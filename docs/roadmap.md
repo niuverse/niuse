@@ -198,6 +198,7 @@ and commit agree.
 | 62 | M3-006 niuse 0.1.12 | ready | Core package passes; upload is next |
 | 63 | M8-008 write MCP surface | done | Flag, write pack, TUI deny/allow proven |
 | 64 | M8-009 evidence mounts | done | /evidence shows servers, writers, hashes |
+| 65 | M3-007 release runbook | done | One reviewable 0.1.12 upload step |
 
 ## The round ritual
 
