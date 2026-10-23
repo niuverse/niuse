@@ -252,6 +252,7 @@ and commit agree.
 | 116 | niucode M9-050 session event | done | All tabs reload on switch |
 | 117 | niucode M9-051 tool timing | done | Aggregate per-tool durations |
 | 118 | niucode M9-052 high contrast | done | Third accessible theme |
+| 119 | niucode M9-053 web a11y | done | Labels, log role, OS theme defaults |
 
 ## The round ritual
 
