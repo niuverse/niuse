@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use anyhow::{bail, Context, Result};
-use niucode_agent::ApprovalMode;
+use niucode_agent::{ApprovalMode, ComputerRuntime};
 use niucode_attachments::{AttachmentKind, AttachmentStore};
 use niucode_core::{load, AttachmentRef, Event};
 use niucode_mcp::McpHost;
@@ -69,6 +69,7 @@ pub(crate) const SLASH_COMMANDS: &[&str] = &[
     "/prompt",
     "/model",
     "/cost",
+    "/computer",
 ];
 
 fn slash_candidates(prefix: &str) -> Vec<&'static str> {
@@ -299,6 +300,7 @@ pub struct App {
     pub cwd: PathBuf,
     completion_cwd: Arc<Mutex<PathBuf>>,
     pub max_steps: usize,
+    pub computer: Option<Arc<Mutex<ComputerRuntime>>>,
     pub prompt: String,
     pub prompt_tokens: usize,
     pub thread_path: PathBuf,
@@ -326,6 +328,13 @@ impl App {
             .unwrap_or(true);
 
         let thread_path = resolve_thread(cli.thread.clone(), &store)?;
+        let computer = driver::computer_runtime(&cli.computer)?;
+        if computer.is_some() && !niucode_provider::model_supports_images(&bundle.model) {
+            eprintln!(
+                "warning: computer observe sends screenshots; model {} has no vision support",
+                bundle.model
+            );
+        }
 
         let mut app = Self {
             store,
@@ -339,6 +348,7 @@ impl App {
             cwd,
             completion_cwd,
             max_steps: settings.max_steps,
+            computer,
             prompt: String::new(),
             prompt_tokens: 0,
             thread_path,
@@ -548,6 +558,7 @@ impl App {
             config.extra_tools = crate::memory_tool::tools(self.store.root().to_path_buf());
             driver::apply_plan_mode(&mut config, self.plan_mode);
             config.mcp_host = self.mcp_host.clone();
+            config.computer = self.computer.clone();
             let mut renderer = Renderer::new();
             let result = driver::run_turn(
                 self.provider.as_ref(),
@@ -832,6 +843,36 @@ impl App {
                 }
                 println!("{line}");
             }
+            "/computer" => match argument.trim() {
+                "" | "status" => match &self.computer {
+                    Some(runtime) => {
+                        let runtime = runtime.lock().unwrap();
+                        println!(
+                            "computer: policy={} armed={}",
+                            runtime.policy().as_str(),
+                            runtime.is_armed()
+                        );
+                    }
+                    None => {
+                        println!("computer: off（用 --computer observe|control|autonomous 启动）")
+                    }
+                },
+                "arm" => match &self.computer {
+                    Some(runtime) => match runtime.lock().unwrap().arm() {
+                        Ok(()) => println!("computer: armed"),
+                        Err(error) => println!("computer: cannot arm: {error}"),
+                    },
+                    None => println!("computer: off"),
+                },
+                "stop" | "off" => match &self.computer {
+                    Some(runtime) => match runtime.lock().unwrap().emergency_stop() {
+                        Ok(()) => println!("computer: stopped, disarmed, input released"),
+                        Err(error) => println!("computer: stopped (release failed: {error})"),
+                    },
+                    None => println!("computer: off"),
+                },
+                _ => println!("用法：/computer [status|arm|stop]"),
+            },
             "/plan" => match argument.trim() {
                 "" => println!(
                     "plan mode: {}（工具：read/grep/glob）",
@@ -1151,7 +1192,6 @@ pub async fn run_exec(
     prompt: String,
     attach: Vec<PathBuf>,
     image: Vec<PathBuf>,
-    computer: String,
 ) -> Result<()> {
     app.mcp_host = driver::mount_mcp(app.allow_mcp_write, app.approval).await;
     let log = driver::new_session(&app.store.root().join("sessions"))?;
@@ -1197,7 +1237,7 @@ pub async fn run_exec(
     config.extra_tools = crate::memory_tool::tools(app.store.root().to_path_buf());
     driver::apply_plan_mode(&mut config, app.plan_mode);
     config.mcp_host = app.mcp_host.clone();
-    crate::driver::configure_computer(&mut config, &computer)?;
+    config.computer = app.computer.clone();
     let mut renderer = Renderer::new();
     let mut log = log;
     let result = if let Some(store) = &attachment_store {

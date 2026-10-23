@@ -39,5 +39,5 @@ or control from the product.
 
 ## Notes
 
-The REPL and web surfaces still need a policy switch. The default niuse binary
+The web surface still needs a policy switch; the REPL switch is M10-019. The default niuse binary
 now links the platform computer crates, but not niucode's TUI.

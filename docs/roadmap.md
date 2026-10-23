@@ -316,6 +316,7 @@ and commit agree.
 | 180 | niucode M9-101 emergency stop | done | Ctrl-C disarms + XTEST release |
 | 181 | niucode M9-102 macOS backend | done | CoreGraphics capture + CGEvent + TCC |
 | 182 | M10-018 product computer flags | done | niuse exec/tui --computer |
+| 183 | M10-019 REPL computer | done | Global --computer + /computer + vision warning |
 
 ## The round ritual
 

@@ -63,6 +63,9 @@ struct Cli {
     /// Start in read-only plan mode (read/grep/glob)
     #[arg(long, global = true)]
     plan: bool,
+    /// Native desktop policy: off, observe, control, or autonomous
+    #[arg(long, global = true, default_value = "off", value_parser = ["off", "observe", "control", "autonomous"])]
+    computer: String,
     /// Mount MCP servers whose manifest has read_only = false and write_tools
     #[arg(long, global = true)]
     allow_mcp_write: bool,
@@ -123,9 +126,6 @@ enum Command {
         /// Image file to attach to this turn (repeatable)
         #[arg(long, value_name = "PATH")]
         image: Vec<PathBuf>,
-        /// Native desktop policy: off, observe, control, or autonomous
-        #[arg(long, default_value = "off", value_parser = ["off", "observe", "control", "autonomous"])]
-        computer: String,
     },
     /// Inspect and edit durable memory
     Mem {
@@ -194,9 +194,6 @@ enum Command {
         /// Replay normalized provider turns from a fixture JSON (testing)
         #[arg(long)]
         replay: Option<PathBuf>,
-        /// Native desktop policy: off, observe, control, or autonomous
-        #[arg(long, default_value = "off", value_parser = ["off", "observe", "control", "autonomous"])]
-        computer: String,
     },
     /// Generate shell completions
     Completions {
@@ -564,7 +561,7 @@ async fn main() -> Result<()> {
         #[cfg(feature = "web")]
         Some(Command::Web { port }) => run_web(&cli, &store, port).await,
         #[cfg(feature = "tui")]
-        Some(Command::Tui { replay, computer }) => run_tui(&cli, &store, replay, computer).await,
+        Some(Command::Tui { replay }) => run_tui(&cli, &store, replay).await,
         Some(Command::Completions { .. }) => Ok(()),
         None => {
             let settings = settings::resolve(&cli, &store)?;
@@ -575,11 +572,10 @@ async fn main() -> Result<()> {
             prompt,
             attach,
             image,
-            computer,
         }) => {
             let settings = settings::resolve(&cli, &store)?;
             let app = repl::App::new(&cli, &settings, store)?;
-            repl::run_exec(app, prompt, attach, image, computer).await
+            repl::run_exec(app, prompt, attach, image).await
         }
         Some(Command::Mem { command }) => match command {
             MemCommand::List {
@@ -1050,12 +1046,7 @@ fn web_context(store: &Store) -> Result<serde_json::Value> {
 }
 
 #[cfg(feature = "tui")]
-async fn run_tui(
-    cli: &Cli,
-    store: &Store,
-    replay: Option<PathBuf>,
-    computer: String,
-) -> Result<()> {
+async fn run_tui(cli: &Cli, store: &Store, replay: Option<PathBuf>) -> Result<()> {
     let settings = settings::resolve(cli, store)?;
     let cwd = config::resolve_cwd(cli.cwd.clone())?;
     let (policy, approval, _) =
@@ -1064,6 +1055,11 @@ async fn run_tui(
         .model
         .clone()
         .unwrap_or_else(|| "deepseek-flash".to_string());
+    if cli.computer != "off" && !niucode_provider::model_supports_images(&model) {
+        eprintln!(
+            "warning: computer observe sends screenshots; model {model} has no vision support"
+        );
+    }
     let thread = config::resolve_thread(cli.thread.clone(), store)?;
     let meta = driver::SessionMeta {
         cwd: &cwd,
@@ -1089,7 +1085,7 @@ async fn run_tui(
         network: settings.network,
         replay,
         plan: cli.plan,
-        computer,
+        computer: cli.computer.clone(),
         approval_keys: niucode::ApprovalKeys::custom('y', 'n', 's')
             .expect("distinct approval keys"),
         extra_tools: memory_tool::tools(store.root().to_path_buf()),
@@ -1170,18 +1166,12 @@ mod docs_tests {
             "observe",
         ])
         .expect("parse");
-        let Some(Command::Exec {
-            attach,
-            image,
-            computer,
-            ..
-        }) = cli.command
-        else {
+        assert_eq!(cli.computer, "observe");
+        let Some(Command::Exec { attach, image, .. }) = cli.command else {
             panic!("expected exec");
         };
         assert_eq!(attach, [PathBuf::from("note.md")]);
         assert_eq!(image, [PathBuf::from("shot.png")]);
-        assert_eq!(computer, "observe");
     }
 
     #[test]

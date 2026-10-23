@@ -150,11 +150,12 @@ pub fn agent_config(
     config
 }
 
-/// Attach the platform computer backend to a product turn. `off` is a no-op;
-/// a missing display or TCC permission warns instead of failing the turn.
-pub fn configure_computer(config: &mut AgentConfig, policy: &str) -> Result<()> {
+/// Build the platform computer runtime for a product surface. `off` is a
+/// no-op; missing displays or TCC permissions warn and return `None`.
+#[allow(clippy::needless_return)]
+pub fn computer_runtime(policy: &str) -> Result<Option<Arc<std::sync::Mutex<ComputerRuntime>>>> {
     if policy == "off" {
-        return Ok(());
+        return Ok(None);
     }
     #[cfg(target_os = "linux")]
     {
@@ -165,8 +166,8 @@ pub fn configure_computer(config: &mut AgentConfig, policy: &str) -> Result<()> 
             Ok(backend) => {
                 let mut runtime = ComputerRuntime::new(Box::new(backend), policy);
                 runtime.arm().context("arm computer use")?;
-                config.computer = Some(Arc::new(std::sync::Mutex::new(runtime)));
                 eprintln!("computer: policy={} armed", policy.as_str());
+                return Ok(Some(Arc::new(std::sync::Mutex::new(runtime))));
             }
             Err(error) => eprintln!("warning: computer unavailable: {error}"),
         }
@@ -180,21 +181,18 @@ pub fn configure_computer(config: &mut AgentConfig, policy: &str) -> Result<()> 
             Ok(backend) => {
                 let mut runtime = ComputerRuntime::new(Box::new(backend), policy);
                 runtime.arm().context("arm computer use")?;
-                config.computer = Some(Arc::new(std::sync::Mutex::new(runtime)));
                 eprintln!(
                     "computer: policy={} armed (macOS TCC permissions required)",
                     policy.as_str()
                 );
+                return Ok(Some(Arc::new(std::sync::Mutex::new(runtime))));
             }
             Err(error) => eprintln!("warning: computer unavailable: {error}"),
         }
     }
     #[cfg(not(any(target_os = "linux", target_os = "macos")))]
-    {
-        let _ = &mut *config;
-        eprintln!("warning: computer use is not supported in this build (got {policy:?})");
-    }
-    Ok(())
+    eprintln!("warning: computer use is not supported in this build (got {policy:?})");
+    Ok(None)
 }
 
 /// Run one user turn with attachments. The session history is rebuilt by the
