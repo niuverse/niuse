@@ -184,12 +184,14 @@ Serve a local, loopback-only browser surface with the same identity, user,
 memory, goals, and plan prompt as the REPL:
 
 ```sh
-niuse web --port 8788
+cargo run --features web --bin niuse -- web --port 8788
 ```
 
-It reuses niucode's local SSE server, browser approvals, Markdown, and MathML.
-The session is `~/.niuse/thread.jsonl`. Chat is workspace-write with explicit
-browser approval; there is no remote mode. Product sidebars are next.
+The `web` feature is opt-in for the same reason as `tui`: the default binary
+does not link niucode. It reuses niucode's local SSE server, browser approvals,
+Markdown, and MathML. The session is `~/.niuse/thread.jsonl`. The sidebar shows
+identity, user, goals, plan, memory, and open loops from the stores. Chat is
+workspace-write with explicit browser approval; there is no remote mode.
 
 ## Experimental TUI
 

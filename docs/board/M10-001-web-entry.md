@@ -33,9 +33,10 @@ prompt, not niuse's identity, user profile, memory, goals, and plan.
 - [x] The session is the niuse thread, not a second store.
 - [x] No remote assets or non-loopback binding.
 - [x] Build and clippy pass.
+- [x] `niucode` stays optional behind the `web` feature.
 
 ## Notes
 
 This is the web entry, not the full product shell. Identity/memory/plan sidebars
-and product-specific routes are the next M10 slices. `niucode` is now a
-non-optional dependency so the default binary can serve web.
+and product-specific routes are the next M10 slices. `web` is an opt-in feature
+so the default binary still does not link niucode.

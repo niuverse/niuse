@@ -20,6 +20,8 @@ cargo test --workspace
 echo "== tui feature =="
 cargo test -p niuse --features tui
 cargo clippy -p niuse --features tui --all-targets -- -D warnings
+cargo test -p niuse --features web
+cargo clippy -p niuse --features web --all-targets -- -D warnings
 
 echo "== dogfood =="
 cargo build -p niuse

@@ -213,6 +213,7 @@ and commit agree.
 | 77 | niucode M9-012 web Markdown | done | HTML, tables, safe links in the browser |
 | 78 | niucode M9-013 web MathML | done | Native MathML, no remote assets |
 | 79 | M10-001 niuse web | done | Product prompt over niucode web |
+| 80 | M10-002 web sidebar | done | Identity/memory/plan context in the browser |
 
 ## The round ritual
 

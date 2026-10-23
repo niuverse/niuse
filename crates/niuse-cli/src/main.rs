@@ -20,6 +20,8 @@ use std::path::PathBuf;
 use anyhow::Result;
 use clap::{CommandFactory, Parser, Subcommand};
 use niuse_core::Store;
+#[cfg(feature = "web")]
+use serde_json::json;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -169,6 +171,7 @@ enum Command {
         json: bool,
     },
     /// Serve the local web companion (identity/memory prompt, browser chat)
+    #[cfg(feature = "web")]
     Web {
         /// Loopback port (0 chooses an ephemeral port)
         #[arg(long, default_value_t = 8788)]
@@ -544,6 +547,7 @@ async fn main() -> Result<()> {
     store.init()?;
 
     match command {
+        #[cfg(feature = "web")]
         Some(Command::Web { port }) => run_web(&cli, &store, port).await,
         #[cfg(feature = "tui")]
         Some(Command::Tui { replay }) => run_tui(&cli, &store, replay).await,
@@ -802,6 +806,7 @@ async fn main() -> Result<()> {
     }
 }
 
+#[cfg(feature = "web")]
 async fn run_web(cli: &Cli, store: &Store, port: u16) -> Result<()> {
     let settings = settings::resolve(cli, store)?;
     let cwd = config::resolve_cwd(cli.cwd.clone())?;
@@ -826,6 +831,57 @@ async fn run_web(cli: &Cli, store: &Store, port: u16) -> Result<()> {
         &journal,
         niuse_core::date::Date::today(),
     );
+    let mut sections = Vec::new();
+    sections.push(json!({
+        "title": "identity",
+        "lines": identity
+            .as_deref()
+            .map(|text| text.lines().take(10).collect::<Vec<_>>())
+            .unwrap_or_else(|| vec!["not set"]),
+    }));
+    sections.push(json!({
+        "title": "user",
+        "lines": user
+            .as_deref()
+            .map(|text| text.lines().take(10).collect::<Vec<_>>())
+            .unwrap_or_else(|| vec!["not set"]),
+    }));
+    sections.push(json!({
+        "title": "goals",
+        "lines": goals
+            .iter()
+            .map(|goal| format!("{} · {}", goal.id, goal.text))
+            .collect::<Vec<_>>(),
+    }));
+    sections.push(json!({
+        "title": "plan",
+        "lines": plan
+            .iter()
+            .map(|step| format!("{} {} · {}", if step.done { "x" } else { " " }, step.id, step.text))
+            .collect::<Vec<_>>(),
+    }));
+    sections.push(json!({
+        "title": "memory",
+        "lines": memories
+            .iter()
+            .take(8)
+            .map(|memory| format!("{} · {}", memory.id, memory.text))
+            .collect::<Vec<_>>(),
+    }));
+    sections.push(json!({
+        "title": "loops",
+        "lines": loops
+            .iter()
+            .filter(|item| !item.done)
+            .take(8)
+            .map(|item| format!("{} · {}", item.id, item.text))
+            .collect::<Vec<_>>(),
+    }));
+    let context = json!({
+        "brand": "niuse",
+        "title": "niuse · web",
+        "sections": sections,
+    });
     niucode::web::serve(niucode::web::Options {
         session: store.session_path(),
         port,
@@ -834,6 +890,8 @@ async fn run_web(cli: &Cli, store: &Store, port: u16) -> Result<()> {
         cwd,
         max_steps: settings.max_steps,
         system_prompt: Some(composition.system),
+        brand: Some("niuse".into()),
+        context: Some(context),
     })
     .await
 }
