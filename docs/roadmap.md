@@ -254,6 +254,7 @@ and commit agree.
 | 118 | niucode M9-052 high contrast | done | Third accessible theme |
 | 119 | niucode M9-053 web a11y | done | Labels, log role, OS theme defaults |
 | 120 | niucode M9-054 DOM test | done | Unique ids, resolvable references |
+| 121 | niucode M9-055 web smoke | done | Headless DOM smoke test |
 
 ## The round ritual
 
