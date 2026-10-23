@@ -320,7 +320,7 @@ and commit agree.
 | 184 | M10-020 cross-session memory | done | Reopen store + two-session answer |
 | 185 | M10-021 web computer | done | Policy chip + status + vision warning |
 | 186 | niucode M9-104 attachment memory | done | Store reopen + resumed image part |
-| 187 | release 0.1.14 | done | Version/pin/preflight prepared; publish awaiting approval |
+| 187 | release 0.1.14 | done | Published 2026-10-24; clean installs pass |
 | 188 | niucode M9-105 computer e2e | done | Xvfb observe→click→approval turn |
 | 189 | niucode M9-106 web arm/stop | done | Token-gated POST + chip toggle |
 | 190 | niucode M9-107 typed-text audit | done | JSONL stores length + SHA-256 |

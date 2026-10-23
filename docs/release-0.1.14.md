@@ -1,17 +1,17 @@
 +++
 id = "release-014"
-title = "Release 0.1.14 (draft)"
+title = "Release 0.1.14"
 kind = "doc"
-status = "draft"
+status = "living"
 order = 33
 summary = "Draft notes: product-wide computer policy, vision warnings, web status, and cross-session memory evidence on niucode 0.1.8."
 +++
 
 ## Status
 
-Prepared 2026-10-23. `niuse-core` and `niuse` are bumped to `0.1.14`,
-requiring `niucode 0.1.8`. Publication is pending maintainer approval; nothing
-has been uploaded for this version.
+Published 2026-10-24. `niuse-core 0.1.14` and `niuse 0.1.14` are on crates.io,
+requiring `niucode 0.1.8`; both default and web+tui clean installs pass. See
+[published evidence](evidence/published-0.1.14.md).
 
 ## Why 0.1.14
 
@@ -93,6 +93,6 @@ clean-install checks, tag/evidence steps, rollback, and the explicit human gate.
 
 ## Blockers
 
-- Human approval to publish.
-- Publish niucode 0.1.8 first.
-- Then verify a clean install before/after uploading niuse.
+- ~~Human approval to publish~~ — granted 2026-10-24.
+- ~~Publish niucode 0.1.8 first~~ — done.
+- ~~Clean installs~~ — both shapes pass.

@@ -34,7 +34,7 @@ but publishing from a dirty or unverified tree is unsafe.
 - [x] Dry-run checks pass where publication is not required.
 - [x] Pre-publication package blocker is documented.
 - [x] Tests/clippy/docs pass.
-- [ ] Publish to crates.io (human approval).
+- [x] Publish to crates.io (human approval granted 2026-10-24).
 
 ## Notes
 
