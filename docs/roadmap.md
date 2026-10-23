@@ -290,6 +290,7 @@ and commit agree.
 | 154 | niucode M9-082 bodies | done | Content-Length loop, 1MiB cap |
 | 155 | niucode M9-083 timeout | done | 5s request read, 408 |
 | 156 | niucode M9-084 PTY alerts | done | Warning label + marker rejection |
+| 157 | niucode M9-085 final audit | done | 3 themes + 390px, no blockers |
 
 ## The round ritual
 
