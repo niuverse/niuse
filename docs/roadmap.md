@@ -232,6 +232,7 @@ and commit agree.
 | 96 | niucode M9-031 web composer | done | Enter sends, Shift+Enter newline |
 | 97 | niucode M9-032 prompt history | done | Local ↑/↓ recall |
 | 98 | niucode M9-033 code copy | done | Copy buttons on web code |
+| 99 | niucode M9-034 context event | done | context_changed after turns |
 
 ## The round ritual
 
