@@ -47,8 +47,8 @@ vision capability probe, and web computer status).
   text or images.
 - **Vision budget**: every provider request carries at most four images; the
   oldest become a text marker.
-- **Memory evidence**: reopened attachment store and reopened Markdown memory
-  both feed a new session.
+- **Memory evidence**: reopened attachment store, reopened Markdown memory, and
+  fork attachment migration all feed the new session.
 - **Boundary**: platform backends live in niucode crates; the default niuse
   binary still does not link niucode's TUI.
 

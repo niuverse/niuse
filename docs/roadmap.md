@@ -343,6 +343,7 @@ and commit agree.
 | 207 | niucode M9-122 stop frame clear | done | Emergency stop drops thumbnail |
 | 208 | niucode M9-123 shortcut red lines | done | Alt+Tab/VT/X-server shortcuts |
 | 209 | niucode M9-124 TUI badge | done | Footer policy/armed state |
+| 210 | niucode M9-125 fork attachments | done | Copy refs into fork store |
 
 ## The round ritual
 
