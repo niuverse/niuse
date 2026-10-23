@@ -224,6 +224,7 @@ and commit agree.
 | 88 | niucode M9-023 web streaming MD | done | Markdown forms during the turn |
 | 89 | niucode M9-024 approval diff | done | Structured diff cards, not JSON |
 | 90 | niucode M9-025 tool cards | done | Collapsible call/result cards |
+| 91 | niucode M9-026 code state | done | Block comments span lines |
 
 ## The round ritual
 
