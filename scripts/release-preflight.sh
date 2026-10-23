@@ -5,6 +5,18 @@ set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 niucode="${NIUCODE_DIR:-$root/../niucode}"
+skip_package=false
+for arg in "$@"; do
+  case "$arg" in
+    --skip-package) skip_package=true ;;
+    --help)
+      echo "usage: scripts/release-preflight.sh [--skip-package]"
+      echo "  --skip-package  pre-publication mode; the registry cannot resolve 0.1.8 yet"
+      exit 0
+      ;;
+    *) echo "unknown argument: $arg" >&2; exit 2 ;;
+  esac
+done
 
 if [[ ! -d "$niucode/.git" ]]; then
   echo "niucode checkout not found at $niucode (set NIUCODE_DIR)" >&2
@@ -40,7 +52,11 @@ echo "== niucode clippy =="
 (cd "$niucode" && cargo clippy --workspace --all-targets -- -D warnings)
 
 echo "== niucode package =="
-(cd "$niucode" && cargo package -p niucode --allow-dirty)
+if $skip_package; then
+  echo "skipped (pre-publication mode; registry lacks niucode 0.1.8)"
+else
+  (cd "$niucode" && cargo package -p niucode --allow-dirty)
+fi
 
 echo "== niucode dashboard =="
 (cd "$niucode" && cargo xtask dashboard --check)
