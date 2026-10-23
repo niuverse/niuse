@@ -20,8 +20,8 @@ proven, what is still a gate, and what needs a human decision.
 - **Companion.** niuse has seven Markdown stores, goals/plan/evidence/verify,
   a 10/10-reviewed opt-in digest, and a TUI that records turn metrics.
 - **MCP.** `niucode-mcp` 0.1.5 is published (2026-10-23). ADR-0034 is accepted
-  and niucode `ab50b75` implements the write path; niuse's surface and a write
-  pack are the next step (M8-008).
+  and niucode `ab50b75` implements the write path; niuse exposes
+  `--allow-mcp-write`, and a write pack plus end-to-end test are next (M8-008).
 - **Tests.** `./scripts/check.sh` and `./scripts/eval.sh` pass; the TUI suite
   covers approvals, session isolation, resume/fork pointers, memory prompts,
   and brief/report/steps composition.

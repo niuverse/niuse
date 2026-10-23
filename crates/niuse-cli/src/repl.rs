@@ -303,6 +303,7 @@ pub struct App {
     pub thread_path: PathBuf,
     pub plan_mode: bool,
     pub mcp_host: Option<Arc<McpHost>>,
+    allow_mcp_write: bool,
     memory_enabled: bool,
     suppress_candidates: bool,
     rejected_tags: HashSet<String>,
@@ -342,6 +343,7 @@ impl App {
             thread_path,
             plan_mode: cli.plan,
             mcp_host: None,
+            allow_mcp_write: cli.allow_mcp_write,
             memory_enabled,
             suppress_candidates: false,
             rejected_tags: HashSet::new(),
@@ -389,7 +391,7 @@ impl App {
         };
         let mut thread = driver::open_thread(&path, &meta)?;
         let mut history = driver::history(&thread.path)?;
-        self.mcp_host = driver::mount_mcp().await;
+        self.mcp_host = driver::mount_mcp(self.allow_mcp_write, self.approval).await;
         self.banner();
         if startup_brief_enabled() {
             if let Ok(lines) = commands::brief_startup(&self.store, &self.cwd) {
@@ -1110,7 +1112,7 @@ enum Flow {
 }
 
 pub async fn run_exec(mut app: App, prompt: String) -> Result<()> {
-    app.mcp_host = driver::mount_mcp().await;
+    app.mcp_host = driver::mount_mcp(app.allow_mcp_write, app.approval).await;
     let log = driver::new_session(&app.store.root().join("sessions"))?;
     let meta = SessionMeta {
         cwd: &app.cwd,

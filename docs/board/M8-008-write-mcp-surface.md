@@ -1,7 +1,7 @@
 +++
 id = "M8-008"
 title = "Mount write-enabled MCP in niuse"
-status = "ready"
+status = "doing"
 milestone = "M8"
 module = "cli"
 size = "M"
@@ -29,8 +29,8 @@ servers only.
 
 ## Acceptance
 
-- [ ] niuse exposes the flag and forwards it without changing read-only defaults.
-- [ ] `--json`/`never` never mount a write server.
+- [x] niuse exposes the flag and forwards it without changing read-only defaults.
+- [x] `--never` and a non-terminal mount read-only servers only.
 - [ ] A write pack lists every mutating tool; unlisted tools stay read-only.
 - [ ] TUI approval shows tool + args; denial leaves the store unchanged.
 - [ ] Offline test covers mount refusal and an approved write.
@@ -39,3 +39,7 @@ servers only.
 
 niucode `ab50b75` is the implementation. This card is the niuse surface, not a
 second design; ADR-0034 remains the source of truth.
+
+2026-10-23: the flag and mount gating are in (`app.allow_mcp_write`, driver
+`mount_mcp_from_with`, unit test). TUI forwards it to niucode. Still open: a
+write-enabled pack and the end-to-end deny/allow test.

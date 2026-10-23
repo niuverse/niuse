@@ -191,7 +191,7 @@ Memory candidates become accept/edit/discard prompts after the turn; conflicts o
 
 ## MCP
 
-All paths mount niucode's read-only MCP servers. The quick start installs both
+All paths mount read-only MCP servers by default. The quick start installs both
 bundled packs and writes `~/.niucode/mcp.toml`:
 
 ```sh
@@ -211,6 +211,14 @@ MCP for that run; it does not take down the session. A read-only notes pack is
 included: [packs/notes](packs/notes/README.md) and
 [packs/calendar](packs/calendar/README.md). See niucode's
 [ADR-0033](https://github.com/niuverse/niucode/blob/main/docs/adr/0033-mcp-client.md).
+
+A manifest may opt into writes with `read_only = false` and an explicit
+`write_tools` list. `niuse exec` and `niuse tui` mount it only with
+`--allow-mcp-write` and an interactive approval mode; every mutating call shows
+the tool and bounded arguments. `--approval never` and non-interactive runs
+mount read-only servers only. The `mcp init` generator still writes read-only
+entries; a write manifest is hand-written and audited against
+[ADR-0034](https://github.com/niuverse/niucode/blob/main/docs/adr/0034-mutating-mcp.md).
 
 ## Privacy
 

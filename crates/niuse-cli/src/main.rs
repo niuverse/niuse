@@ -61,6 +61,9 @@ struct Cli {
     /// Start in read-only plan mode (read/grep/glob)
     #[arg(long, global = true)]
     plan: bool,
+    /// Mount MCP servers whose manifest has read_only = false and write_tools
+    #[arg(long, global = true)]
+    allow_mcp_write: bool,
     #[command(subcommand)]
     command: Option<Command>,
 }
@@ -830,6 +833,7 @@ async fn run_tui(cli: &Cli, store: &Store, replay: Option<PathBuf>) -> Result<()
         approval_keys: niucode::ApprovalKeys::custom('y', 'n', 's')
             .expect("distinct approval keys"),
         extra_tools: memory_tool::tools(store.root().to_path_buf()),
+        allow_mcp_write: cli.allow_mcp_write,
         ..niucode::TuiOptions::default()
     };
     niucode::run_tui_with_hooks(options, Box::new(hooks)).await

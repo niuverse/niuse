@@ -1,6 +1,7 @@
 //! Session glue between niuse's stores and niucode's turn loop.
 
 use std::fs;
+use std::io::IsTerminal;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
@@ -201,10 +202,11 @@ fn set_private(_path: &Path) -> Result<()> {
     Ok(())
 }
 
-/// Mount read-only MCP servers from `NIUSE_MCP_CONFIG` or
-/// `~/.niucode/mcp.toml`. A broken manifest disables MCP for this run instead
-/// of failing the session.
-pub async fn mount_mcp() -> Option<Arc<McpHost>> {
+/// Mount MCP servers from `NIUSE_MCP_CONFIG` or `~/.niucode/mcp.toml`.
+/// Read-only is the default; write-enabled servers need `allow_write` and an
+/// interactive approval mode, and are filtered out otherwise. A broken
+/// manifest disables MCP for this run instead of failing the session.
+pub async fn mount_mcp(allow_write: bool, approval: ApprovalMode) -> Option<Arc<McpHost>> {
     let explicit = std::env::var_os("NIUSE_MCP_CONFIG").filter(|value| !value.is_empty());
     let path = match &explicit {
         Some(path) => PathBuf::from(path),
@@ -214,12 +216,26 @@ pub async fn mount_mcp() -> Option<Arc<McpHost>> {
         eprintln!("warning: MCP config not found: {}", path.display());
         return None;
     }
-    mount_mcp_from(&path).await
+    mount_mcp_from(&path, allow_write, approval).await
 }
 
 /// Mount from a specific manifest; callers that resolve the default path use
 /// `mount_mcp`.
-pub async fn mount_mcp_from(path: &Path) -> Option<Arc<McpHost>> {
+pub async fn mount_mcp_from(
+    path: &Path,
+    allow_write: bool,
+    approval: ApprovalMode,
+) -> Option<Arc<McpHost>> {
+    let interactive = std::io::stdin().is_terminal() && std::io::stdout().is_terminal();
+    mount_mcp_from_with(path, allow_write, approval, interactive).await
+}
+
+async fn mount_mcp_from_with(
+    path: &Path,
+    allow_write: bool,
+    approval: ApprovalMode,
+    interactive: bool,
+) -> Option<Arc<McpHost>> {
     let parsed = match McpConfig::load(path) {
         Ok(parsed) => parsed,
         Err(error) => {
@@ -227,17 +243,43 @@ pub async fn mount_mcp_from(path: &Path) -> Option<Arc<McpHost>> {
             return None;
         }
     };
-    let servers = match parsed.validated() {
+    let write_interactive = allow_write && approval != ApprovalMode::Never && interactive;
+    let all = match if allow_write {
+        parsed.validated_with(true)
+    } else {
+        parsed.validated()
+    } {
         Ok(servers) => servers,
         Err(error) => {
             eprintln!("warning: MCP disabled: {error:#}");
             return None;
         }
     };
+    let mut skipped_write = false;
+    let servers = if write_interactive {
+        all
+    } else {
+        all.into_iter()
+            .filter(|server| {
+                if server.read_only {
+                    true
+                } else {
+                    skipped_write = true;
+                    false
+                }
+            })
+            .collect()
+    };
+    if skipped_write {
+        eprintln!(
+            "warning: MCP write servers need --allow-mcp-write, an interactive approval mode, and a terminal; read-only servers only"
+        );
+    }
     if servers.is_empty() {
         return None;
     }
-    match McpHost::mount(&servers, Duration::from_secs(10)).await {
+    let mount_writes = write_interactive && servers.iter().any(|server| !server.read_only);
+    match McpHost::mount_with(&servers, Duration::from_secs(10), mount_writes).await {
         Ok(host) => {
             for mount in host.mounts() {
                 eprintln!("mcp: {} · {} tool(s)", mount.server, mount.tools.len());
@@ -284,7 +326,9 @@ mod tests {
             ),
         )
         .unwrap();
-        let host = mount_mcp_from(&config).await.expect("mount");
+        let host = mount_mcp_from(&config, false, ApprovalMode::Ask)
+            .await
+            .expect("mount");
         let names: Vec<String> = host
             .specs()
             .into_iter()
@@ -339,6 +383,39 @@ mod tests {
         set_private(&path).unwrap();
         let mode = fs::metadata(&path).unwrap().permissions().mode() & 0o777;
         assert_eq!(mode, 0o600);
+    }
+
+    #[tokio::test]
+    async fn write_mount_needs_the_flag_and_an_interactive_terminal() {
+        let directory = tempfile::tempdir().unwrap();
+        let config = directory.path().join("mcp.toml");
+        let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../../niucode/crates/niucode-mcp/tests/fixture_server.py");
+        std::fs::write(
+            &config,
+            format!(
+                "[[server]]\nname = \"fixture\"\ncommand = \"python3\"\nargs = [\"{}\"]\nread_only = false\nwrite_tools = [\"echo\"]\n\n[server.env]\nPATH = \"{}\"\n",
+                fixture.display(),
+                std::env::var("PATH").unwrap_or_else(|_| "/usr/bin:/bin".into())
+            ),
+        )
+        .unwrap();
+        assert!(mount_mcp_from_with(&config, false, ApprovalMode::Ask, true)
+            .await
+            .is_none());
+        assert!(
+            mount_mcp_from_with(&config, true, ApprovalMode::Never, true)
+                .await
+                .is_none()
+        );
+        assert!(mount_mcp_from_with(&config, true, ApprovalMode::Ask, false)
+            .await
+            .is_none());
+        let host = mount_mcp_from_with(&config, true, ApprovalMode::Ask, true)
+            .await
+            .expect("write mount");
+        assert!(host.is_mutating("mcp__fixture__echo"));
+        host.shutdown().await.unwrap();
     }
 
     #[test]
