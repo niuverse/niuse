@@ -243,6 +243,7 @@ and commit agree.
 | 107 | niucode M9-042 MSRV/package | done | 1.88 clean, package verifies |
 | 108 | niucode M9-043 web new session | done | Fresh JSONL via /api/new |
 | 109 | M10-005 web new thread | done | Archive thread, recreate thread.jsonl |
+| 110 | niucode M9-044 web autoscroll | done | Follow only near bottom |
 
 ## The round ritual
 
