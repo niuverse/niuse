@@ -32,6 +32,8 @@ vision capability probe, and web computer status).
   default, with an explicit debug `--computer-log-input`; screenshots stay
   ephemeral unless `--computer-keep-frames` is explicit; approvals show
   coordinates/keys/typed length, never typed text.
+- **Vision budget**: every provider request carries at most four images; the
+  oldest become a text marker.
 - **Memory evidence**: reopened attachment store and reopened Markdown memory
   both feed a new session.
 - **Boundary**: platform backends live in niucode crates; the default niuse
