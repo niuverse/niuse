@@ -253,6 +253,7 @@ and commit agree.
 | 117 | niucode M9-051 tool timing | done | Aggregate per-tool durations |
 | 118 | niucode M9-052 high contrast | done | Third accessible theme |
 | 119 | niucode M9-053 web a11y | done | Labels, log role, OS theme defaults |
+| 120 | niucode M9-054 DOM test | done | Unique ids, resolvable references |
 
 ## The round ritual
 
