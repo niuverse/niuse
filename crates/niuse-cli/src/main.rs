@@ -846,6 +846,7 @@ async fn run_web(cli: &Cli, store: &Store, port: u16) -> Result<()> {
             let context_store = store.clone();
             move || web_context(&context_store).unwrap_or_else(|_| json!({"brand": "niuse"}))
         })),
+        allow_new: false,
     })
     .await
 }
