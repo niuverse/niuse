@@ -220,6 +220,7 @@ and commit agree.
 | 84 | niucode M9-019 table chrome | done | Bold headers, dim borders |
 | 85 | niucode M9-020 table cells | done | Inline styles survive cell layout |
 | 86 | niucode M9-021 code tokens | done | Keywords/strings/comments/numbers |
+| 87 | niucode M9-022 web code | done | Highlighted code in browser HTML |
 
 ## The round ritual
 
