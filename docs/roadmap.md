@@ -233,6 +233,7 @@ and commit agree.
 | 97 | niucode M9-032 prompt history | done | Local ↑/↓ recall |
 | 98 | niucode M9-033 code copy | done | Copy buttons on web code |
 | 99 | niucode M9-034 context event | done | context_changed after turns |
+| 100 | niucode M9-035 web commands | done | /help /status /report locally |
 
 ## The round ritual
 
