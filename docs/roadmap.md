@@ -345,6 +345,7 @@ and commit agree.
 | 209 | niucode M9-124 TUI badge | done | Footer policy/armed state |
 | 210 | niucode M9-125 fork attachments | done | Copy refs into fork store |
 | 211 | M10-028 computer evidence | done | evidence lists computer actions |
+| 212 | niucode M9-126 completion audit | done | Requirement/evidence matrix |
 
 ## The round ritual
 

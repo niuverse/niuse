@@ -80,6 +80,12 @@ turn. `--check` reports version/license/token/order. Preflight is expected to fa
 until `niucode 0.1.8` is published, because its package step resolves the new
 crates from the registry.
 
+## Completion audit
+
+The kernel `docs/computer-completion.md` maps every objective clause to code and
+tests, and names the remaining external gates: publish authorization, real Linux
+desktop acceptance, and macOS TCC/runtime acceptance.
+
 ## Runbook
 
 The kernel `docs/release-runbook.md` records the publish order, index waits,
