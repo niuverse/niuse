@@ -39,5 +39,5 @@ required leaving the browser and moving files by hand.
 
 ## Notes
 
-The old page keeps its SSE connection until reload. A future session-switched
-SSE event can close that window.
+Successful switches broadcast `session_switched`; every open tab reloads onto
+the new path. Connections still finish against the old file until that reload.
