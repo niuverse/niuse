@@ -251,6 +251,7 @@ and commit agree.
 | 115 | M10-007 web switch | done | Move archived chapter to active thread |
 | 116 | niucode M9-050 session event | done | All tabs reload on switch |
 | 117 | niucode M9-051 tool timing | done | Aggregate per-tool durations |
+| 118 | niucode M9-052 high contrast | done | Third accessible theme |
 
 ## The round ritual
 
