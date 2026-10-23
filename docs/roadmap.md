@@ -263,6 +263,7 @@ and commit agree.
 | 127 | niucode M9-060 session approval | done | Allow session in web |
 | 128 | niucode M9-061 approval countdown | done | 5:00 deadline, disabled at zero |
 | 129 | niucode M9-062 tool approval | done | Allow only the requested tool |
+| 130 | niucode M9-063 image block | done | No remote image fetches |
 
 ## The round ritual
 
