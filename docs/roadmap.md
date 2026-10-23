@@ -240,6 +240,7 @@ and commit agree.
 | 104 | niucode M9-039 web usage | done | Page-local in/out token chip |
 | 105 | niucode M9-040 web export | done | Download session Markdown |
 | 106 | niucode M9-041 web search | done | Filter transcript locally |
+| 107 | niucode M9-042 MSRV/package | done | 1.88 clean, package verifies |
 
 ## The round ritual
 
