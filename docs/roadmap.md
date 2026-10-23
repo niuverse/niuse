@@ -326,6 +326,7 @@ and commit agree.
 | 190 | niucode M9-107 typed-text audit | done | JSONL stores length + SHA-256 |
 | 191 | niucode M9-108 approval details | done | Safe coords/keys/length summaries |
 | 192 | niucode M9-109 log-input opt-in | done | Explicit debug full-text logging |
+| 193 | niucode M9-110 keep frames | done | Opt-in content-addressed screenshot |
 
 ## The round ritual
 

@@ -69,6 +69,9 @@ struct Cli {
     /// Persist full typed computer text in the session log (default: length + SHA-256 only)
     #[arg(long, global = true)]
     computer_log_input: bool,
+    /// Keep observation screenshots in the session attachment store
+    #[arg(long, global = true)]
+    computer_keep_frames: bool,
     /// Mount MCP servers whose manifest has read_only = false and write_tools
     #[arg(long, global = true)]
     allow_mcp_write: bool,
@@ -837,6 +840,11 @@ async fn run_web(cli: &Cli, store: &Store, port: u16) -> Result<()> {
             "warning: --computer-log-input persists full typed desktop text in the session JSONL"
         );
     }
+    if cli.computer_keep_frames && cli.computer != "off" {
+        eprintln!(
+            "warning: --computer-keep-frames persists observation screenshots in the session attachment store"
+        );
+    }
     if cli.computer != "off" && !niucode_provider::model_supports_images(&model) {
         eprintln!(
             "warning: computer observe sends screenshots; model {model} has no vision support"
@@ -1101,6 +1109,7 @@ async fn run_tui(cli: &Cli, store: &Store, replay: Option<PathBuf>) -> Result<()
         plan: cli.plan,
         computer: cli.computer.clone(),
         computer_log_input: cli.computer_log_input,
+        computer_keep_frames: cli.computer_keep_frames,
         approval_keys: niucode::ApprovalKeys::custom('y', 'n', 's')
             .expect("distinct approval keys"),
         extra_tools: memory_tool::tools(store.root().to_path_buf()),

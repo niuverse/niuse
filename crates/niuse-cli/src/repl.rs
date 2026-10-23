@@ -302,6 +302,7 @@ pub struct App {
     pub max_steps: usize,
     pub computer: Option<Arc<Mutex<ComputerRuntime>>>,
     pub computer_log_input: bool,
+    pub computer_keep_frames: bool,
     pub prompt: String,
     pub prompt_tokens: usize,
     pub thread_path: PathBuf,
@@ -333,6 +334,9 @@ impl App {
         if cli.computer_log_input && cli.computer != "off" {
             eprintln!("warning: --computer-log-input persists full typed desktop text in the session JSONL");
         }
+        if cli.computer_keep_frames && cli.computer != "off" {
+            eprintln!("warning: --computer-keep-frames persists observation screenshots in the session attachment store");
+        }
         if computer.is_some() && !niucode_provider::model_supports_images(&bundle.model) {
             eprintln!(
                 "warning: computer observe sends screenshots; model {} has no vision support",
@@ -354,6 +358,7 @@ impl App {
             max_steps: settings.max_steps,
             computer,
             computer_log_input: cli.computer_log_input,
+            computer_keep_frames: cli.computer_keep_frames,
             prompt: String::new(),
             prompt_tokens: 0,
             thread_path,
@@ -565,6 +570,7 @@ impl App {
             config.mcp_host = self.mcp_host.clone();
             config.computer = self.computer.clone();
             config.computer_log_input = self.computer_log_input;
+            config.computer_keep_frames = self.computer_keep_frames;
             let mut renderer = Renderer::new();
             let result = driver::run_turn(
                 self.provider.as_ref(),
@@ -1245,6 +1251,7 @@ pub async fn run_exec(
     config.mcp_host = app.mcp_host.clone();
     config.computer = app.computer.clone();
     config.computer_log_input = app.computer_log_input;
+    config.computer_keep_frames = app.computer_keep_frames;
     let mut renderer = Renderer::new();
     let mut log = log;
     let result = if let Some(store) = &attachment_store {

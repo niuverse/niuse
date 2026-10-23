@@ -29,7 +29,8 @@ vision capability probe, and web computer status).
 - **Web**: policy chip, `/api/status` computer state, and token-gated
   arm/stop; browser approvals remain the input gate.
 - **Privacy**: typed computer text is persisted only as length + SHA-256 by
-  default, with an explicit debug `--computer-log-input`; approvals show
+  default, with an explicit debug `--computer-log-input`; screenshots stay
+  ephemeral unless `--computer-keep-frames` is explicit; approvals show
   coordinates/keys/typed length, never typed text.
 - **Memory evidence**: reopened attachment store and reopened Markdown memory
   both feed a new session.
