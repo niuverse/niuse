@@ -239,6 +239,7 @@ and commit agree.
 | 103 | niucode M9-038 web clear | done | View-only clear, log unchanged |
 | 104 | niucode M9-039 web usage | done | Page-local in/out token chip |
 | 105 | niucode M9-040 web export | done | Download session Markdown |
+| 106 | niucode M9-041 web search | done | Filter transcript locally |
 
 ## The round ritual
 
