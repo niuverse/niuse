@@ -274,6 +274,7 @@ and commit agree.
 | 138 | niucode M9-070 mobile overlay | done | Backdrop, Escape, focus |
 | 139 | niucode M9-071 web keys | done | Ctrl+K, Ctrl+/, Tab trap |
 | 140 | niucode M9-072 export calls | done | Tool args in Markdown export |
+| 141 | niucode M9-073 copy tools | done | Copy tool output/commands |
 
 ## The round ritual
 
