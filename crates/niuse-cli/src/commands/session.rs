@@ -371,10 +371,12 @@ mod tests {
         let events = vec![
             Event::UserMessage {
                 text: "   ".into(),
+                attachments: Vec::new(),
                 ts: 1,
             },
             Event::UserMessage {
                 text: "x".repeat(70),
+                attachments: Vec::new(),
                 ts: 2,
             },
         ];

@@ -861,6 +861,7 @@ mod tests {
         let log = niucode_core::SessionLog::create(store.root()).unwrap();
         log.append(&Event::UserMessage {
             text: "exported prompt".into(),
+            attachments: Vec::new(),
             ts: 1,
         })
         .unwrap();
@@ -925,6 +926,7 @@ mod tests {
         let log = niucode_core::SessionLog::create(directory.path()).unwrap();
         log.append(&Event::UserMessage {
             text: "custom prompt".into(),
+            attachments: Vec::new(),
             ts: 1,
         })
         .unwrap();

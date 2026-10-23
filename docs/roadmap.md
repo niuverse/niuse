@@ -300,6 +300,7 @@ and commit agree.
 | 164 | niucode M9-086 computer protocol | done | ADR-0037 + observation/permission types |
 | 165 | niucode M9-087 vision parts | done | Image content + capability gate |
 | 166 | niucode M9-088 attachments | done | SHA-256 store + per-turn budget |
+| 167 | niucode M9-089 attachment events | done | Metadata refs, backward compatible |
 
 ## The round ritual
 

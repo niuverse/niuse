@@ -233,6 +233,7 @@ mod tests {
         for message in messages {
             log.append(&Event::UserMessage {
                 text: (*message).into(),
+                attachments: Vec::new(),
                 ts: now_ms(),
             })
             .unwrap();
