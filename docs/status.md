@@ -15,7 +15,7 @@ Both repositories are green. The board at <https://niuverse.github.io/niuse/> is
 
 **Released 2026-10-23:** `niucode 0.1.7` (all eight crates) and `niuse 0.1.13` are on crates.io; clean installs report `niucode 0.1.7` and `niuse 0.1.13`. The local `niuse` install includes the opt-in `web,tui` features for trying the product. See [published evidence](evidence/published-0.1.13.md).
 
-**New 100-round goal started:** native computer use and multimodal input. The first two increments are the observation-bound protocol crate/ADR-0037 and OpenAI-compatible vision content parts with a capability gate content-addressed attachment storage, and metadata-only attachment references on user events; Linux X11 is the first backend, macOS the second milestone. The design keeps desktop control in niucode and product policy/UX in niuse. The real dogfood calendar remains **2/10 days** and is not backfilled.
+**New 100-round goal started:** native computer use and multimodal input. The first two increments are the observation-bound protocol crate/ADR-0037 and OpenAI-compatible vision content parts with a capability gate content-addressed attachment storage, metadata-only attachment references on user events, and budgeted attachment turns sent as provider parts; Linux X11 is the first backend, macOS the second milestone. The design keeps desktop control in niucode and product policy/UX in niuse. The real dogfood calendar remains **2/10 days** and is not backfilled.
 
 ## Verify
 

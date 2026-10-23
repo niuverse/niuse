@@ -301,6 +301,7 @@ and commit agree.
 | 165 | niucode M9-087 vision parts | done | Image content + capability gate |
 | 166 | niucode M9-088 attachments | done | SHA-256 store + per-turn budget |
 | 167 | niucode M9-089 attachment events | done | Metadata refs, backward compatible |
+| 168 | niucode M9-090 attachment turns | done | Budget + image parts + text fences |
 
 ## The round ritual
 
