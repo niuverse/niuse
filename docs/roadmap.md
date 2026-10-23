@@ -255,6 +255,7 @@ and commit agree.
 | 119 | niucode M9-053 web a11y | done | Labels, log role, OS theme defaults |
 | 120 | niucode M9-054 DOM test | done | Unique ids, resolvable references |
 | 121 | niucode M9-055 web smoke | done | Headless DOM smoke test |
+| 122 | niucode M9-056 chip visual fix | done | Readable header buttons |
 
 ## The round ritual
 
