@@ -123,6 +123,9 @@ enum Command {
         /// Image file to attach to this turn (repeatable)
         #[arg(long, value_name = "PATH")]
         image: Vec<PathBuf>,
+        /// Native desktop policy: off, observe, control, or autonomous
+        #[arg(long, default_value = "off", value_parser = ["off", "observe", "control", "autonomous"])]
+        computer: String,
     },
     /// Inspect and edit durable memory
     Mem {
@@ -191,6 +194,9 @@ enum Command {
         /// Replay normalized provider turns from a fixture JSON (testing)
         #[arg(long)]
         replay: Option<PathBuf>,
+        /// Native desktop policy: off, observe, control, or autonomous
+        #[arg(long, default_value = "off", value_parser = ["off", "observe", "control", "autonomous"])]
+        computer: String,
     },
     /// Generate shell completions
     Completions {
@@ -558,7 +564,7 @@ async fn main() -> Result<()> {
         #[cfg(feature = "web")]
         Some(Command::Web { port }) => run_web(&cli, &store, port).await,
         #[cfg(feature = "tui")]
-        Some(Command::Tui { replay }) => run_tui(&cli, &store, replay).await,
+        Some(Command::Tui { replay, computer }) => run_tui(&cli, &store, replay, computer).await,
         Some(Command::Completions { .. }) => Ok(()),
         None => {
             let settings = settings::resolve(&cli, &store)?;
@@ -569,10 +575,11 @@ async fn main() -> Result<()> {
             prompt,
             attach,
             image,
+            computer,
         }) => {
             let settings = settings::resolve(&cli, &store)?;
             let app = repl::App::new(&cli, &settings, store)?;
-            repl::run_exec(app, prompt, attach, image).await
+            repl::run_exec(app, prompt, attach, image, computer).await
         }
         Some(Command::Mem { command }) => match command {
             MemCommand::List {
@@ -1043,7 +1050,12 @@ fn web_context(store: &Store) -> Result<serde_json::Value> {
 }
 
 #[cfg(feature = "tui")]
-async fn run_tui(cli: &Cli, store: &Store, replay: Option<PathBuf>) -> Result<()> {
+async fn run_tui(
+    cli: &Cli,
+    store: &Store,
+    replay: Option<PathBuf>,
+    computer: String,
+) -> Result<()> {
     let settings = settings::resolve(cli, store)?;
     let cwd = config::resolve_cwd(cli.cwd.clone())?;
     let (policy, approval, _) =
@@ -1077,6 +1089,7 @@ async fn run_tui(cli: &Cli, store: &Store, replay: Option<PathBuf>) -> Result<()
         network: settings.network,
         replay,
         plan: cli.plan,
+        computer,
         approval_keys: niucode::ApprovalKeys::custom('y', 'n', 's')
             .expect("distinct approval keys"),
         extra_tools: memory_tool::tools(store.root().to_path_buf()),
@@ -1146,14 +1159,29 @@ mod docs_tests {
     #[test]
     fn exec_parses_attachment_flags() {
         let cli = Cli::try_parse_from([
-            "niuse", "exec", "look", "--attach", "note.md", "--image", "shot.png",
+            "niuse",
+            "exec",
+            "look",
+            "--attach",
+            "note.md",
+            "--image",
+            "shot.png",
+            "--computer",
+            "observe",
         ])
         .expect("parse");
-        let Some(Command::Exec { attach, image, .. }) = cli.command else {
+        let Some(Command::Exec {
+            attach,
+            image,
+            computer,
+            ..
+        }) = cli.command
+        else {
             panic!("expected exec");
         };
         assert_eq!(attach, [PathBuf::from("note.md")]);
         assert_eq!(image, [PathBuf::from("shot.png")]);
+        assert_eq!(computer, "observe");
     }
 
     #[test]

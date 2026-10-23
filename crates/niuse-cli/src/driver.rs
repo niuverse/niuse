@@ -9,9 +9,11 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 use niucode_agent::{
     project_history, run_with_attachments, run_with_history, AgentConfig, AgentEvent, ApprovalMode,
-    ApprovalRequest, RunOutcome,
+    ApprovalRequest, ComputerRuntime, RunOutcome,
 };
 use niucode_attachments::AttachmentStore;
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+use niucode_computer::ComputerPolicy;
 use niucode_core::{load, now_ms, AttachmentRef, Event, SessionLog};
 use niucode_mcp::{McpConfig, McpHost};
 use niucode_provider::{ChatMessage, Provider};
@@ -146,6 +148,53 @@ pub fn agent_config(
         config.context.budget_tokens = budget;
     }
     config
+}
+
+/// Attach the platform computer backend to a product turn. `off` is a no-op;
+/// a missing display or TCC permission warns instead of failing the turn.
+pub fn configure_computer(config: &mut AgentConfig, policy: &str) -> Result<()> {
+    if policy == "off" {
+        return Ok(());
+    }
+    #[cfg(target_os = "linux")]
+    {
+        let policy: ComputerPolicy = policy
+            .parse()
+            .with_context(|| format!("invalid --computer policy {policy:?}"))?;
+        match niucode_computer_x11::X11Backend::connect(None) {
+            Ok(backend) => {
+                let mut runtime = ComputerRuntime::new(Box::new(backend), policy);
+                runtime.arm().context("arm computer use")?;
+                config.computer = Some(Arc::new(std::sync::Mutex::new(runtime)));
+                eprintln!("computer: policy={} armed", policy.as_str());
+            }
+            Err(error) => eprintln!("warning: computer unavailable: {error}"),
+        }
+    }
+    #[cfg(target_os = "macos")]
+    {
+        let policy: ComputerPolicy = policy
+            .parse()
+            .with_context(|| format!("invalid --computer policy {policy:?}"))?;
+        match niucode_computer_macos::MacBackend::connect(None) {
+            Ok(backend) => {
+                let mut runtime = ComputerRuntime::new(Box::new(backend), policy);
+                runtime.arm().context("arm computer use")?;
+                config.computer = Some(Arc::new(std::sync::Mutex::new(runtime)));
+                eprintln!(
+                    "computer: policy={} armed (macOS TCC permissions required)",
+                    policy.as_str()
+                );
+            }
+            Err(error) => eprintln!("warning: computer unavailable: {error}"),
+        }
+    }
+    #[cfg(not(any(target_os = "linux", target_os = "macos")))]
+    {
+        let _ = &mut *config;
+        eprintln!("warning: computer use is not supported in this build (got {policy:?})");
+    }
+    Ok(())
 }
 
 /// Run one user turn with attachments. The session history is rebuilt by the

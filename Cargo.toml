@@ -29,6 +29,9 @@ walkdir = "2.5"
 # see docs/plan.md §8.
 niucode-agent = { path = "../niucode/crates/niucode-agent", version = "0.1.7" }
 niucode-attachments = { path = "../niucode/crates/niucode-attachments", version = "0.1.7" }
+niucode-computer = { path = "../niucode/crates/niucode-computer", version = "0.1.7" }
+niucode-computer-x11 = { path = "../niucode/crates/niucode-computer-x11", version = "0.1.7" }
+niucode-computer-macos = { path = "../niucode/crates/niucode-computer-macos", version = "0.1.7" }
 niucode = { path = "../niucode/crates/niucode-cli", version = "0.1.7" }
 niucode-auth = { path = "../niucode/crates/niucode-auth", version = "0.1.7" }
 niucode-core = { path = "../niucode/crates/niucode-core", version = "0.1.7" }

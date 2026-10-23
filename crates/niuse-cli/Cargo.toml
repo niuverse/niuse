@@ -28,6 +28,7 @@ serde_json.workspace = true
 niuse-core = { path = "../niuse-core", version = "0.1.13" }
 niucode-agent.workspace = true
 niucode-attachments.workspace = true
+niucode-computer.workspace = true
 niucode-auth.workspace = true
 niucode-core.workspace = true
 niucode-mcp.workspace = true
@@ -36,6 +37,12 @@ niucode-tools.workspace = true
 rustyline = "15"
 tokio.workspace = true
 toml.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+niucode-computer-x11.workspace = true
+
+[target.'cfg(target_os = "macos")'.dependencies]
+niucode-computer-macos.workspace = true
 
 [dev-dependencies]
 tempfile = "3"

@@ -1151,6 +1151,7 @@ pub async fn run_exec(
     prompt: String,
     attach: Vec<PathBuf>,
     image: Vec<PathBuf>,
+    computer: String,
 ) -> Result<()> {
     app.mcp_host = driver::mount_mcp(app.allow_mcp_write, app.approval).await;
     let log = driver::new_session(&app.store.root().join("sessions"))?;
@@ -1196,6 +1197,7 @@ pub async fn run_exec(
     config.extra_tools = crate::memory_tool::tools(app.store.root().to_path_buf());
     driver::apply_plan_mode(&mut config, app.plan_mode);
     config.mcp_host = app.mcp_host.clone();
+    crate::driver::configure_computer(&mut config, &computer)?;
     let mut renderer = Renderer::new();
     let mut log = log;
     let result = if let Some(store) = &attachment_store {

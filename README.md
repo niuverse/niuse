@@ -86,6 +86,7 @@ Global flags: `--preset`, `--model`, `--no-thinking`, `--cwd`, `--sandbox`, `--a
 niuse                         interactive REPL (resumes the same thread)
 niuse --plan                  start read-only plan mode (read/grep/glob)
 niuse exec "<task>"           run one turn; candidates are printed, never written
+niuse exec "<task>" --computer observe   native desktop observation (Linux X11 / macOS)
 niuse identity init|show|edit
 niuse user show|edit
 niuse mem list|search|show|edit|add|forget|confirm|review|prune
