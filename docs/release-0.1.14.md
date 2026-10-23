@@ -32,6 +32,8 @@ vision capability probe, and web computer status).
   default, with an explicit debug `--computer-log-input`; screenshots stay
   ephemeral unless `--computer-keep-frames` is explicit; approvals show
   coordinates/keys/typed length, never typed text.
+- **Doctor**: `niuse doctor` reports X11 readiness/XTEST or macOS TCC and
+  points at the kernel `niucode computer doctor`.
 - **Vision budget**: every provider request carries at most four images; the
   oldest become a text marker.
 - **Memory evidence**: reopened attachment store and reopened Markdown memory

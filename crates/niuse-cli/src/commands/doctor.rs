@@ -241,6 +241,8 @@ pub fn doctor(store: &Store, preset: &str, json: bool) -> Result<()> {
         None => report.record(Level::Ok, "pin", "no niucode.rev (installed binary)"),
     }
 
+    computer_check(&mut report);
+
     if json {
         let payload = serde_json::json!({
             "checks": report.checks,
@@ -265,6 +267,66 @@ enum PinStatus {
     Match(String),
     Drift { pinned: String, local: String },
     Missing,
+}
+
+#[cfg(target_os = "linux")]
+fn computer_check(report: &mut Report) {
+    if std::env::var_os("DISPLAY").is_none() {
+        report.record(
+            Level::Warn,
+            "computer",
+            "DISPLAY is unset; `--computer` needs an X11 display",
+        );
+        return;
+    }
+    match niucode_computer_x11::X11Backend::connect(None) {
+        Ok(backend) => match backend.list_windows() {
+            Ok(windows) => report.record(
+                Level::Ok,
+                "computer",
+                format!(
+                    "X11 ready · {} window(s) · XTEST {}",
+                    windows.len(),
+                    if backend.has_xtest() { "yes" } else { "no" }
+                ),
+            ),
+            Err(error) => report.record(Level::Warn, "computer", format!("window list: {error}")),
+        },
+        Err(error) => report.record(
+            Level::Warn,
+            "computer",
+            format!("X11 unavailable: {error}; run `niucode computer doctor`"),
+        ),
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn computer_check(report: &mut Report) {
+    let screen = niucode_computer_macos::MacBackend::screen_access();
+    let accessibility = niucode_computer_macos::MacBackend::accessibility_access();
+    let level = if screen && accessibility {
+        Level::Ok
+    } else {
+        Level::Warn
+    };
+    report.record(
+        level,
+        "computer",
+        format!(
+            "Screen Recording {}, Accessibility {}; run `niucode computer doctor`",
+            if screen { "granted" } else { "denied" },
+            if accessibility { "granted" } else { "denied" }
+        ),
+    );
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
+fn computer_check(report: &mut Report) {
+    report.record(
+        Level::Warn,
+        "computer",
+        "native computer use is not supported on this platform",
+    );
 }
 
 fn active_days(metrics: &str) -> usize {
