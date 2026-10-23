@@ -178,6 +178,19 @@ Four views: Architecture (default), Work, Docs, Decisions. Sources are `docs/das
 
 `.github/workflows/pages.yml` deploys the generated board to GitHub Pages. A private repository needs GitHub Pro/Team/Enterprise; on the Free plan the workflow skips with a notice until Pages is available.
 
+## Web
+
+Serve a local, loopback-only browser surface with the same identity, user,
+memory, goals, and plan prompt as the REPL:
+
+```sh
+niuse web --port 8788
+```
+
+It reuses niucode's local SSE server, browser approvals, Markdown, and MathML.
+The session is `~/.niuse/thread.jsonl`. Chat is workspace-write with explicit
+browser approval; there is no remote mode. Product sidebars are next.
+
 ## Experimental TUI
 
 The default REPL stays on rustyline. An opt-in build reuses niucode's TUI with niuse hooks:

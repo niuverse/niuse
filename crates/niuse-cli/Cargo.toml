@@ -13,10 +13,10 @@ path = "src/main.rs"
 
 [features]
 default = []
-tui = ["dep:niucode"]
+tui = []
 
 [dependencies]
-niucode = { workspace = true, optional = true }
+niucode.workspace = true
 anyhow.workspace = true
 async-trait.workspace = true
 clap.workspace = true

@@ -5,7 +5,7 @@
     "title": "niuse",
     "tagline": "personal engineering companion on niucode",
     "summary": "A personal engineering companion on top of niucode: seven Markdown stores for identity, memory, and human goals, an opt-in shared TUI, project context, and a long-horizon roadmap. The board records architecture, decisions, and iteration; it is not runtime monitoring.",
-    "status": "M2/M5 gates · M3/M6/M7/M8 done",
+    "status": "M2/M5 gates · M3/M6/M7/M8 done · M10 web",
     "repo": "niuverse/niuse",
     "language": "Rust"
   },
@@ -118,6 +118,18 @@
         "offline personal-agent suite covers recall, briefs, goals, and delegation",
         "memory-on/off A/B shows a behavioural difference",
         "dogfood regressions block a release"
+      ]
+    },
+    {
+      "id": "M10",
+      "title": "Web companion",
+      "status": "active",
+      "goal": "把 niuse 的产品上下文和交互带到本地浏览器，同时复用 niucode 的传输、审批和渲染。",
+      "exit": [
+        "niuse web 使用七类 store 组合出产品 prompt，并绑定本地 thread",
+        "身份、用户、记忆、计划在浏览器可见",
+        "复用 niucode 的 SSE、审批、Markdown 和 MathML",
+        "只绑定 127.0.0.1，无远程认证面"
       ]
     }
   ],

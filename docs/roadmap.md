@@ -212,6 +212,7 @@ and commit agree.
 | 76 | niucode M9-011 web approvals | done | Browser Allow/Deny releases the turn |
 | 77 | niucode M9-012 web Markdown | done | HTML, tables, safe links in the browser |
 | 78 | niucode M9-013 web MathML | done | Native MathML, no remote assets |
+| 79 | M10-001 niuse web | done | Product prompt over niucode web |
 
 ## The round ritual
 

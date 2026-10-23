@@ -168,6 +168,12 @@ enum Command {
         #[arg(long)]
         json: bool,
     },
+    /// Serve the local web companion (identity/memory prompt, browser chat)
+    Web {
+        /// Loopback port (0 chooses an ephemeral port)
+        #[arg(long, default_value_t = 8788)]
+        port: u16,
+    },
     /// Experimental: run niucode's TUI with niuse hooks
     #[cfg(feature = "tui")]
     Tui {
@@ -538,6 +544,7 @@ async fn main() -> Result<()> {
     store.init()?;
 
     match command {
+        Some(Command::Web { port }) => run_web(&cli, &store, port).await,
         #[cfg(feature = "tui")]
         Some(Command::Tui { replay }) => run_tui(&cli, &store, replay).await,
         Some(Command::Completions { .. }) => Ok(()),
@@ -793,6 +800,42 @@ async fn main() -> Result<()> {
             commands::status(&store, &thread, &cwd, json)
         }
     }
+}
+
+async fn run_web(cli: &Cli, store: &Store, port: u16) -> Result<()> {
+    let settings = settings::resolve(cli, store)?;
+    let cwd = config::resolve_cwd(cli.cwd.clone())?;
+    let model = settings
+        .model
+        .clone()
+        .unwrap_or_else(|| "deepseek-flash".to_string());
+    let identity = store.identity()?;
+    let user = store.user()?;
+    let memories = store.memories()?;
+    let goals = store.goals()?;
+    let plan = store.plan()?;
+    let loops = store.loops()?;
+    let journal = store.recent_journal(7)?;
+    let composition = niuse_core::prompt::compose_with_plan(
+        identity.as_deref(),
+        user.as_deref(),
+        &goals,
+        &plan,
+        &memories,
+        &loops,
+        &journal,
+        niuse_core::date::Date::today(),
+    );
+    niucode::web::serve(niucode::web::Options {
+        session: store.session_path(),
+        port,
+        preset: settings.provider,
+        model: Some(model),
+        cwd,
+        max_steps: settings.max_steps,
+        system_prompt: Some(composition.system),
+    })
+    .await
 }
 
 #[cfg(feature = "tui")]
