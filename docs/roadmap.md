@@ -230,6 +230,7 @@ and commit agree.
 | 94 | niucode M9-029 sidebar filter | done | Collapsible/filterable context |
 | 95 | M10-004 live web context | done | Context re-read per request |
 | 96 | niucode M9-031 web composer | done | Enter sends, Shift+Enter newline |
+| 97 | niucode M9-032 prompt history | done | Local ↑/↓ recall |
 
 ## The round ritual
 
