@@ -338,6 +338,7 @@ and commit agree.
 | 202 | niucode M9-117 web control tests | done | Configured stop + thumbnail marker |
 | 203 | niucode M9-118 input limits | done | 10k text / 64 key / 50 scroll |
 | 204 | niucode M9-119 release runbook | done | Order, install, rollback, gate |
+| 205 | niucode M9-120 computer audit | done | Structured action event |
 
 ## The round ritual
 
