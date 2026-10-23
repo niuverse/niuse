@@ -267,6 +267,7 @@ and commit agree.
 | 131 | niucode M9-064 link hardening | done | New-tab links, blocked schemes |
 | 132 | niucode M9-065 href allowlist | done | Parsed schemes, mixed-case safe |
 | 133 | niucode M9-066 loopback guards | done | Host/Origin checks, CSP |
+| 134 | niucode web threat model | done | Controls, tests, residual risks |
 
 ## The round ritual
 
