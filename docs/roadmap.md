@@ -221,6 +221,7 @@ and commit agree.
 | 85 | niucode M9-020 table cells | done | Inline styles survive cell layout |
 | 86 | niucode M9-021 code tokens | done | Keywords/strings/comments/numbers |
 | 87 | niucode M9-022 web code | done | Highlighted code in browser HTML |
+| 88 | niucode M9-023 web streaming MD | done | Markdown forms during the turn |
 
 ## The round ritual
 
