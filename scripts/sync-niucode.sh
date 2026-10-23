@@ -10,6 +10,7 @@ if ! git -C "$repo" rev-parse --verify "${rev}^{commit}" >/dev/null 2>&1; then
   echo "unknown niucode revision: $rev" >&2
   exit 1
 fi
+rev="$(git -C "$repo" rev-parse "${rev}^{commit}")"
 
 printf '%s\n' "$rev" > "$root/niucode.rev"
 echo "pinned niucode ${rev:0:7}"
