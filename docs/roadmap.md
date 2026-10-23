@@ -312,6 +312,7 @@ and commit agree.
 | 176 | niucode M9-097 X11 input | done | XTEST click/type/key/scroll |
 | 177 | niucode M9-098 computer tool | done | Schema + parser + session registry |
 | 178 | niucode M9-099 agent computer | done | Tool image parts + approval bridge + exec flag |
+| 179 | niucode M9-100 TUI computer | done | tui --computer + /computer stop |
 
 ## The round ritual
 
