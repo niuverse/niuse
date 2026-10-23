@@ -258,6 +258,7 @@ and commit agree.
 | 122 | niucode M9-056 chip visual fix | done | Readable header buttons |
 | 123 | niucode visual audit | done | Populated transcript screenshots |
 | 124 | niucode M9-057 contrast/mobile | done | Deny readable, mobile header, /export |
+| 125 | niucode M9-058 TUI motion | done | Reduced-motion env fallback |
 
 ## The round ritual
 
