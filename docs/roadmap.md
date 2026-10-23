@@ -310,6 +310,7 @@ and commit agree.
 | 174 | niucode M9-095 @path | done | Existing-file @path + follow-up images |
 | 175 | niucode M9-096 X11 observe | done | Windows + PNG + observation token |
 | 176 | niucode M9-097 X11 input | done | XTEST click/type/key/scroll |
+| 177 | niucode M9-098 computer tool | done | Schema + parser + session registry |
 
 ## The round ritual
 
