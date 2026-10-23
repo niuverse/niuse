@@ -284,6 +284,7 @@ and commit agree.
 | 148 | niucode M9-078 stream throttle | done | HTML render capped at 100ms/64B |
 | 149 | niucode M9-079 publish dry run | done | 8 crates package+verify, no upload |
 | 150 | M10-010 niuse dry run | done | Both niuse crates package+verify |
+| 151 | M10-011 feature dry run | done | tui passes; web needs niucode 0.1.7 |
 
 ## The round ritual
 
