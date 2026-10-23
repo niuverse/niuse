@@ -8,7 +8,8 @@ use std::sync::{Arc, Mutex};
 
 use anyhow::{bail, Context, Result};
 use niucode_agent::ApprovalMode;
-use niucode_core::{load, Event};
+use niucode_attachments::{AttachmentKind, AttachmentStore};
+use niucode_core::{load, AttachmentRef, Event};
 use niucode_mcp::McpHost;
 use niucode_provider::Provider;
 use niucode_tools::SandboxPolicy;
@@ -1114,9 +1115,62 @@ enum Flow {
     Quit,
 }
 
-pub async fn run_exec(mut app: App, prompt: String) -> Result<()> {
+pub(crate) fn ingest_attachments(
+    paths: &[PathBuf],
+    expected: Option<AttachmentKind>,
+    store: &AttachmentStore,
+) -> Result<Vec<AttachmentRef>> {
+    let mut references = Vec::new();
+    for path in paths {
+        let bytes =
+            fs::read(path).with_context(|| format!("read attachment {}", path.display()))?;
+        let name = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("attachment");
+        let reference = store
+            .put(&bytes, Some(name), None)
+            .with_context(|| format!("ingest attachment {}", path.display()))?;
+        if let Some(expected) = expected {
+            if reference.kind != expected {
+                bail!(
+                    "{} is {:?}, not {:?}; use the matching --attach/--image flag",
+                    path.display(),
+                    reference.kind,
+                    expected
+                );
+            }
+        }
+        references.push(reference);
+    }
+    Ok(references)
+}
+
+pub async fn run_exec(
+    mut app: App,
+    prompt: String,
+    attach: Vec<PathBuf>,
+    image: Vec<PathBuf>,
+) -> Result<()> {
     app.mcp_host = driver::mount_mcp(app.allow_mcp_write, app.approval).await;
     let log = driver::new_session(&app.store.root().join("sessions"))?;
+    let mut attachments = Vec::new();
+    let attachment_store = if attach.is_empty() && image.is_empty() {
+        None
+    } else {
+        let store = AttachmentStore::open(app.store.root().join("attachments"))?;
+        attachments.extend(ingest_attachments(
+            &attach,
+            Some(AttachmentKind::Text),
+            &store,
+        )?);
+        attachments.extend(ingest_attachments(
+            &image,
+            Some(AttachmentKind::Image),
+            &store,
+        )?);
+        Some(store)
+    };
     if let Some(host) = &app.mcp_host {
         driver::record_mcp_mounts(&log, host)?;
     }
@@ -1144,15 +1198,28 @@ pub async fn run_exec(mut app: App, prompt: String) -> Result<()> {
     config.mcp_host = app.mcp_host.clone();
     let mut renderer = Renderer::new();
     let mut log = log;
-    let result = driver::run_turn(
-        app.provider.as_ref(),
-        &mut log,
-        &config,
-        &prompt,
-        Vec::new(),
-        &mut renderer,
-    )
-    .await;
+    let result = if let Some(store) = &attachment_store {
+        driver::run_turn_with_attachments(
+            app.provider.as_ref(),
+            &mut log,
+            &config,
+            &prompt,
+            attachments,
+            store,
+            &mut renderer,
+        )
+        .await
+    } else {
+        driver::run_turn(
+            app.provider.as_ref(),
+            &mut log,
+            &config,
+            &prompt,
+            Vec::new(),
+            &mut renderer,
+        )
+        .await
+    };
     let parsed = renderer.finish();
     let usage = renderer.usage();
     if usage.input + usage.output + usage.cached > 0 {

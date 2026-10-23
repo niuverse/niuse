@@ -115,7 +115,15 @@ enum PlanCommand {
 #[derive(Subcommand, Debug, Clone)]
 enum Command {
     /// Run one prompt through the agent, then exit
-    Exec { prompt: String },
+    Exec {
+        prompt: String,
+        /// Text file to attach to this turn (repeatable)
+        #[arg(long, value_name = "PATH")]
+        attach: Vec<PathBuf>,
+        /// Image file to attach to this turn (repeatable)
+        #[arg(long, value_name = "PATH")]
+        image: Vec<PathBuf>,
+    },
     /// Inspect and edit durable memory
     Mem {
         #[command(subcommand)]
@@ -557,10 +565,14 @@ async fn main() -> Result<()> {
             let app = repl::App::new(&cli, &settings, store)?;
             app.run().await
         }
-        Some(Command::Exec { prompt }) => {
+        Some(Command::Exec {
+            prompt,
+            attach,
+            image,
+        }) => {
             let settings = settings::resolve(&cli, &store)?;
             let app = repl::App::new(&cli, &settings, store)?;
-            repl::run_exec(app, prompt).await
+            repl::run_exec(app, prompt, attach, image).await
         }
         Some(Command::Mem { command }) => match command {
             MemCommand::List {
@@ -1129,6 +1141,42 @@ mod docs_tests {
             .any(|section| section["title"] == "report · 7d"));
         assert!(sections.iter().any(|section| section["title"] == "threads"));
         assert!(sections.iter().any(|section| section["title"] == "thread"));
+    }
+
+    #[test]
+    fn exec_parses_attachment_flags() {
+        let cli = Cli::try_parse_from([
+            "niuse", "exec", "look", "--attach", "note.md", "--image", "shot.png",
+        ])
+        .expect("parse");
+        let Some(Command::Exec { attach, image, .. }) = cli.command else {
+            panic!("expected exec");
+        };
+        assert_eq!(attach, [PathBuf::from("note.md")]);
+        assert_eq!(image, [PathBuf::from("shot.png")]);
+    }
+
+    #[test]
+    fn attachment_ingestion_enforces_kind() {
+        let directory = tempfile::tempdir().unwrap();
+        let store =
+            niucode_attachments::AttachmentStore::open(directory.path().join("attachments"))
+                .unwrap();
+        let note = directory.path().join("note.txt");
+        std::fs::write(&note, "hello").unwrap();
+        let refs = repl::ingest_attachments(
+            std::slice::from_ref(&note),
+            Some(niucode_attachments::AttachmentKind::Text),
+            &store,
+        )
+        .unwrap();
+        assert_eq!(refs.len(), 1);
+        assert!(repl::ingest_attachments(
+            std::slice::from_ref(&note),
+            Some(niucode_attachments::AttachmentKind::Image),
+            &store
+        )
+        .is_err());
     }
 
     #[test]

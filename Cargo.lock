@@ -1707,6 +1707,7 @@ dependencies = [
  "futures-util",
  "niucode",
  "niucode-agent",
+ "niucode-attachments",
  "niucode-auth",
  "niucode-core",
  "niucode-mcp",

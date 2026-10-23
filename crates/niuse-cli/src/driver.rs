@@ -8,10 +8,11 @@ use std::time::Duration;
 
 use anyhow::{Context, Result};
 use niucode_agent::{
-    project_history, run_with_history, AgentConfig, AgentEvent, ApprovalMode, ApprovalRequest,
-    RunOutcome,
+    project_history, run_with_attachments, run_with_history, AgentConfig, AgentEvent, ApprovalMode,
+    ApprovalRequest, RunOutcome,
 };
-use niucode_core::{load, now_ms, Event, SessionLog};
+use niucode_attachments::AttachmentStore;
+use niucode_core::{load, now_ms, AttachmentRef, Event, SessionLog};
 use niucode_mcp::{McpConfig, McpHost};
 use niucode_provider::{ChatMessage, Provider};
 use niucode_tools::SandboxPolicy;
@@ -145,6 +146,38 @@ pub fn agent_config(
         config.context.budget_tokens = budget;
     }
     config
+}
+
+/// Run one user turn with attachments. The session history is rebuilt by the
+/// agent's attachment-aware projection; `run_turn` remains the text-only path.
+pub async fn run_turn_with_attachments(
+    provider: &dyn Provider,
+    log: &mut SessionLog,
+    config: &AgentConfig,
+    prompt: &str,
+    attachments: Vec<AttachmentRef>,
+    store: &AttachmentStore,
+    renderer: &mut Renderer,
+) -> Result<Option<RunOutcome>> {
+    let mut observer = |event: AgentEvent| renderer.event(event);
+    let mut approver = |request: &ApprovalRequest| approve(request);
+
+    let future = run_with_attachments(
+        provider,
+        log,
+        config,
+        prompt,
+        attachments,
+        store,
+        &mut approver,
+        &mut observer,
+    );
+    tokio::pin!(future);
+
+    tokio::select! {
+        result = &mut future => result.map(Some),
+        _ = tokio::signal::ctrl_c() => Ok(None),
+    }
 }
 
 /// Run one user turn. `Ok(None)` means the user cancelled with Ctrl-C.

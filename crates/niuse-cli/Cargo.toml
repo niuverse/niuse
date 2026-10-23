@@ -27,6 +27,7 @@ serde.workspace = true
 serde_json.workspace = true
 niuse-core = { path = "../niuse-core", version = "0.1.13" }
 niucode-agent.workspace = true
+niucode-attachments.workspace = true
 niucode-auth.workspace = true
 niucode-core.workspace = true
 niucode-mcp.workspace = true
