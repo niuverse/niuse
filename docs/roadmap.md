@@ -262,6 +262,7 @@ and commit agree.
 | 126 | niucode M9-059 viewport rules | done | Rules fill the terminal width |
 | 127 | niucode M9-060 session approval | done | Allow session in web |
 | 128 | niucode M9-061 approval countdown | done | 5:00 deadline, disabled at zero |
+| 129 | niucode M9-062 tool approval | done | Allow only the requested tool |
 
 ## The round ritual
 
