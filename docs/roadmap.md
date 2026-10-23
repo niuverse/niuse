@@ -219,6 +219,7 @@ and commit agree.
 | 83 | niucode M9-018 lists/rules | done | Ordered lists and horizontal rules in TUI |
 | 84 | niucode M9-019 table chrome | done | Bold headers, dim borders |
 | 85 | niucode M9-020 table cells | done | Inline styles survive cell layout |
+| 86 | niucode M9-021 code tokens | done | Keywords/strings/comments/numbers |
 
 ## The round ritual
 
