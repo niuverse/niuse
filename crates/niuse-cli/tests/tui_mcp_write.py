@@ -59,6 +59,11 @@ class Pane:
                 raise AssertionError(f"missing {marker!r}\n{self.transcript[-6000:]!r}")
             self.pump(0.05)
 
+    def settle(self, seconds):
+        deadline = time.monotonic() + seconds
+        while time.monotonic() < deadline:
+            self.pump(0.05)
+
     def close(self):
         if self.child.poll() is None:
             self.child.terminate()
@@ -134,7 +139,11 @@ PATH = {json.dumps(os.environ.get("PATH", "/usr/bin:/bin"))}
             assert mount.get("server") == "notes"
             assert mount.get("write_tools") == ["mcp__notes__create_note"]
             assert len(mount.get("config_hash", "")) == 16, mount
-            print(f"PTY mutating MCP {mode}: preview, outcome, and mount audit correct")
+            pane.settle(0.3)
+            os.write(pane.master, b"/evidence\r")
+            pane.wait_for(b"writes:")
+            pane.wait_for(b"mcp mount(s)")
+            print(f"PTY mutating MCP {mode}: preview, outcome, mount audit, evidence correct")
         finally:
             pane.close()
 

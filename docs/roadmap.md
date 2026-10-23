@@ -197,6 +197,7 @@ and commit agree.
 | 61 | M5-011 TUI command compose | done | Brief, report, and steps run back-to-back |
 | 62 | M3-006 niuse 0.1.12 | ready | Core package passes; upload is next |
 | 63 | M8-008 write MCP surface | done | Flag, write pack, TUI deny/allow proven |
+| 64 | M8-009 evidence mounts | done | /evidence shows servers, writers, hashes |
 
 ## The round ritual
 

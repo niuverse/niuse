@@ -32,6 +32,13 @@ pub struct Delegation {
     pub turns: u64,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct McpMount {
+    pub server: String,
+    pub config_hash: String,
+    pub write_tools: Vec<String>,
+}
+
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize)]
 pub struct Evidence {
     pub tools: usize,
@@ -43,6 +50,7 @@ pub struct Evidence {
     #[serde(default)]
     pub plan: Vec<PlanStep>,
     pub delegations: Vec<Delegation>,
+    pub mounts: Vec<McpMount>,
 }
 
 pub fn from_thread(path: &Path) -> Result<Evidence> {
@@ -144,6 +152,18 @@ pub fn from_events(events: &[Event]) -> Evidence {
                     step: step.clone(),
                 });
             }
+            Event::McpMount {
+                server,
+                config_hash,
+                write_tools,
+                ..
+            } => {
+                evidence.mounts.push(McpMount {
+                    server: server.clone(),
+                    config_hash: config_hash.clone(),
+                    write_tools: write_tools.clone(),
+                });
+            }
             Event::Approval { allowed, .. } if !allowed => {
                 evidence.denied += 1;
             }
@@ -163,6 +183,7 @@ impl Evidence {
             && self.verifications.is_empty()
             && self.plan.is_empty()
             && self.delegations.is_empty()
+            && self.mounts.is_empty()
             && self.denied == 0
     }
 
@@ -190,13 +211,14 @@ impl Evidence {
         }
         let passed = self.checks.iter().filter(|check| check.ok).count();
         let mut out = format!(
-            "evidence · {} tool call(s) · {} file(s) · {}/{} check(s) · {} verification(s) · {} delegated · {} failure(s)\n",
+            "evidence · {} tool call(s) · {} file(s) · {}/{} check(s) · {} verification(s) · {} delegated · {} mcp mount(s) · {} failure(s)\n",
             self.tools,
             self.files.len(),
             passed,
             self.checks.len(),
             self.verifications.len(),
             self.delegations.len(),
+            self.mounts.len(),
             self.failures
         );
         if !self.files.is_empty() {
@@ -263,6 +285,20 @@ impl Evidence {
                         .map(|step| format!("[{step}] "))
                         .unwrap_or_default(),
                     check.command
+                ));
+            }
+        }
+        if !self.mounts.is_empty() {
+            out.push_str("mcp\n");
+            for mount in &self.mounts {
+                let writes = if mount.write_tools.is_empty() {
+                    "read-only".to_string()
+                } else {
+                    format!("writes: {}", mount.write_tools.join(", "))
+                };
+                out.push_str(&format!(
+                    "  {} · {} · {}\n",
+                    mount.server, writes, mount.config_hash
                 ));
             }
         }
@@ -395,6 +431,18 @@ mod tests {
         };
         assert_eq!(evidence.step_state(&step), "verification failed");
         assert!(evidence.render().contains("verification failed"));
+    }
+
+    #[test]
+    fn mcp_mounts_show_their_write_allowlist() {
+        let evidence = from_events(&[event(
+            r#"{"type":"mcp_mount","server":"notes","config_hash":"0123456789abcdef","write_tools":["mcp__notes__create_note"],"ts":1}"#,
+        )]);
+        let rendered = evidence.render();
+        assert!(rendered.contains("1 mcp mount(s)"));
+        assert!(rendered.contains("notes · writes: mcp__notes__create_note"));
+        assert!(rendered.contains("0123456789abcdef"));
+        assert!(!evidence.is_empty());
     }
 
     #[test]
