@@ -36,5 +36,4 @@ the product surface. There was no way to see what chapters existed.
 
 ## Notes
 
-This is visibility, not navigation. Switching to an archived thread needs a
-server-side session switch protocol with an allowlist.
+This was visibility only. **M10-007** adds the allowlisted switch protocol.

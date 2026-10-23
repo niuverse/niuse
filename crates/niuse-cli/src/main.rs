@@ -847,6 +847,13 @@ async fn run_web(cli: &Cli, store: &Store, port: u16) -> Result<()> {
             move || web_context(&context_store).unwrap_or_else(|_| json!({"brand": "niuse"}))
         })),
         allow_new: true,
+        switch_session_provider: Some(std::sync::Arc::new({
+            let store = store.clone();
+            let cwd = cwd.clone();
+            let model = model.clone();
+            let provider = settings.provider.clone();
+            move |id| web_switch_thread(&store, id, &cwd, &model, &provider)
+        })),
         new_session_provider: Some(std::sync::Arc::new({
             let store = store.clone();
             let provider = settings.provider.clone();
@@ -867,6 +874,45 @@ fn web_new_thread(
 ) -> Result<PathBuf> {
     let active = store.session_path();
     driver::archive_thread(&active, &store.threads_dir())?;
+    let thread = driver::open_thread(
+        &active,
+        &driver::SessionMeta {
+            cwd,
+            model,
+            provider,
+            policy: niucode_tools::SandboxPolicy::new(
+                niucode_tools::SandboxMode::WorkspaceWrite,
+                niucode_tools::NetworkMode::Off,
+            ),
+            approval: niucode_agent::ApprovalMode::Ask,
+        },
+    )?;
+    Ok(thread.path.clone())
+}
+
+#[cfg(feature = "web")]
+fn web_switch_thread(
+    store: &Store,
+    id: &str,
+    cwd: &std::path::Path,
+    model: &str,
+    provider: &str,
+) -> Result<PathBuf> {
+    if id.is_empty()
+        || !id
+            .chars()
+            .all(|character| character.is_ascii_alphanumeric() || matches!(character, '-' | '_'))
+    {
+        anyhow::bail!("invalid thread id");
+    }
+    let selected = store.threads_dir().join(format!("{id}.jsonl"));
+    if !selected.exists() {
+        anyhow::bail!("thread not found");
+    }
+    let active = store.session_path();
+    driver::archive_thread(&active, &store.threads_dir())?;
+    std::fs::rename(&selected, &active)
+        .map_err(|error| anyhow::anyhow!("switch {}: {error}", selected.display()))?;
     let thread = driver::open_thread(
         &active,
         &driver::SessionMeta {
@@ -953,6 +999,7 @@ fn web_context(store: &Store) -> Result<serde_json::Value> {
     threads.sort_by_key(|right| std::cmp::Reverse(right.0));
     sections.push(json!({
         "title": "threads",
+        "kind": "threads",
         "lines": threads
             .into_iter()
             .take(8)
@@ -1037,6 +1084,23 @@ mod docs_tests {
         assert!(text.contains("session_start"), "{text}");
         let archived = std::fs::read_dir(store.threads_dir()).unwrap().count();
         assert!(archived >= 1);
+    }
+
+    #[cfg(feature = "web")]
+    #[test]
+    fn web_switch_thread_moves_an_archived_chapter_back() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().to_path_buf());
+        store.init().unwrap();
+        let active = web_new_thread(&store, directory.path(), "m", "deepseek").unwrap();
+        std::fs::create_dir_all(store.threads_dir()).unwrap();
+        let archived = store.threads_dir().join("thread-1.jsonl");
+        std::fs::copy(&active, &archived).unwrap();
+        let expected = std::fs::read_to_string(&archived).unwrap();
+        let switched =
+            web_switch_thread(&store, "thread-1", directory.path(), "m", "deepseek").unwrap();
+        assert_eq!(switched, active);
+        assert_eq!(std::fs::read_to_string(&switched).unwrap(), expected);
     }
 
     #[cfg(feature = "web")]
