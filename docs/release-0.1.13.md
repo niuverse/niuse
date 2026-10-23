@@ -44,10 +44,11 @@ cargo install niuse --version 0.1.13 --features tui --locked
 ## Verification
 
 ```sh
-./scripts/check.sh
-cargo +1.88.0 check --workspace --all-targets
-cargo +1.88.0 check --features web
+./scripts/release-preflight.sh
 ```
+
+This checks both repositories clean, the pin, niucode MSRV/tests/clippy/package,
+niuse MSRV for default/web/tui, `check.sh`, and drift.
 
 Last run: default, tui, and web feature checks pass on 1.88; check.sh is green.
 

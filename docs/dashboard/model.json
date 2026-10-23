@@ -823,6 +823,26 @@
       "path": "docs/board/M10-007-web-switch-thread.md"
     },
     {
+      "id": "M10-008",
+      "title": "Cross-repository release preflight",
+      "status": "done",
+      "milestone": "M10",
+      "module": "cli",
+      "size": "S",
+      "priority": "P1",
+      "updated": "2026-10-23",
+      "completed": "2026-10-23",
+      "depends_on": [
+        "M10-005"
+      ],
+      "docs": [
+        "roadmap"
+      ],
+      "blocked_reason": null,
+      "body_html": "<h2>Problem</h2>\n<p>Release checks were a list of commands in prose. It was easy to verify niuse but\nforget niucode's MSRV/package/dashboard, or to release from a dirty tree.</p>\n<h2>Scope</h2>\n<ul>\n<li>Add <code>scripts/release-preflight.sh</code>.</li>\n<li>Require both repos clean.</li>\n<li>Verify <code>niucode.rev</code> equals the sibling checkout HEAD.</li>\n<li>Run niucode MSRV, tests, clippy, package, dashboard check.</li>\n<li>Run niuse MSRV (default/web/tui) and <code>scripts/check.sh</code>, then drift.</li>\n<li>Explicitly does not publish anything.</li>\n<li>Document it in the 0.1.13 draft.</li>\n</ul>\n<h2>Acceptance</h2>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nScript exits on a dirty tree.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nPin mismatch fails.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nAll niucode and niuse gates run.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nNo registry write or version bump.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nScript is executable and committed.</li>\n<li><input disabled=\"\" type=\"checkbox\" checked=\"\"/>\nPreflight passes from a clean checkout.</li>\n</ul>\n<h2>Notes</h2>\n<p>The script assumes sibling checkouts; <code>NIUCODE_DIR</code> overrides the path. CI can\nrun it once the Chrome smoke test is optional.</p>\n",
+      "path": "docs/board/M10-008-release-preflight.md"
+    },
+    {
       "id": "M2-001",
       "title": "Ten working days of dogfood",
       "status": "doing",
@@ -4235,7 +4255,7 @@
       "status": "draft",
       "order": 32,
       "summary": "Draft notes for niuse 0.1.13: opt-in web companion, shared TUI rendering, and verification evidence.",
-      "body_html": "<h2>Status</h2>\n<p>Draft. Not published. The workspace is still 0.1.12. Publishing requires human\napproval and a coordinated <code>niucode 0.1.7</code> release first.</p>\n<h2>Why 0.1.13</h2>\n<p><code>niuse web</code> needs <code>niucode::web</code> and <code>Options.system_prompt</code>, which are newer\nthan niucode 0.1.6 on crates.io. The web feature is opt-in, preserving the rule\nthat the default binary does not link niucode's TUI.</p>\n<h2>Highlights</h2>\n<ul>\n<li><strong><code>niuse web --features web</code></strong>: loopback-only browser companion using the\nniuse product prompt (identity, user, goals, plan, memory, loops, journal).\nStartup prints a random token URL; page/API/SSE are gated behind an HttpOnly\ncookie.</li>\n<li><strong>Live context</strong>: the sidebar re-reads the Markdown stores per request and\nrefreshes after turns/reports.</li>\n<li><strong>Product report</strong>: the 7-day report, including dogfood, is visible in the\nsidebar.</li>\n<li><strong>Shared rendering</strong>: niucode's SSE, approvals with diffs, tool cards,\nMarkdown, MathML, code highlighting, export, search, and local commands.</li>\n<li><strong>Boundary</strong>: default build stays niucode-free; <code>web</code> and <code>tui</code> are separate\nopt-in features.</li>\n</ul>\n<h2>Install shape after release</h2>\n<pre><code class=\"language-sh\">cargo install niuse --version 0.1.13 --locked\ncargo install niuse --version 0.1.13 --features web --locked\ncargo install niuse --version 0.1.13 --features tui --locked\n</code></pre>\n<h2>Verification</h2>\n<pre><code class=\"language-sh\">./scripts/check.sh\ncargo +1.88.0 check --workspace --all-targets\ncargo +1.88.0 check --features web\n</code></pre>\n<p>Last run: default, tui, and web feature checks pass on 1.88; check.sh is green.</p>\n<h2>Blockers</h2>\n<ul>\n<li>Human approval to publish.</li>\n<li><code>niucode 0.1.7</code> must be published first; <code>niuse</code> must require it.</li>\n<li>Version bump and <code>niucode.rev</code> pin must be updated in the same release\ncommit.</li>\n</ul>\n",
+      "body_html": "<h2>Status</h2>\n<p>Draft. Not published. The workspace is still 0.1.12. Publishing requires human\napproval and a coordinated <code>niucode 0.1.7</code> release first.</p>\n<h2>Why 0.1.13</h2>\n<p><code>niuse web</code> needs <code>niucode::web</code> and <code>Options.system_prompt</code>, which are newer\nthan niucode 0.1.6 on crates.io. The web feature is opt-in, preserving the rule\nthat the default binary does not link niucode's TUI.</p>\n<h2>Highlights</h2>\n<ul>\n<li><strong><code>niuse web --features web</code></strong>: loopback-only browser companion using the\nniuse product prompt (identity, user, goals, plan, memory, loops, journal).\nStartup prints a random token URL; page/API/SSE are gated behind an HttpOnly\ncookie.</li>\n<li><strong>Live context</strong>: the sidebar re-reads the Markdown stores per request and\nrefreshes after turns/reports.</li>\n<li><strong>Product report</strong>: the 7-day report, including dogfood, is visible in the\nsidebar.</li>\n<li><strong>Shared rendering</strong>: niucode's SSE, approvals with diffs, tool cards,\nMarkdown, MathML, code highlighting, export, search, and local commands.</li>\n<li><strong>Boundary</strong>: default build stays niucode-free; <code>web</code> and <code>tui</code> are separate\nopt-in features.</li>\n</ul>\n<h2>Install shape after release</h2>\n<pre><code class=\"language-sh\">cargo install niuse --version 0.1.13 --locked\ncargo install niuse --version 0.1.13 --features web --locked\ncargo install niuse --version 0.1.13 --features tui --locked\n</code></pre>\n<h2>Verification</h2>\n<pre><code class=\"language-sh\">./scripts/release-preflight.sh\n</code></pre>\n<p>This checks both repositories clean, the pin, niucode MSRV/tests/clippy/package,\nniuse MSRV for default/web/tui, <code>check.sh</code>, and drift.</p>\n<p>Last run: default, tui, and web feature checks pass on 1.88; check.sh is green.</p>\n<h2>Blockers</h2>\n<ul>\n<li>Human approval to publish.</li>\n<li><code>niucode 0.1.7</code> must be published first; <code>niuse</code> must require it.</li>\n<li>Version bump and <code>niucode.rev</code> pin must be updated in the same release\ncommit.</li>\n</ul>\n",
       "path": "docs/release-0.1.13.md",
       "excerpt": "Draft notes for niuse 0.1.13: opt-in web companion, shared TUI rendering, and verification evidence."
     },
@@ -4403,7 +4423,7 @@
   ],
   "meta": {
     "schema_version": 1,
-    "cards": 172,
+    "cards": 173,
     "modules": 10,
     "docs": 21,
     "generator": "cargo xtask dashboard"
