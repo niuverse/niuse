@@ -5,7 +5,7 @@
     "title": "niuse",
     "tagline": "personal engineering companion on niucode",
     "summary": "A personal engineering companion on top of niucode: seven Markdown stores for identity, memory, and human goals, an opt-in shared TUI, project context, and a long-horizon roadmap. The board records architecture, decisions, and iteration; it is not runtime monitoring.",
-    "status": "M2/M5/M8 work · M3 deferred · M6/M7 done",
+    "status": "M2/M5 gates · M3 deferred · M6/M7/M8 done",
     "repo": "niuverse/niuse",
     "language": "Rust"
   },
@@ -101,7 +101,7 @@
     {
       "id": "M8",
       "title": "Connected agent",
-      "status": "active",
+      "status": "done",
       "goal": "Reach personal tools and data through a standard, trust-bounded connector.",
       "exit": [
         "niucode ships a stdio MCP client with trust and timeouts",

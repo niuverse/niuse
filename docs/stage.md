@@ -21,12 +21,12 @@ proven, what is still a gate, and what needs a human decision.
   a 10/10-reviewed opt-in digest, and a TUI that records turn metrics.
 - **MCP.** `niucode-mcp` 0.1.5 is published (2026-10-23). ADR-0034 is accepted
   and niucode `ab50b75` implements the write path; niuse exposes
-  `--allow-mcp-write` and ships an opt-in notes `create_note` with a deny/allow
-  test; the TUI-level approval preview is next (M8-008).
+  `--allow-mcp-write`, ships an opt-in notes `create_note`, and the TUI PTY
+  proves the approval preview plus deny/allow (M8 done).
 - **Tests.** `./scripts/check.sh` and `./scripts/eval.sh` pass; the TUI suite
   covers approvals, session isolation, resume/fork pointers, memory prompts,
   and brief/report/steps composition.
-- **Board.** 161 cards and 18 docs are generated and link-checked.
+- **Board.** 163 cards and 18 docs are generated and link-checked.
 - **CI.** niucode `2b278fe` and niuse `ed54d6f` are green. niuse `c4282f3`
   passes local `check.sh`/`eval.sh`; GitHub CI is pending on a runner backlog,
   with no red run.

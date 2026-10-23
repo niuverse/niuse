@@ -1,12 +1,13 @@
 +++
 id = "M8-008"
 title = "Mount write-enabled MCP in niuse"
-status = "doing"
+status = "done"
 milestone = "M8"
 module = "cli"
 size = "M"
 priority = "P1"
 updated = "2026-10-23"
+completed = "2026-10-23"
 depends_on = ["M8-002"]
 docs = ["roadmap"]
 +++
@@ -32,7 +33,7 @@ servers only.
 - [x] niuse exposes the flag and forwards it without changing read-only defaults.
 - [x] `--never` and a non-terminal mount read-only servers only.
 - [x] A write pack lists every mutating tool; unlisted tools stay read-only.
-- [ ] TUI approval shows tool + args; denial leaves the store unchanged.
+- [x] TUI approval shows tool + args; denial leaves the store unchanged.
 - [x] Offline test covers mount refusal and an approved write.
 
 ## Notes
@@ -43,5 +44,6 @@ second design; ADR-0034 remains the source of truth.
 2026-10-23: the flag and mount gating are in (`app.allow_mcp_write`, driver
 `mount_mcp_from_with`, unit test). TUI forwards it to niucode. The notes pack
 now has opt-in `create_note`, and `mcp_notes_write.rs` proves denial writes
-nothing and approval writes once. Still open: a TUI-level approval-preview test
-for a mutating call.
+nothing and approval writes once. 2026-10-23: `tui_mcp_write.rs` covers both outcomes. The PTY waits for the
+namespaced tool and the `Arguments:` preview, sends `n` or `y`, and checks the
+note file. Deny writes nothing; allow writes once. The card is done.

@@ -90,7 +90,7 @@ session boundary.
 
 **Cards:** M7-001 through M7-007; the phase is complete.
 
-### M8 · Connected agent (planned)
+### M8 · Connected agent (done)
 
 **Goal:** reach personal tools and data through a standard, trust-bounded
 connector instead of one-off shell commands.
@@ -108,11 +108,10 @@ config mounting in `exec`/TUI, and offline tests. niuse mounts the host in the
 TUI, REPL, and `exec`, ships read-only notes and calendar packs, installs both
 with `niuse mcp init` (which merges safely), and covers the TUI mount with a PTY
 test. [ADR-0034](https://github.com/niuverse/niucode/blob/main/docs/adr/0034-mutating-mcp.md)
-is accepted and niucode `ab50b75` implements the write path: `write_tools`,
-`--allow-mcp-write`, per-call approval, shared write lock, no retry. niuse now
-exposes the flag, mounts writes only with an interactive terminal, and ships an
-opt-in `create_note` notes tool with a deny/allow test; M8-008 still needs a
-TUI-level approval-preview test.
+is accepted and implemented: `write_tools`, `--allow-mcp-write`, per-call
+approval, shared write lock, no retry. niuse exposes the flag, mounts writes
+only with an interactive terminal, ships an opt-in `create_note` notes tool,
+and the TUI PTY proves the preview plus deny/allow. M8 is complete.
 
 ### M9 · Proof (planned)
 
@@ -197,7 +196,7 @@ and commit agree.
 | 60 | M2-099 distinct citations | done | Three different ids, not three rows |
 | 61 | M5-011 TUI command compose | done | Brief, report, and steps run back-to-back |
 | 62 | M3-006 niuse 0.1.12 | ready | Core package passes; upload is next |
-| 63 | M8-008 write MCP surface | doing | Flag, write pack, deny/allow E2E done |
+| 63 | M8-008 write MCP surface | done | Flag, write pack, TUI deny/allow proven |
 
 ## The round ritual
 
