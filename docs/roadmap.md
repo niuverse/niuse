@@ -314,6 +314,7 @@ and commit agree.
 | 178 | niucode M9-099 agent computer | done | Tool image parts + approval bridge + exec flag |
 | 179 | niucode M9-100 TUI computer | done | tui --computer + /computer stop |
 | 180 | niucode M9-101 emergency stop | done | Ctrl-C disarms + XTEST release |
+| 181 | niucode M9-102 macOS backend | done | CoreGraphics capture + CGEvent + TCC |
 
 ## The round ritual
 
