@@ -1595,6 +1595,7 @@ dependencies = [
  "async-trait",
  "futures-util",
  "ignore",
+ "niucode-attachments",
  "niucode-core",
  "niucode-extension",
  "niucode-mcp",
@@ -1603,6 +1604,17 @@ dependencies = [
  "serde_json",
  "similar",
  "tokio",
+]
+
+[[package]]
+name = "niucode-attachments"
+version = "0.1.7"
+dependencies = [
+ "base64 0.22.1",
+ "niucode-core",
+ "serde",
+ "sha2",
+ "thiserror 2.0.21",
 ]
 
 [[package]]
