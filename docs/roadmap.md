@@ -302,6 +302,7 @@ and commit agree.
 | 166 | niucode M9-088 attachments | done | SHA-256 store + per-turn budget |
 | 167 | niucode M9-089 attachment events | done | Metadata refs, backward compatible |
 | 168 | niucode M9-090 attachment turns | done | Budget + image parts + text fences |
+| 169 | niucode M9-091 recent images | done | Last 2 images + omission markers |
 
 ## The round ritual
 
