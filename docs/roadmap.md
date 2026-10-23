@@ -256,6 +256,7 @@ and commit agree.
 | 120 | niucode M9-054 DOM test | done | Unique ids, resolvable references |
 | 121 | niucode M9-055 web smoke | done | Headless DOM smoke test |
 | 122 | niucode M9-056 chip visual fix | done | Readable header buttons |
+| 123 | niucode visual audit | done | Populated transcript screenshots |
 
 ## The round ritual
 
