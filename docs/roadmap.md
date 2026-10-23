@@ -280,6 +280,7 @@ and commit agree.
 | 144 | niucode M9-075 task lists | done | Web checkboxes for - [ ]/- [x] |
 | 145 | niucode M9-076 footnotes | done | Web footnote references |
 | 146 | niucode M9-077 GFM alerts | done | Styled NOTE/TIP/WARNING quotes |
+| 147 | M10-009 active thread | done | Active thread label in sidebar |
 
 ## The round ritual
 

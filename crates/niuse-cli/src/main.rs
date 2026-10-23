@@ -983,6 +983,17 @@ fn web_context(store: &Store) -> Result<serde_json::Value> {
             .map(|item| format!("{} · {}", item.id, item.text))
             .collect::<Vec<_>>(),
     }));
+    let active = store.session_path();
+    sections.push(json!({
+        "title": "thread",
+        "lines": [format!(
+            "active · {}",
+            active
+                .file_name()
+                .and_then(|name| name.to_str())
+                .unwrap_or("thread.jsonl")
+        )],
+    }));
     let mut threads: Vec<(std::time::SystemTime, String)> = std::fs::read_dir(store.threads_dir())
         .map(|entries| {
             entries
@@ -1112,11 +1123,12 @@ mod docs_tests {
         let context = web_context(&store).unwrap();
         assert_eq!(context["brand"], "niuse");
         let sections = context["sections"].as_array().unwrap();
-        assert!(sections.len() >= 8);
+        assert!(sections.len() >= 9);
         assert!(sections
             .iter()
             .any(|section| section["title"] == "report · 7d"));
         assert!(sections.iter().any(|section| section["title"] == "threads"));
+        assert!(sections.iter().any(|section| section["title"] == "thread"));
     }
 
     #[test]
