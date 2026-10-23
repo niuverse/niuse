@@ -288,6 +288,7 @@ and commit agree.
 | 152 | niucode M9-080 TUI alerts | done | note ·/tip · quote labels |
 | 153 | niucode M9-081 alert tones | done | Variant colors for alert quotes |
 | 154 | niucode M9-082 bodies | done | Content-Length loop, 1MiB cap |
+| 155 | niucode M9-083 timeout | done | 5s request read, 408 |
 
 ## The round ritual
 
