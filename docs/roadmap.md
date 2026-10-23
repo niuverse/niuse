@@ -319,6 +319,7 @@ and commit agree.
 | 183 | M10-019 REPL computer | done | Global --computer + /computer + vision warning |
 | 184 | M10-020 cross-session memory | done | Reopen store + two-session answer |
 | 185 | M10-021 web computer | done | Policy chip + status + vision warning |
+| 186 | niucode M9-104 attachment memory | done | Store reopen + resumed image part |
 
 ## The round ritual
 
