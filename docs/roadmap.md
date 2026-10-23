@@ -238,6 +238,7 @@ and commit agree.
 | 102 | niucode M9-037 command menu | done | Filter/complete web slash commands |
 | 103 | niucode M9-038 web clear | done | View-only clear, log unchanged |
 | 104 | niucode M9-039 web usage | done | Page-local in/out token chip |
+| 105 | niucode M9-040 web export | done | Download session Markdown |
 
 ## The round ritual
 
