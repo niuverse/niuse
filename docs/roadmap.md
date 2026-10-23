@@ -225,6 +225,7 @@ and commit agree.
 | 89 | niucode M9-024 approval diff | done | Structured diff cards, not JSON |
 | 90 | niucode M9-025 tool cards | done | Collapsible call/result cards |
 | 91 | niucode M9-026 code state | done | Block comments span lines |
+| 92 | niucode M9-027 tool markers | done | One marker per tool type per turn |
 
 ## The round ritual
 
