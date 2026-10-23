@@ -340,6 +340,7 @@ and commit agree.
 | 204 | niucode M9-119 release runbook | done | Order, install, rollback, gate |
 | 205 | niucode M9-120 computer audit | done | Structured action event |
 | 206 | niucode M9-121 observe audit | done | Captured window/observation ids |
+| 207 | niucode M9-122 stop frame clear | done | Emergency stop drops thumbnail |
 
 ## The round ritual
 

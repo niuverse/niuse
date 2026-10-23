@@ -29,7 +29,7 @@ vision capability probe, and web computer status).
 - **Web**: policy chip, `/api/status` computer state, and token-gated
   arm/stop; browser approvals remain the input gate.
 - **Approvals**: computer approvals carry a bounded in-memory target thumbnail
-  in the web card (never persisted).
+  in the web card (never persisted); emergency stop clears it.
 - **Privacy**: sensitive-window observation asks before returning an image;
   typed computer text is persisted only as length + SHA-256 by default, with
   an explicit debug `--computer-log-input`; screenshots stay ephemeral unless
