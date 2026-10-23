@@ -331,6 +331,7 @@ and commit agree.
 | 195 | niucode M9-112 computer doctor | done | DISPLAY/TCC/XTEST/capture probe |
 | 196 | M10-026 doctor computer | done | niuse doctor computer check |
 | 197 | niucode M9-113 acceptance guide | done | Manual Linux/macOS evidence template |
+| 198 | niucode M9-114 window identity | done | id/app/class/kind recheck |
 
 ## The round ritual
 
