@@ -877,6 +877,12 @@ async fn run_web(cli: &Cli, store: &Store, port: u16) -> Result<()> {
             .map(|item| format!("{} · {}", item.id, item.text))
             .collect::<Vec<_>>(),
     }));
+    let report =
+        commands::report_text(store, 7, None).unwrap_or_else(|_| "report unavailable".to_string());
+    sections.push(json!({
+        "title": "report · 7d",
+        "lines": report.lines().take(18).collect::<Vec<_>>(),
+    }));
     let context = json!({
         "brand": "niuse",
         "title": "niuse · web",

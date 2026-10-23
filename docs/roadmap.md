@@ -215,6 +215,7 @@ and commit agree.
 | 79 | M10-001 niuse web | done | Product prompt over niucode web |
 | 80 | M10-002 web sidebar | done | Identity/memory/plan context in the browser |
 | 81 | niucode M9-017 web timer | done | Phase + elapsed chip, collapsible context |
+| 82 | M10-003 web report | done | Weekly report/dogfood in the sidebar |
 
 ## The round ritual
 

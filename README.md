@@ -190,7 +190,7 @@ cargo run --features web --bin niuse -- web --port 8788
 The `web` feature is opt-in for the same reason as `tui`: the default binary
 does not link niucode. It reuses niucode's local SSE server, browser approvals,
 Markdown, and MathML. The session is `~/.niuse/thread.jsonl`. The sidebar shows
-identity, user, goals, plan, memory, and open loops from the stores. Chat is
+identity, user, goals, plan, memory, open loops, and the 7-day report from the stores. Chat is
 workspace-write with explicit browser approval; there is no remote mode.
 
 ## Experimental TUI
