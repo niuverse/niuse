@@ -216,6 +216,7 @@ and commit agree.
 | 80 | M10-002 web sidebar | done | Identity/memory/plan context in the browser |
 | 81 | niucode M9-017 web timer | done | Phase + elapsed chip, collapsible context |
 | 82 | M10-003 web report | done | Weekly report/dogfood in the sidebar |
+| 83 | niucode M9-018 lists/rules | done | Ordered lists and horizontal rules in TUI |
 
 ## The round ritual
 
