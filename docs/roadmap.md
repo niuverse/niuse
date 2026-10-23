@@ -325,6 +325,7 @@ and commit agree.
 | 189 | niucode M9-106 web arm/stop | done | Token-gated POST + chip toggle |
 | 190 | niucode M9-107 typed-text audit | done | JSONL stores length + SHA-256 |
 | 191 | niucode M9-108 approval details | done | Safe coords/keys/length summaries |
+| 192 | niucode M9-109 log-input opt-in | done | Explicit debug full-text logging |
 
 ## The round ritual
 
