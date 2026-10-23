@@ -829,6 +829,11 @@ async fn run_web(cli: &Cli, store: &Store, port: u16) -> Result<()> {
         .model
         .clone()
         .unwrap_or_else(|| "deepseek-flash".to_string());
+    if cli.computer != "off" && !niucode_provider::model_supports_images(&model) {
+        eprintln!(
+            "warning: computer observe sends screenshots; model {model} has no vision support"
+        );
+    }
     let identity = store.identity()?;
     let user = store.user()?;
     let memories = store.memories()?;
@@ -862,6 +867,7 @@ async fn run_web(cli: &Cli, store: &Store, port: u16) -> Result<()> {
             move || web_context(&context_store).unwrap_or_else(|_| json!({"brand": "niuse"}))
         })),
         allow_new: true,
+        computer: cli.computer.clone(),
         switch_session_provider: Some(std::sync::Arc::new({
             let store = store.clone();
             let cwd = cwd.clone();
