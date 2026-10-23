@@ -39,8 +39,9 @@ vision capability probe, and web computer status).
   points at the kernel `niucode computer doctor`.
 - **Binding**: input rechecks window id/app/class/kind + geometry, not just
   id, before dispatch; typed text/key/scroll have hard per-action caps.
-- **Audit**: a structured `computer_action` event records target/observation/
-  purpose/result and typed length + SHA-256, never text or images.
+- **Audit**: a structured `computer_action` event records the captured/target
+  window, observation id, purpose, result, and typed length + SHA-256, never
+  text or images.
 - **Vision budget**: every provider request carries at most four images; the
   oldest become a text marker.
 - **Memory evidence**: reopened attachment store and reopened Markdown memory

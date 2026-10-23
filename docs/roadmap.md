@@ -339,6 +339,7 @@ and commit agree.
 | 203 | niucode M9-118 input limits | done | 10k text / 64 key / 50 scroll |
 | 204 | niucode M9-119 release runbook | done | Order, install, rollback, gate |
 | 205 | niucode M9-120 computer audit | done | Structured action event |
+| 206 | niucode M9-121 observe audit | done | Captured window/observation ids |
 
 ## The round ritual
 
