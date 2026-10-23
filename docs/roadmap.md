@@ -265,6 +265,7 @@ and commit agree.
 | 129 | niucode M9-062 tool approval | done | Allow only the requested tool |
 | 130 | niucode M9-063 image block | done | No remote image fetches |
 | 131 | niucode M9-064 link hardening | done | New-tab links, blocked schemes |
+| 132 | niucode M9-065 href allowlist | done | Parsed schemes, mixed-case safe |
 
 ## The round ritual
 
