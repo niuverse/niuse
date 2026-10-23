@@ -38,7 +38,8 @@ proven, what is still a gate, and what needs a human decision.
 - 2026-10-23: real TUI tasks read `DAY_TWO*.md`; the missing TUI `on_turn_end`
   was found and fixed, and the first metrics-backed TUI turn was recorded. A
   real model also called the notes `create_note` write tool with approval and
-  created `stage-write-home.md`.
+  created `stage-write-home.md`. The published 0.1.12 binary passed a TUI
+  smoke test and a write-MCP smoke test.
 - Dogfood: **2/10 days**, acceptance **100% (1/1)**, **3 distinct cited memory
   ids** (`m-f356`, `m-5c68`, `m-3d0b`), **1 disagreement**.
 
