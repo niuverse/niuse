@@ -236,6 +236,7 @@ and commit agree.
 | 100 | niucode M9-035 web commands | done | /help /status /report locally |
 | 101 | niucode M9-036 unknown slash | done | Reject locally, no model turn |
 | 102 | niucode M9-037 command menu | done | Filter/complete web slash commands |
+| 103 | niucode M9-038 web clear | done | View-only clear, log unchanged |
 
 ## The round ritual
 
