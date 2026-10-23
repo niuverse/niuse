@@ -299,6 +299,7 @@ and commit agree.
 | 163 | M3-008 publish 0.1.13 | done | niucode 0.1.7 + niuse 0.1.13 live |
 | 164 | niucode M9-086 computer protocol | done | ADR-0037 + observation/permission types |
 | 165 | niucode M9-087 vision parts | done | Image content + capability gate |
+| 166 | niucode M9-088 attachments | done | SHA-256 store + per-turn budget |
 
 ## The round ritual
 
