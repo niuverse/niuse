@@ -336,6 +336,7 @@ and commit agree.
 | 200 | niucode M9-116 approval thumbnail | done | In-memory data-URL target frame |
 | 201 | M10-027 preflight | done | --skip-package source gate evidence |
 | 202 | niucode M9-117 web control tests | done | Configured stop + thumbnail marker |
+| 203 | niucode M9-118 input limits | done | 10k text / 64 key / 50 scroll |
 
 ## The round ritual
 

@@ -38,7 +38,7 @@ vision capability probe, and web computer status).
 - **Doctor**: `niuse doctor` reports X11 readiness/XTEST or macOS TCC and
   points at the kernel `niucode computer doctor`.
 - **Binding**: input rechecks window id/app/class/kind + geometry, not just
-  id, before dispatch.
+  id, before dispatch; typed text/key/scroll have hard per-action caps.
 - **Vision budget**: every provider request carries at most four images; the
   oldest become a text marker.
 - **Memory evidence**: reopened attachment store and reopened Markdown memory
