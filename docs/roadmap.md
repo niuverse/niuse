@@ -323,6 +323,7 @@ and commit agree.
 | 187 | release 0.1.14 | done | Version/pin/preflight prepared; publish awaiting approval |
 | 188 | niucode M9-105 computer e2e | done | Xvfb observe→click→approval turn |
 | 189 | niucode M9-106 web arm/stop | done | Token-gated POST + chip toggle |
+| 190 | niucode M9-107 typed-text audit | done | JSONL stores length + SHA-256 |
 
 ## The round ritual
 
