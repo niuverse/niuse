@@ -110,8 +110,9 @@ with `niuse mcp init` (which merges safely), and covers the TUI mount with a PTY
 test. [ADR-0034](https://github.com/niuverse/niucode/blob/main/docs/adr/0034-mutating-mcp.md)
 is accepted and niucode `ab50b75` implements the write path: `write_tools`,
 `--allow-mcp-write`, per-call approval, shared write lock, no retry. niuse now
-exposes the flag and mounts writes only with an interactive terminal; M8-008
-still needs a write pack and its end-to-end test.
+exposes the flag, mounts writes only with an interactive terminal, and ships an
+opt-in `create_note` notes tool with a deny/allow test; M8-008 still needs a
+TUI-level approval-preview test.
 
 ### M9 · Proof (planned)
 
@@ -196,7 +197,7 @@ and commit agree.
 | 60 | M2-099 distinct citations | done | Three different ids, not three rows |
 | 61 | M5-011 TUI command compose | done | Brief, report, and steps run back-to-back |
 | 62 | M3-006 niuse 0.1.12 | ready | Core package passes; upload is next |
-| 63 | M8-008 write MCP surface | doing | Flag/gating done; write pack and E2E next |
+| 63 | M8-008 write MCP surface | doing | Flag, write pack, deny/allow E2E done |
 
 ## The round ritual
 

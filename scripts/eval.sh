@@ -72,6 +72,7 @@ cargo test -p niuse --features tui --test tui_resume -- --nocapture
 cargo test -p niuse --features tui --test tui_fork -- --nocapture
 cargo test -p niuse --features tui --test tui_memory -- --nocapture
 cargo test -p niuse --features tui --test tui_commands -- --nocapture
+cargo test -p niuse --test mcp_notes_write -- --nocapture
 
 if [[ -d "$root/../niucode" ]]; then
   echo "== MCP client boundaries =="

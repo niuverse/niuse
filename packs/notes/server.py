@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
-"""Read-only notes MCP server for niuse.
+"""Notes MCP server for niuse.
 
-Exposes three tools over stdio:
+Read-only by default; exposes three tools over stdio:
   search_notes(query, limit)  case-insensitive line search
   read_note(path)             read one note, bounded and confined to NOTES_DIR
   list_notes(limit)           recent notes by mtime
 
-The server never writes. Paths are resolved before the confinement check, so a
-symlink cannot escape NOTES_DIR.
+With NOTES_WRITE=1 it also exposes:
+  create_note(title, text)    create a new Markdown note, never overwrite
+
+Paths are resolved before the confinement check, so a symlink cannot escape
+NOTES_DIR. Write mode is opt-in through the child environment; a read-only
+manifest must not expose the write tool.
 """
 import json
 import os
@@ -24,8 +28,10 @@ if not ROOT.is_dir():
     sys.exit(2)
 
 MAX_READ = 20_000
+MAX_WRITE = 20_000
 MAX_HITS = 50
 EXTENSIONS = (".md", ".txt")
+WRITE = os.environ.get("NOTES_WRITE", "").strip().lower() in ("1", "true", "yes")
 
 
 def send(payload):
@@ -94,6 +100,31 @@ def read_note(arguments):
     return text
 
 
+def create_note(arguments):
+    if not WRITE:
+        raise ValueError("write mode is disabled; set NOTES_WRITE=1")
+    title = str(arguments.get("title", "")).strip()
+    text = str(arguments.get("text", ""))
+    if not title:
+        raise ValueError("title is required")
+    if not text:
+        raise ValueError("text is required")
+    if len(text) > MAX_WRITE:
+        raise ValueError(f"text is longer than {MAX_WRITE} characters")
+    slug = "".join(
+        character if character.isalnum() or character in "-_" else "-"
+        for character in title.lower()
+    ).strip("-")
+    slug = "-".join(part for part in slug.split("-") if part)[:60]
+    if not slug:
+        raise ValueError("title has no usable filename characters")
+    path = within(f"{slug}.md")
+    if path.exists():
+        raise ValueError(f"note already exists: {path.name}")
+    path.write_text(f"# {title}\n\n{text.rstrip()}\n", encoding="utf-8")
+    return f"created {path.relative_to(ROOT)}"
+
+
 def list_notes(arguments):
     limit = min(int(arguments.get("limit", 20)), MAX_HITS)
     rows = []
@@ -138,6 +169,19 @@ TOOLS = [
         },
     },
 ]
+if WRITE:
+    TOOLS.append({
+        "name": "create_note",
+        "description": "Create a new Markdown note in NOTES_DIR. Refuses to overwrite.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string"},
+                "text": {"type": "string"},
+            },
+            "required": ["title", "text"],
+        },
+    })
 
 for line in sys.stdin:
     line = line.strip()
@@ -167,6 +211,8 @@ for line in sys.stdin:
                 tool_output(request_id, read_note(arguments))
             elif name == "list_notes":
                 tool_output(request_id, list_notes(arguments))
+            elif name == "create_note":
+                tool_output(request_id, create_note(arguments))
             else:
                 raise ValueError(f"unknown tool {name}")
         except (ValueError, OSError) as error:
