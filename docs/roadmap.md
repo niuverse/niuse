@@ -322,6 +322,7 @@ and commit agree.
 | 186 | niucode M9-104 attachment memory | done | Store reopen + resumed image part |
 | 187 | release 0.1.14 | done | Version/pin/preflight prepared; publish awaiting approval |
 | 188 | niucode M9-105 computer e2e | done | Xvfb observe→click→approval turn |
+| 189 | niucode M9-106 web arm/stop | done | Token-gated POST + chip toggle |
 
 ## The round ritual
 

@@ -35,5 +35,5 @@ whether a browser prompt would have desktop access.
 
 ## Notes
 
-Arm/stop from the browser is a later kernel slice. The product only selects and
-reports policy.
+Arm/stop is provided by kernel M9-106 (`POST /api/computer`); the product only
+selects and reports policy.

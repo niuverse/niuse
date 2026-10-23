@@ -26,8 +26,8 @@ vision capability probe, and web computer status).
 - **REPL/TUI controls**: `/computer`, `/computer arm`, `/computer stop` with
   emergency disarm and input release.
 - **Vision warning**: text-only models warn before a screenshot is requested.
-- **Web**: policy chip and `/api/status` computer state; browser approvals
-  remain the input gate.
+- **Web**: policy chip, `/api/status` computer state, and token-gated
+  arm/stop; browser approvals remain the input gate.
 - **Memory evidence**: reopened attachment store and reopened Markdown memory
   both feed a new session.
 - **Boundary**: platform backends live in niucode crates; the default niuse
