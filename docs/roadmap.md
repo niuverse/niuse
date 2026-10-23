@@ -211,6 +211,7 @@ and commit agree.
 | 75 | niucode M9-010 web streaming | done | Deltas arrive before turn end |
 | 76 | niucode M9-011 web approvals | done | Browser Allow/Deny releases the turn |
 | 77 | niucode M9-012 web Markdown | done | HTML, tables, safe links in the browser |
+| 78 | niucode M9-013 web MathML | done | Native MathML, no remote assets |
 
 ## The round ritual
 
