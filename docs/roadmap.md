@@ -287,6 +287,7 @@ and commit agree.
 | 151 | M10-011 feature dry run | done | tui passes; web needs niucode 0.1.7 |
 | 152 | niucode M9-080 TUI alerts | done | note ·/tip · quote labels |
 | 153 | niucode M9-081 alert tones | done | Variant colors for alert quotes |
+| 154 | niucode M9-082 bodies | done | Content-Length loop, 1MiB cap |
 
 ## The round ritual
 
