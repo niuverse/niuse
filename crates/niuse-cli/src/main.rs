@@ -937,6 +937,28 @@ fn web_context(store: &Store) -> Result<serde_json::Value> {
             .map(|item| format!("{} · {}", item.id, item.text))
             .collect::<Vec<_>>(),
     }));
+    let mut threads: Vec<(std::time::SystemTime, String)> = std::fs::read_dir(store.threads_dir())
+        .map(|entries| {
+            entries
+                .filter_map(Result::ok)
+                .filter(|entry| entry.path().extension().is_some_and(|ext| ext == "jsonl"))
+                .filter_map(|entry| {
+                    let modified = entry.metadata().ok()?.modified().ok()?;
+                    let name = entry.path().file_stem()?.to_string_lossy().to_string();
+                    Some((modified, name))
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    threads.sort_by_key(|right| std::cmp::Reverse(right.0));
+    sections.push(json!({
+        "title": "threads",
+        "lines": threads
+            .into_iter()
+            .take(8)
+            .map(|(_, name)| name)
+            .collect::<Vec<_>>(),
+    }));
     let report =
         commands::report_text(store, 7, None).unwrap_or_else(|_| "report unavailable".to_string());
     sections.push(json!({
@@ -1026,10 +1048,11 @@ mod docs_tests {
         let context = web_context(&store).unwrap();
         assert_eq!(context["brand"], "niuse");
         let sections = context["sections"].as_array().unwrap();
-        assert!(sections.len() >= 7);
+        assert!(sections.len() >= 8);
         assert!(sections
             .iter()
             .any(|section| section["title"] == "report · 7d"));
+        assert!(sections.iter().any(|section| section["title"] == "threads"));
     }
 
     #[test]
