@@ -39,6 +39,8 @@ vision capability probe, and web computer status).
   points at the kernel `niucode computer doctor`.
 - **Binding**: input rechecks window id/app/class/kind + geometry, not just
   id, before dispatch; typed text/key/scroll have hard per-action caps.
+- **Red lines**: Super, Alt+Tab/Escape/F4, Ctrl+Alt+Delete/Backspace/F1-F12
+  require approval in autonomous mode.
 - **Audit**: a structured `computer_action` event records the captured/target
   window, observation id, purpose, result, and typed length + SHA-256, never
   text or images.

@@ -341,6 +341,7 @@ and commit agree.
 | 205 | niucode M9-120 computer audit | done | Structured action event |
 | 206 | niucode M9-121 observe audit | done | Captured window/observation ids |
 | 207 | niucode M9-122 stop frame clear | done | Emergency stop drops thumbnail |
+| 208 | niucode M9-123 shortcut red lines | done | Alt+Tab/VT/X-server shortcuts |
 
 ## The round ritual
 
