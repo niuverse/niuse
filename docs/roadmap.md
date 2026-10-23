@@ -275,6 +275,7 @@ and commit agree.
 | 139 | niucode M9-071 web keys | done | Ctrl+K, Ctrl+/, Tab trap |
 | 140 | niucode M9-072 export calls | done | Tool args in Markdown export |
 | 141 | niucode M9-073 copy tools | done | Copy tool output/commands |
+| 142 | niucode M9-074 message copy | done | Copy full user/assistant message |
 
 ## The round ritual
 
