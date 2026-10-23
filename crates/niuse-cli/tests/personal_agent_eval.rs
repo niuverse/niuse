@@ -34,7 +34,7 @@ impl Provider for EvalProvider {
         let system = request
             .messages
             .first()
-            .and_then(|message: &ChatMessage| message.content.clone())
+            .and_then(|message: &ChatMessage| message.text().map(str::to_string))
             .unwrap_or_default();
         let text = if system.contains("cargo nextest") {
             "I remember: this repo uses cargo nextest."

@@ -106,10 +106,7 @@ async fn one_session_switches_working_directory_per_turn() {
     // The base system prompt must reach the provider unchanged; memory
     // injection is niuse's job, not niucode's.
     let request = provider.requests().remove(0);
-    assert_eq!(
-        request.messages[0].content.as_deref(),
-        Some("niuse contract test")
-    );
+    assert_eq!(request.messages[0].text(), Some("niuse contract test"));
 
     let history =
         project_history(&load(log.path()).expect("load").events).expect("project history");
