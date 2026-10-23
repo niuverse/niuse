@@ -250,6 +250,7 @@ and commit agree.
 | 114 | M10-006 web threads | done | Archived chapters in sidebar |
 | 115 | M10-007 web switch | done | Move archived chapter to active thread |
 | 116 | niucode M9-050 session event | done | All tabs reload on switch |
+| 117 | niucode M9-051 tool timing | done | Aggregate per-tool durations |
 
 ## The round ritual
 
