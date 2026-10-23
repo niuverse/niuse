@@ -279,6 +279,7 @@ and commit agree.
 | 143 | M10-008 release preflight | done | Clean trees, pin, both repos, no publish |
 | 144 | niucode M9-075 task lists | done | Web checkboxes for - [ ]/- [x] |
 | 145 | niucode M9-076 footnotes | done | Web footnote references |
+| 146 | niucode M9-077 GFM alerts | done | Styled NOTE/TIP/WARNING quotes |
 
 ## The round ritual
 
