@@ -214,6 +214,7 @@ and commit agree.
 | 78 | niucode M9-013 web MathML | done | Native MathML, no remote assets |
 | 79 | M10-001 niuse web | done | Product prompt over niucode web |
 | 80 | M10-002 web sidebar | done | Identity/memory/plan context in the browser |
+| 81 | niucode M9-017 web timer | done | Phase + elapsed chip, collapsible context |
 
 ## The round ritual
 
