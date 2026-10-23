@@ -309,6 +309,7 @@ and commit agree.
 | 173 | niucode M9-094 TUI attachments | done | /attach, chips, live/legacy paths |
 | 174 | niucode M9-095 @path | done | Existing-file @path + follow-up images |
 | 175 | niucode M9-096 X11 observe | done | Windows + PNG + observation token |
+| 176 | niucode M9-097 X11 input | done | XTEST click/type/key/scroll |
 
 ## The round ritual
 
