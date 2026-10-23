@@ -292,6 +292,7 @@ and commit agree.
 | 156 | niucode M9-084 PTY alerts | done | Warning label + marker rejection |
 | 157 | niucode M9-085 final audit | done | 3 themes + 390px, no blockers |
 | 158 | M10-012 final preflight | done | Clean-tree pass at 23e23af, 2/10 dogfood |
+| 159 | M10-013 goal scope audit | done | Objective mapped to evidence |
 
 ## The round ritual
 
