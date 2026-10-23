@@ -208,6 +208,7 @@ and commit agree.
 | 72 | niucode M9-007 web viewer | done | Loopback read-only session viewer |
 | 73 | niucode M9-008 web SSE | done | Live event tail in the browser |
 | 74 | niucode M9-009 web prompt | done | Read-only browser chat is live |
+| 75 | niucode M9-010 web streaming | done | Deltas arrive before turn end |
 
 ## The round ritual
 
