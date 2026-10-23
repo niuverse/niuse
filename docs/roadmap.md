@@ -337,6 +337,7 @@ and commit agree.
 | 201 | M10-027 preflight | done | --skip-package source gate evidence |
 | 202 | niucode M9-117 web control tests | done | Configured stop + thumbnail marker |
 | 203 | niucode M9-118 input limits | done | 10k text / 64 key / 50 scroll |
+| 204 | niucode M9-119 release runbook | done | Order, install, rollback, gate |
 
 ## The round ritual
 

@@ -72,6 +72,11 @@ turn. `--check` reports version/license/token/order. Preflight is expected to fa
 until `niucode 0.1.8` is published, because its package step resolves the new
 crates from the registry.
 
+## Runbook
+
+The kernel `docs/release-runbook.md` records the publish order, index waits,
+clean-install checks, tag/evidence steps, rollback, and the explicit human gate.
+
 ## Blockers
 
 - Human approval to publish.
