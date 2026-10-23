@@ -209,6 +209,7 @@ and commit agree.
 | 73 | niucode M9-008 web SSE | done | Live event tail in the browser |
 | 74 | niucode M9-009 web prompt | done | Read-only browser chat is live |
 | 75 | niucode M9-010 web streaming | done | Deltas arrive before turn end |
+| 76 | niucode M9-011 web approvals | done | Browser Allow/Deny releases the turn |
 
 ## The round ritual
 
