@@ -1,16 +1,17 @@
 +++
 id = "release-012"
-title = "Release runbook: niuse 0.1.12"
+title = "Release 0.1.12"
 kind = "doc"
-status = "ready"
+status = "living"
 order = 31
-summary = "Prepared, not uploaded: publish niuse-core 0.1.12, wait for the index, publish niuse 0.1.12, verify install."
+summary = "Published 2026-10-23: niuse-core 0.1.12 and niuse 0.1.12 are on crates.io; clean-root install verified."
 +++
 
 ## Status
 
-Prepared · 2026-10-23. **No crate has been uploaded.** The published versions
-are still 0.1.11; the current tree and registry disagree until this runs.
+Published · 2026-10-23. `niuse-core` 0.1.12 and `niuse` 0.1.12 are on
+crates.io, and a clean-root install reports `niuse 0.1.12`. This page records
+the preflight and the exact order; it is history, not a pending action.
 
 ## Why 0.1.12
 
@@ -19,7 +20,18 @@ are still 0.1.11; the current tree and registry disagree until this runs.
 registry core. The workspace is bumped to 0.1.12. `niucode-mcp` 0.1.5 is
 already published.
 
-## Preflight (verified read-only)
+## Release result
+
+- `cargo search niuse` → 0.1.12
+- `cargo install niuse --version 0.1.12 --locked --root /tmp/niuse-0.1.12`
+  installed the binary; `niuse --version` → `niuse 0.1.12`
+- The first CLI upload failed verification: pack scripts sat outside the crate
+  and registry niucode 0.1.5 predated `EmbedderTool`. The fix embeds the packs
+  under `crates/niuse-cli/assets` and ships niucode 0.1.6.
+- `niuse-core` 0.1.12 was already uploaded on the first attempt; the retry
+  skipped it and published only the CLI.
+
+## Preflight (verified read-only, before the first upload)
 
 - `./scripts/check.sh` passes.
 - `cargo package -p niuse-core` passes.

@@ -56,14 +56,15 @@ crates.io removes `path` specifications and expects the dependency to exist in t
 
 Publish the `niucode-*` crates first at **0.1.0**, then consume them by version. The path dependencies in niuse already carry `version = "0.1.0"` beside `path`, so local development keeps the sibling checkout while packaging can resolve registry versions once the upload exists.
 
-Current state (2026-10-23): `niucode-mcp` 0.1.5 is published; the seven original
-`niucode-*` crates are at 0.1.5. `niuse` and `niuse-core` are published at
-0.1.11, but that release predates the plan API (`PlanStep`,
-`compose_with_plan`). The source is now 0.1.12.
+Current state (2026-10-23): `niuse` and `niuse-core` are published at **0.1.12**;
+the eight `niucode-*` crates, including `niucode-mcp`, are published at
+**0.1.6**. `cargo package -p niuse` passes against the registry, and a clean-root
+`cargo install niuse --version 0.1.12 --locked` reports `niuse 0.1.12`.
 
-`cargo package -p niuse-core` passes at 0.1.12. `cargo package -p niuse` fails
-with `failed to select a version for niuse-core = "^0.1.12"` because the core
-upload has not happened. Publish `niuse-core` 0.1.12 first, then `niuse` 0.1.12.
+The 0.1.11 core predated the plan API, and 0.1.5 predated `EmbedderTool`; those
+were version-discipline bugs. The fix is the coordinated 0.1.12/0.1.6 release.
+Pack servers are embedded under `crates/niuse-cli/assets` so cargo package can
+build them; `scripts/check-pack-assets.sh` keeps the copies identical.
 
 ## Options
 

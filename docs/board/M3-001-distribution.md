@@ -1,12 +1,13 @@
 +++
 id = "M3-001"
 title = "Release and dependency strategy"
-status = "backlog"
+status = "done"
 milestone = "M3"
 module = "cli"
 size = "M"
 priority = "P1"
-updated = "2026-10-21"
+updated = "2026-10-23"
+completed = "2026-10-23"
 depends_on = ["M0-003"]
 docs = ["plan", "distribution"]
 +++
@@ -20,9 +21,9 @@ docs = ["plan", "distribution"]
 
 ## Acceptance
 
-- [ ] `cargo package -p niuse` passes (currently blocked by path dependencies).
-- [ ] The install path is reproducible on a clean machine.
-- [ ] License and naming strategy are documented in the README.
+- [x] `cargo package -p niuse` passes against crates.io.
+- [x] The install path is reproducible on a clean machine (`cargo install niuse --version 0.1.12 --locked`).
+- [x] License and naming strategy are documented in the README and distribution doc.
 
 ## Notes
 
@@ -37,4 +38,7 @@ it. This card stays backlog until the authorized upload and a passing
 version: crates.io core 0.1.11 predates the plan API. M3-006 prepares 0.1.12;
 core must be uploaded before the CLI package can verify.
 
-Current failure: `all dependencies must have a version requirement specified when packaging`, pointing at the `niucode-agent` path dependency.
+2026-10-23: released. `niuse`/`niuse-core` 0.1.12 and `niucode-*` 0.1.6 are
+published; package verification and clean-root install pass. The first CLI
+upload failed on pack paths and the pre-EmbedderTool registry API; both are
+fixed and recorded in [the release page](../release-0.1.12.md).

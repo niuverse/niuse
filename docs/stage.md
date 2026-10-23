@@ -48,14 +48,13 @@ proven, what is still a gate, and what needs a human decision.
 |---|---|---|
 | M2 dogfood | 2/10 days; citations and disagreement met | eight distinct real working days |
 | M5-002 TUI | 2/10 days | eight more real TUI days |
-| M3 publish | `niucode-mcp` 0.1.5 published; niuse 0.1.12 prepared; [runbook](release-0.1.12.md) | publish `niuse-core` 0.1.12, then `niuse` 0.1.12 |
+| M3 publish | done: `niuse` 0.1.12 and `niucode-*` 0.1.6 published; [release page](release-0.1.12.md) | — |
 | M8-002 mutating MCP | ADR-0034 proposed | human acceptance before any write tools |
 
 ## Decisions waiting on a human
 
-1. Publish `niuse-core` 0.1.12, then `niuse` 0.1.12 (the MCP crate is already
-   published).
-2. Accept or reject [ADR-0034](https://github.com/niuverse/niucode/blob/main/docs/adr/0034-mutating-mcp.md).
+1. Publish nothing further; 0.1.12/0.1.6 is live.
+2. M2/M5 need distinct real working days.
 3. Continue past round 79 only on an explicit request.
 
 ## Stage outcome

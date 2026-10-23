@@ -5,7 +5,7 @@
     "title": "niuse",
     "tagline": "personal engineering companion on niucode",
     "summary": "A personal engineering companion on top of niucode: seven Markdown stores for identity, memory, and human goals, an opt-in shared TUI, project context, and a long-horizon roadmap. The board records architecture, decisions, and iteration; it is not runtime monitoring.",
-    "status": "M2/M5 gates · M3 deferred · M6/M7/M8 done",
+    "status": "M2/M5 gates · M3/M6/M7/M8 done",
     "repo": "niuverse/niuse",
     "language": "Rust"
   },
@@ -46,7 +46,7 @@
     {
       "id": "M3",
       "title": "Distribution",
-      "status": "planned",
+      "status": "done",
       "goal": "Make the project installable, publishable, and maintainable.",
       "exit": [
         "the niucode dependency is versioned, or git install is the stated path",
