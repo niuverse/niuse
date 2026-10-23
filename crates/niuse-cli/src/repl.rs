@@ -301,6 +301,7 @@ pub struct App {
     completion_cwd: Arc<Mutex<PathBuf>>,
     pub max_steps: usize,
     pub computer: Option<Arc<Mutex<ComputerRuntime>>>,
+    pub computer_log_input: bool,
     pub prompt: String,
     pub prompt_tokens: usize,
     pub thread_path: PathBuf,
@@ -329,6 +330,9 @@ impl App {
 
         let thread_path = resolve_thread(cli.thread.clone(), &store)?;
         let computer = driver::computer_runtime(&cli.computer)?;
+        if cli.computer_log_input && cli.computer != "off" {
+            eprintln!("warning: --computer-log-input persists full typed desktop text in the session JSONL");
+        }
         if computer.is_some() && !niucode_provider::model_supports_images(&bundle.model) {
             eprintln!(
                 "warning: computer observe sends screenshots; model {} has no vision support",
@@ -349,6 +353,7 @@ impl App {
             completion_cwd,
             max_steps: settings.max_steps,
             computer,
+            computer_log_input: cli.computer_log_input,
             prompt: String::new(),
             prompt_tokens: 0,
             thread_path,
@@ -559,6 +564,7 @@ impl App {
             driver::apply_plan_mode(&mut config, self.plan_mode);
             config.mcp_host = self.mcp_host.clone();
             config.computer = self.computer.clone();
+            config.computer_log_input = self.computer_log_input;
             let mut renderer = Renderer::new();
             let result = driver::run_turn(
                 self.provider.as_ref(),
@@ -1238,6 +1244,7 @@ pub async fn run_exec(
     driver::apply_plan_mode(&mut config, app.plan_mode);
     config.mcp_host = app.mcp_host.clone();
     config.computer = app.computer.clone();
+    config.computer_log_input = app.computer_log_input;
     let mut renderer = Renderer::new();
     let mut log = log;
     let result = if let Some(store) = &attachment_store {
