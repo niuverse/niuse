@@ -48,7 +48,8 @@ cargo install niuse --version 0.1.14 --features tui --locked
 ```
 
 Computer use additionally requires a vision-capable model and, on macOS, TCC
-grants.
+grants. Run `niucode computer doctor [--json]` to check DISPLAY/TCC, XTEST,
+window enumeration, and capture before enabling a policy.
 
 ## Verification
 

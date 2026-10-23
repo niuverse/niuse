@@ -328,6 +328,7 @@ and commit agree.
 | 192 | niucode M9-109 log-input opt-in | done | Explicit debug full-text logging |
 | 193 | niucode M9-110 keep frames | done | Opt-in content-addressed screenshot |
 | 194 | niucode M9-111 visual budget | done | Max 4 images/request, drop oldest |
+| 195 | niucode M9-112 computer doctor | done | DISPLAY/TCC/XTEST/capture probe |
 
 ## The round ritual
 
