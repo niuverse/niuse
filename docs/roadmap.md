@@ -303,6 +303,7 @@ and commit agree.
 | 167 | niucode M9-089 attachment events | done | Metadata refs, backward compatible |
 | 168 | niucode M9-090 attachment turns | done | Budget + image parts + text fences |
 | 169 | niucode M9-091 recent images | done | Last 2 images + omission markers |
+| 170 | niucode M9-092 CLI attachments | done | exec --attach/--image |
 
 ## The round ritual
 
