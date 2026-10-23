@@ -278,6 +278,7 @@ and commit agree.
 | 142 | niucode M9-074 message copy | done | Copy full user/assistant message |
 | 143 | M10-008 release preflight | done | Clean trees, pin, both repos, no publish |
 | 144 | niucode M9-075 task lists | done | Web checkboxes for - [ ]/- [x] |
+| 145 | niucode M9-076 footnotes | done | Web footnote references |
 
 ## The round ritual
 
