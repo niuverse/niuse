@@ -285,6 +285,7 @@ and commit agree.
 | 149 | niucode M9-079 publish dry run | done | 8 crates package+verify, no upload |
 | 150 | M10-010 niuse dry run | done | Both niuse crates package+verify |
 | 151 | M10-011 feature dry run | done | tui passes; web needs niucode 0.1.7 |
+| 152 | niucode M9-080 TUI alerts | done | note ·/tip · quote labels |
 
 ## The round ritual
 
