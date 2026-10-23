@@ -217,6 +217,7 @@ and commit agree.
 | 81 | niucode M9-017 web timer | done | Phase + elapsed chip, collapsible context |
 | 82 | M10-003 web report | done | Weekly report/dogfood in the sidebar |
 | 83 | niucode M9-018 lists/rules | done | Ordered lists and horizontal rules in TUI |
+| 84 | niucode M9-019 table chrome | done | Bold headers, dim borders |
 
 ## The round ritual
 
