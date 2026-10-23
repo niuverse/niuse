@@ -246,6 +246,7 @@ and commit agree.
 | 110 | niucode M9-044 web autoscroll | done | Follow only near bottom |
 | 111 | niucode M9-045 web theme | done | Light mode + reduced motion |
 | 112 | niucode M9-046 web tests | done | Export/new-session HTTP contracts |
+| 113 | niucode M9-047 heading levels | done | H1/H2/H3+ emphasis |
 
 ## The round ritual
 
