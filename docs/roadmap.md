@@ -234,6 +234,7 @@ and commit agree.
 | 98 | niucode M9-033 code copy | done | Copy buttons on web code |
 | 99 | niucode M9-034 context event | done | context_changed after turns |
 | 100 | niucode M9-035 web commands | done | /help /status /report locally |
+| 101 | niucode M9-036 unknown slash | done | Reject locally, no model turn |
 
 ## The round ritual
 
