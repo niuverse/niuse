@@ -206,6 +206,7 @@ and commit agree.
 | 70 | niucode M9-005 display math | done | $$ blocks lose fences and use Unicode |
 | 71 | niucode M9-006 motion | done | Streaming caret and per-tool elapsed |
 | 72 | niucode M9-007 web viewer | done | Loopback read-only session viewer |
+| 73 | niucode M9-008 web SSE | done | Live event tail in the browser |
 
 ## The round ritual
 
