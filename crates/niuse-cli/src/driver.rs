@@ -293,6 +293,20 @@ async fn mount_mcp_from_with(
     }
 }
 
+/// Append one `mcp_mount` event per server. The hash covers command, args,
+/// read_only, write_tools, and env keys, never env values.
+pub fn record_mcp_mounts(log: &SessionLog, host: &McpHost) -> Result<()> {
+    for mount in host.mounts() {
+        log.append(&Event::McpMount {
+            server: mount.server,
+            config_hash: mount.config_hash,
+            write_tools: mount.write_tools,
+            ts: now_ms(),
+        })?;
+    }
+    Ok(())
+}
+
 /// Narrow an agent config to read-only planning tools. Turning plan mode off
 /// leaves any explicit tool allowlist in place.
 pub fn apply_plan_mode(config: &mut AgentConfig, plan: bool) {

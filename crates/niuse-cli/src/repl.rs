@@ -392,6 +392,9 @@ impl App {
         let mut thread = driver::open_thread(&path, &meta)?;
         let mut history = driver::history(&thread.path)?;
         self.mcp_host = driver::mount_mcp(self.allow_mcp_write, self.approval).await;
+        if let Some(host) = &self.mcp_host {
+            driver::record_mcp_mounts(&thread.log, host)?;
+        }
         self.banner();
         if startup_brief_enabled() {
             if let Ok(lines) = commands::brief_startup(&self.store, &self.cwd) {
@@ -1114,6 +1117,9 @@ enum Flow {
 pub async fn run_exec(mut app: App, prompt: String) -> Result<()> {
     app.mcp_host = driver::mount_mcp(app.allow_mcp_write, app.approval).await;
     let log = driver::new_session(&app.store.root().join("sessions"))?;
+    if let Some(host) = &app.mcp_host {
+        driver::record_mcp_mounts(&log, host)?;
+    }
     let meta = SessionMeta {
         cwd: &app.cwd,
         model: &app.model,
