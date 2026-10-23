@@ -46,6 +46,7 @@ fn spec(name: &str, args: Vec<String>, envs: BTreeMap<String, String>) -> McpSer
         args,
         env: envs,
         read_only: true,
+        write_tools: Vec::new(),
     }
 }
 

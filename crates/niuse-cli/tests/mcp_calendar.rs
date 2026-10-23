@@ -30,6 +30,7 @@ async fn calendar_pack_lists_and_searches_without_network() {
         args: vec![pack().display().to_string()],
         env,
         read_only: true,
+        write_tools: Vec::new(),
     };
 
     let limit = Duration::from_secs(5);

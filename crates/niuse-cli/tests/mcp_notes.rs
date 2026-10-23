@@ -29,6 +29,7 @@ async fn notes_pack_searches_reads_and_refuses_escape() {
         args: vec![server().display().to_string()],
         env,
         read_only: true,
+        write_tools: Vec::new(),
     };
 
     let limit = Duration::from_secs(5);

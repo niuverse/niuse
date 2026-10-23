@@ -119,6 +119,7 @@ async fn steps_execute_one_at_a_time_and_vanish_after_verification() {
                     args: vec![pack("notes").display().to_string()],
                     env: env(&[("NOTES_DIR", notes.display().to_string())]),
                     read_only: true,
+                    write_tools: Vec::new(),
                 },
                 McpServerSpec {
                     name: "calendar".into(),
@@ -129,6 +130,7 @@ async fn steps_execute_one_at_a_time_and_vanish_after_verification() {
                         ("CALENDAR_TODAY", "2026-10-22".to_string()),
                     ]),
                     read_only: true,
+                    write_tools: Vec::new(),
                 },
             ],
             Duration::from_secs(5),

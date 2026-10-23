@@ -107,9 +107,10 @@ connector instead of one-off shell commands.
 config mounting in `exec`/TUI, and offline tests. niuse mounts the host in the
 TUI, REPL, and `exec`, ships read-only notes and calendar packs, installs both
 with `niuse mcp init` (which merges safely), and covers the TUI mount with a PTY
-test. Mutating MCP is
-proposed in [ADR-0034](https://github.com/niuverse/niucode/blob/main/docs/adr/0034-mutating-mcp.md)
-and blocked on human sign-off; do not implement it before that.
+test. [ADR-0034](https://github.com/niuverse/niucode/blob/main/docs/adr/0034-mutating-mcp.md)
+is accepted and niucode `ab50b75` implements the write path: `write_tools`,
+`--allow-mcp-write`, per-call approval, shared write lock, no retry. M8-008 is
+the niuse surface and write pack; read-only remains the default.
 
 ### M9 · Proof (planned)
 
@@ -194,6 +195,7 @@ and commit agree.
 | 60 | M2-099 distinct citations | done | Three different ids, not three rows |
 | 61 | M5-011 TUI command compose | done | Brief, report, and steps run back-to-back |
 | 62 | M3-006 niuse 0.1.12 | ready | Core package passes; upload is next |
+| 63 | M8-008 write MCP surface | ready | Niucode write path landed; niuse flag/pack next |
 
 ## The round ritual
 
