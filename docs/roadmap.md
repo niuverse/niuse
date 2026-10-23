@@ -308,6 +308,7 @@ and commit agree.
 | 172 | niucode M9-093 web attachments | done | Upload endpoint + browser chips |
 | 173 | niucode M9-094 TUI attachments | done | /attach, chips, live/legacy paths |
 | 174 | niucode M9-095 @path | done | Existing-file @path + follow-up images |
+| 175 | niucode M9-096 X11 observe | done | Windows + PNG + observation token |
 
 ## The round ritual
 
