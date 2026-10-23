@@ -260,6 +260,7 @@ and commit agree.
 | 124 | niucode M9-057 contrast/mobile | done | Deny readable, mobile header, /export |
 | 125 | niucode M9-058 TUI motion | done | Reduced-motion env fallback |
 | 126 | niucode M9-059 viewport rules | done | Rules fill the terminal width |
+| 127 | niucode M9-060 session approval | done | Allow session in web |
 
 ## The round ritual
 
