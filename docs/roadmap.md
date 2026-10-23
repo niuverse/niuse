@@ -270,6 +270,7 @@ and commit agree.
 | 134 | niucode web threat model | done | Controls, tests, residual risks |
 | 135 | niucode M9-067 local token | done | Random URL token + HttpOnly cookie |
 | 136 | niucode M9-068 token page | done | Explain missing token in browser |
+| 137 | niucode M9-069 mobile sidebar | done | Overlay toggle below 980px |
 
 ## The round ritual
 
