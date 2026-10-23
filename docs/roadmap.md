@@ -203,6 +203,7 @@ and commit agree.
 | 67 | niucode M9-002 math | done | Common TeX falls back to Unicode |
 | 68 | niucode M9-003 lists | done | Bullets, tasks, and quotes render |
 | 69 | niucode M9-004 fences | done | Fences become a language label |
+| 70 | niucode M9-005 display math | done | $$ blocks lose fences and use Unicode |
 
 ## The round ritual
 
