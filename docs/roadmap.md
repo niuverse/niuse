@@ -228,6 +228,7 @@ and commit agree.
 | 92 | niucode M9-027 tool markers | done | One marker per tool type per turn |
 | 93 | niucode M9-028 triple strings | done | Docstrings span lines |
 | 94 | niucode M9-029 sidebar filter | done | Collapsible/filterable context |
+| 95 | M10-004 live web context | done | Context re-read per request |
 
 ## The round ritual
 

@@ -831,6 +831,33 @@ async fn run_web(cli: &Cli, store: &Store, port: u16) -> Result<()> {
         &journal,
         niuse_core::date::Date::today(),
     );
+    let context = web_context(store)?;
+    niucode::web::serve(niucode::web::Options {
+        session: store.session_path(),
+        port,
+        preset: settings.provider,
+        model: Some(model),
+        cwd,
+        max_steps: settings.max_steps,
+        system_prompt: Some(composition.system),
+        brand: Some("niuse".into()),
+        context: Some(context),
+        context_provider: Some(std::sync::Arc::new({
+            let context_store = store.clone();
+            move || web_context(&context_store).unwrap_or_else(|_| json!({"brand": "niuse"}))
+        })),
+    })
+    .await
+}
+
+#[cfg(feature = "web")]
+fn web_context(store: &Store) -> Result<serde_json::Value> {
+    let identity = store.identity()?;
+    let user = store.user()?;
+    let memories = store.memories()?;
+    let goals = store.goals()?;
+    let plan = store.plan()?;
+    let loops = store.loops()?;
     let mut sections = Vec::new();
     sections.push(json!({
         "title": "identity",
@@ -883,23 +910,11 @@ async fn run_web(cli: &Cli, store: &Store, port: u16) -> Result<()> {
         "title": "report · 7d",
         "lines": report.lines().take(18).collect::<Vec<_>>(),
     }));
-    let context = json!({
+    Ok(json!({
         "brand": "niuse",
         "title": "niuse · web",
         "sections": sections,
-    });
-    niucode::web::serve(niucode::web::Options {
-        session: store.session_path(),
-        port,
-        preset: settings.provider,
-        model: Some(model),
-        cwd,
-        max_steps: settings.max_steps,
-        system_prompt: Some(composition.system),
-        brand: Some("niuse".into()),
-        context: Some(context),
-    })
-    .await
+    }))
 }
 
 #[cfg(feature = "tui")]
@@ -953,6 +968,21 @@ mod docs_tests {
     use std::collections::HashSet;
 
     const README: &str = include_str!("../../../README.md");
+
+    #[cfg(feature = "web")]
+    #[test]
+    fn web_context_contains_product_sections() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().to_path_buf());
+        store.init().unwrap();
+        let context = web_context(&store).unwrap();
+        assert_eq!(context["brand"], "niuse");
+        let sections = context["sections"].as_array().unwrap();
+        assert!(sections.len() >= 7);
+        assert!(sections
+            .iter()
+            .any(|section| section["title"] == "report · 7d"));
+    }
 
     #[test]
     fn readme_cli_examples_name_real_subcommands() {
