@@ -286,6 +286,7 @@ and commit agree.
 | 150 | M10-010 niuse dry run | done | Both niuse crates package+verify |
 | 151 | M10-011 feature dry run | done | tui passes; web needs niucode 0.1.7 |
 | 152 | niucode M9-080 TUI alerts | done | note ·/tip · quote labels |
+| 153 | niucode M9-081 alert tones | done | Variant colors for alert quotes |
 
 ## The round ritual
 
