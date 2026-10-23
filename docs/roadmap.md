@@ -344,6 +344,7 @@ and commit agree.
 | 208 | niucode M9-123 shortcut red lines | done | Alt+Tab/VT/X-server shortcuts |
 | 209 | niucode M9-124 TUI badge | done | Footer policy/armed state |
 | 210 | niucode M9-125 fork attachments | done | Copy refs into fork store |
+| 211 | M10-028 computer evidence | done | evidence lists computer actions |
 
 ## The round ritual
 

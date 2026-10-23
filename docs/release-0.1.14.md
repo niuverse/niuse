@@ -44,7 +44,9 @@ vision capability probe, and web computer status).
 - **TUI badge**: policy + armed/paused is visible in the footer; stop updates it.
 - **Audit**: a structured `computer_action` event records the captured/target
   window, observation id, purpose, result, and typed length + SHA-256, never
-  text or images.
+  text or images; `niuse evidence` includes computer actions.
+- **Evidence**: `niuse evidence` lists desktop actions and failures without
+  typed text.
 - **Vision budget**: every provider request carries at most four images; the
   oldest become a text marker.
 - **Memory evidence**: reopened attachment store, reopened Markdown memory, and

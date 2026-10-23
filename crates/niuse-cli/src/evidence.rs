@@ -39,6 +39,18 @@ pub struct McpMount {
     pub write_tools: Vec<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ComputerStep {
+    pub action: String,
+    pub window_id: u64,
+    pub observation_id: String,
+    pub purpose: String,
+    pub ok: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+    pub text_chars: u64,
+}
+
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize)]
 pub struct Evidence {
     pub tools: usize,
@@ -51,6 +63,8 @@ pub struct Evidence {
     pub plan: Vec<PlanStep>,
     pub delegations: Vec<Delegation>,
     pub mounts: Vec<McpMount>,
+    #[serde(default)]
+    pub computer: Vec<ComputerStep>,
 }
 
 pub fn from_thread(path: &Path) -> Result<Evidence> {
@@ -164,6 +178,24 @@ pub fn from_events(events: &[Event]) -> Evidence {
                     write_tools: write_tools.clone(),
                 });
             }
+            Event::ComputerAction {
+                action,
+                window_id,
+                observation_id,
+                purpose,
+                ok,
+                error,
+                text_chars,
+                ..
+            } => evidence.computer.push(ComputerStep {
+                action: action.clone(),
+                window_id: *window_id,
+                observation_id: observation_id.clone(),
+                purpose: purpose.clone(),
+                ok: *ok,
+                error: error.clone(),
+                text_chars: *text_chars,
+            }),
             Event::Approval { allowed, .. } if !allowed => {
                 evidence.denied += 1;
             }
@@ -184,6 +216,7 @@ impl Evidence {
             && self.plan.is_empty()
             && self.delegations.is_empty()
             && self.mounts.is_empty()
+            && self.computer.is_empty()
             && self.denied == 0
     }
 
@@ -221,6 +254,13 @@ impl Evidence {
             self.mounts.len(),
             self.failures
         );
+        if !self.computer.is_empty() {
+            out.push_str(&format!(
+                "computer · {} action(s) · {} failed\n",
+                self.computer.len(),
+                self.computer.iter().filter(|action| !action.ok).count()
+            ));
+        }
         if !self.files.is_empty() {
             out.push_str("files\n");
             for file in &self.files {
@@ -286,6 +326,29 @@ impl Evidence {
                         .unwrap_or_default(),
                     check.command
                 ));
+            }
+        }
+        if !self.computer.is_empty() {
+            out.push_str("computer\n");
+            for action in &self.computer {
+                let status = if action.ok { "✓" } else { "✗" };
+                let target = if action.window_id == 0 {
+                    "unobserved".to_string()
+                } else {
+                    format!("window {}", action.window_id)
+                };
+                let mut detail = format!("  {status} {} {target}", action.action);
+                if action.text_chars > 0 {
+                    detail.push_str(&format!(" · {} chars", action.text_chars));
+                }
+                if !action.purpose.is_empty() {
+                    detail.push_str(&format!(" · {}", action.purpose));
+                }
+                if let Some(error) = &action.error {
+                    detail.push_str(&format!(" · {error}"));
+                }
+                out.push_str(&detail);
+                out.push('\n');
             }
         }
         if !self.mounts.is_empty() {
@@ -379,6 +442,28 @@ mod tests {
         assert_eq!(evidence.delegations[0].ok, Some(true));
         assert!(rendered.contains("inspect auth"));
         assert!(rendered.contains("found the seam"));
+    }
+
+    #[test]
+    fn computer_actions_are_evidence_without_typed_text() {
+        let events = vec![
+            event(
+                r#"{"type":"computer_action","action":"click","window_id":7,"observation_id":"obs-1","purpose":"open","ok":true,"text_chars":0,"ts":1}"#,
+            ),
+            event(
+                r#"{"type":"computer_action","action":"type","window_id":7,"observation_id":"obs-1","purpose":"fill","ok":false,"error":"denied","text_chars":7,"text_sha256":"abc","ts":2}"#,
+            ),
+        ];
+        let evidence = from_events(&events);
+        assert_eq!(evidence.computer.len(), 2);
+        assert!(evidence.computer[0].ok);
+        assert_eq!(evidence.computer[1].text_chars, 7);
+        assert!(!evidence.is_empty());
+        let rendered = evidence.render();
+        assert!(rendered.contains("computer · 2 action(s) · 1 failed"));
+        assert!(rendered.contains("click window 7"));
+        assert!(rendered.contains("type window 7 · 7 chars"));
+        assert!(rendered.contains("denied"));
     }
 
     #[test]
