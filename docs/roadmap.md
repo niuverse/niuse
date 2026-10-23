@@ -210,6 +210,7 @@ and commit agree.
 | 74 | niucode M9-009 web prompt | done | Read-only browser chat is live |
 | 75 | niucode M9-010 web streaming | done | Deltas arrive before turn end |
 | 76 | niucode M9-011 web approvals | done | Browser Allow/Deny releases the turn |
+| 77 | niucode M9-012 web Markdown | done | HTML, tables, safe links in the browser |
 
 ## The round ritual
 
