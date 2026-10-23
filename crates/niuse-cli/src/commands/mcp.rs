@@ -7,8 +7,8 @@ use std::path::{Path, PathBuf};
 use anyhow::{bail, Context, Result};
 use niuse_core::Store;
 
-const NOTES_SERVER: &str = include_str!("../../../../packs/notes/server.py");
-const CALENDAR_SERVER: &str = include_str!("../../../../packs/calendar/server.py");
+const NOTES_SERVER: &str = include_str!("../../assets/packs/notes/server.py");
+const CALENDAR_SERVER: &str = include_str!("../../assets/packs/calendar/server.py");
 
 pub struct InitOptions {
     pub notes: Option<PathBuf>,

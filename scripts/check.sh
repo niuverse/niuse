@@ -35,6 +35,9 @@ bash scripts/dogfood-check_test.sh
 echo "== package =="
 cargo package -p niuse-core --allow-dirty --offline
 
+echo "== pack assets =="
+bash scripts/check-pack-assets.sh
+
 echo "== board =="
 python3 scripts/check-board.py
 bash scripts/check-board_test.sh

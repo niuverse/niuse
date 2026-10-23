@@ -1545,7 +1545,7 @@ dependencies = [
 
 [[package]]
 name = "niucode"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "anyhow",
  "clap",
@@ -1572,7 +1572,7 @@ dependencies = [
 
 [[package]]
 name = "niucode-agent"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1590,7 +1590,7 @@ dependencies = [
 
 [[package]]
 name = "niucode-auth"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "keyring",
  "serde",
@@ -1600,7 +1600,7 @@ dependencies = [
 
 [[package]]
 name = "niucode-core"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "anyhow",
  "serde",
@@ -1609,7 +1609,7 @@ dependencies = [
 
 [[package]]
 name = "niucode-extension"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "anyhow",
  "niucode-provider",
@@ -1622,7 +1622,7 @@ dependencies = [
 
 [[package]]
 name = "niucode-mcp"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "anyhow",
  "niucode-provider",
@@ -1634,7 +1634,7 @@ dependencies = [
 
 [[package]]
 name = "niucode-provider"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -1649,7 +1649,7 @@ dependencies = [
 
 [[package]]
 name = "niucode-tools"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "anyhow",
  "globset",
