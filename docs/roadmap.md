@@ -330,6 +330,7 @@ and commit agree.
 | 194 | niucode M9-111 visual budget | done | Max 4 images/request, drop oldest |
 | 195 | niucode M9-112 computer doctor | done | DISPLAY/TCC/XTEST/capture probe |
 | 196 | M10-026 doctor computer | done | niuse doctor computer check |
+| 197 | niucode M9-113 acceptance guide | done | Manual Linux/macOS evidence template |
 
 ## The round ritual
 
