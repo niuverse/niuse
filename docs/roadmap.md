@@ -235,6 +235,7 @@ and commit agree.
 | 99 | niucode M9-034 context event | done | context_changed after turns |
 | 100 | niucode M9-035 web commands | done | /help /status /report locally |
 | 101 | niucode M9-036 unknown slash | done | Reject locally, no model turn |
+| 102 | niucode M9-037 command menu | done | Filter/complete web slash commands |
 
 ## The round ritual
 

@@ -26,7 +26,8 @@ All niuse paths mount niucode's read-only MCP host: `niuse tui` inherits it, and
 
 | niuse | niucode | status | updated |
 |---|---|---|---|
-| 0.1.12 | `e6cf7bd` | current pin; strict web slash routing | 2026-10-23 |
+| 0.1.12 | `9ff5560` | current pin; web command menu | 2026-10-23 |
+| 0.1.12 | `e6cf7bd` | previous pin; strict web slash routing | 2026-10-23 |
 | 0.1.12 | `77c15a5` | previous pin; web slash commands | 2026-10-23 |
 | 0.1.12 | `d43aa84` | previous pin; context_changed event | 2026-10-23 |
 | 0.1.12 | `252a349` | previous pin; web code copy | 2026-10-23 |
