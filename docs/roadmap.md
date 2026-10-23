@@ -333,6 +333,7 @@ and commit agree.
 | 197 | niucode M9-113 acceptance guide | done | Manual Linux/macOS evidence template |
 | 198 | niucode M9-114 window identity | done | id/app/class/kind recheck |
 | 199 | niucode M9-115 sensitive observe | done | Approval before sensitive screenshot |
+| 200 | niucode M9-116 approval thumbnail | done | In-memory data-URL target frame |
 
 ## The round ritual
 
