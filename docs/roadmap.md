@@ -201,6 +201,7 @@ and commit agree.
 | 65 | M3-007 release runbook | done | One reviewable 0.1.12 upload step |
 | 66 | niucode M9-001 rich text | done | Inline Markdown and boxed tables in the TUI |
 | 67 | niucode M9-002 math | done | Common TeX falls back to Unicode |
+| 68 | niucode M9-003 lists | done | Bullets, tasks, and quotes render |
 
 ## The round ritual
 
