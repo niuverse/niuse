@@ -28,7 +28,8 @@ vision capability probe, and web computer status).
 - **Vision warning**: text-only models warn before a screenshot is requested.
 - **Web**: policy chip, `/api/status` computer state, and token-gated
   arm/stop; browser approvals remain the input gate.
-- **Privacy**: typed computer text is persisted only as length + SHA-256.
+- **Privacy**: typed computer text is persisted only as length + SHA-256;
+  approvals show coordinates/keys/typed length, never typed text.
 - **Memory evidence**: reopened attachment store and reopened Markdown memory
   both feed a new session.
 - **Boundary**: platform backends live in niucode crates; the default niuse

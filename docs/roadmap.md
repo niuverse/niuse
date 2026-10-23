@@ -324,6 +324,7 @@ and commit agree.
 | 188 | niucode M9-105 computer e2e | done | Xvfb observe→click→approval turn |
 | 189 | niucode M9-106 web arm/stop | done | Token-gated POST + chip toggle |
 | 190 | niucode M9-107 typed-text audit | done | JSONL stores length + SHA-256 |
+| 191 | niucode M9-108 approval details | done | Safe coords/keys/length summaries |
 
 ## The round ritual
 
