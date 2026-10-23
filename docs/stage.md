@@ -19,8 +19,8 @@ proven, what is still a gate, and what needs a human decision.
   `/fork` all notify the embedder and are covered by PTY tests.
 - **Companion.** niuse has seven Markdown stores, goals/plan/evidence/verify,
   a 10/10-reviewed opt-in digest, and a TUI that records turn metrics.
-- **MCP.** `niucode-mcp` packages and passes `cargo publish --dry-run`; the
-  release order includes it.
+- **MCP.** `niucode-mcp` 0.1.5 is published (2026-10-23) after package and
+  publish dry-runs.
 - **Tests.** `./scripts/check.sh` and `./scripts/eval.sh` pass; the TUI suite
   covers approvals, session isolation, resume/fork pointers, memory prompts,
   and brief/report/steps composition.
@@ -44,12 +44,13 @@ proven, what is still a gate, and what needs a human decision.
 |---|---|---|
 | M2 dogfood | 2/10 days; citations and disagreement met | eight distinct real working days |
 | M5-002 TUI | 2/10 days | eight more real TUI days |
-| M3 publish | `niucode-mcp` release-ready | authorized crates.io upload, then `cargo package -p niuse` |
+| M3 publish | `niucode-mcp` 0.1.5 published; niuse 0.1.12 prepared | publish `niuse-core` 0.1.12, then `niuse` 0.1.12 |
 | M8-002 mutating MCP | ADR-0034 proposed | human acceptance before any write tools |
 
 ## Decisions waiting on a human
 
-1. Publish `niucode-mcp` 0.1.5 (the token exists; no upload is authorized).
+1. Publish `niuse-core` 0.1.12, then `niuse` 0.1.12 (the MCP crate is already
+   published).
 2. Accept or reject [ADR-0034](https://github.com/niuverse/niucode/blob/main/docs/adr/0034-mutating-mcp.md).
 3. Continue past round 79 only on an explicit request.
 

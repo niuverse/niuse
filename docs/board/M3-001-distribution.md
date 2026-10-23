@@ -33,4 +33,8 @@ now packages and passes `cargo publish --dry-run`; the publish order includes
 it. This card stays backlog until the authorized upload and a passing
 `cargo package -p niuse`.
 
+2026-10-23: `niucode-mcp` 0.1.5 is published. The next blocker is the niuse
+version: crates.io core 0.1.11 predates the plan API. M3-006 prepares 0.1.12;
+core must be uploaded before the CLI package can verify.
+
 Current failure: `all dependencies must have a version requirement specified when packaging`, pointing at the `niucode-agent` path dependency.

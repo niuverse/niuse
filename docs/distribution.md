@@ -56,9 +56,14 @@ crates.io removes `path` specifications and expects the dependency to exist in t
 
 Publish the `niucode-*` crates first at **0.1.0**, then consume them by version. The path dependencies in niuse already carry `version = "0.1.0"` beside `path`, so local development keeps the sibling checkout while packaging can resolve registry versions once the upload exists.
 
-Current state (2026-10-22): `niuse` and `niuse-core` are published at 0.1.11; the seven original `niucode-*` crates are published at 0.1.5. The current tree adds `niucode-mcp`, which is not on crates.io, so `cargo package -p niuse` fails with `no matching package named niucode-mcp`.
+Current state (2026-10-23): `niucode-mcp` 0.1.5 is published; the seven original
+`niucode-*` crates are at 0.1.5. `niuse` and `niuse-core` are published at
+0.1.11, but that release predates the plan API (`PlanStep`,
+`compose_with_plan`). The source is now 0.1.12.
 
-Release preflight now passes for the missing crate: `cargo package -p niucode-mcp` and `cargo publish -p niucode-mcp --dry-run` both reach the upload step, and the niucode publish order includes it between extension and agent. The only remaining step is the authorized upload; after that, `cargo package -p niuse` can verify against the registry. Until then, the crates.io packages are older than this checkout.
+`cargo package -p niuse-core` passes at 0.1.12. `cargo package -p niuse` fails
+with `failed to select a version for niuse-core = "^0.1.12"` because the core
+upload has not happened. Publish `niuse-core` 0.1.12 first, then `niuse` 0.1.12.
 
 ## Options
 
