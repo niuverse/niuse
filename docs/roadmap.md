@@ -268,6 +268,7 @@ and commit agree.
 | 132 | niucode M9-065 href allowlist | done | Parsed schemes, mixed-case safe |
 | 133 | niucode M9-066 loopback guards | done | Host/Origin checks, CSP |
 | 134 | niucode web threat model | done | Controls, tests, residual risks |
+| 135 | niucode M9-067 local token | done | Random URL token + HttpOnly cookie |
 
 ## The round ritual
 
