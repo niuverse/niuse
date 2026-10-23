@@ -241,7 +241,8 @@ and commit agree.
 | 105 | niucode M9-040 web export | done | Download session Markdown |
 | 106 | niucode M9-041 web search | done | Filter transcript locally |
 | 107 | niucode M9-042 MSRV/package | done | 1.88 clean, package verifies |
-| 108 | niucode M9-043 web new session | done | Fresh JSONL via /api/new; niuse opts out |
+| 108 | niucode M9-043 web new session | done | Fresh JSONL via /api/new |
+| 109 | M10-005 web new thread | done | Archive thread, recreate thread.jsonl |
 
 ## The round ritual
 

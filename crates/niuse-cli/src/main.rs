@@ -835,9 +835,9 @@ async fn run_web(cli: &Cli, store: &Store, port: u16) -> Result<()> {
     niucode::web::serve(niucode::web::Options {
         session: store.session_path(),
         port,
-        preset: settings.provider,
-        model: Some(model),
-        cwd,
+        preset: settings.provider.clone(),
+        model: Some(model.clone()),
+        cwd: cwd.clone(),
         max_steps: settings.max_steps,
         system_prompt: Some(composition.system),
         brand: Some("niuse".into()),
@@ -846,9 +846,41 @@ async fn run_web(cli: &Cli, store: &Store, port: u16) -> Result<()> {
             let context_store = store.clone();
             move || web_context(&context_store).unwrap_or_else(|_| json!({"brand": "niuse"}))
         })),
-        allow_new: false,
+        allow_new: true,
+        new_session_provider: Some(std::sync::Arc::new({
+            let store = store.clone();
+            let provider = settings.provider.clone();
+            let model = model.clone();
+            let cwd = cwd.clone();
+            move || web_new_thread(&store, &cwd, &model, &provider)
+        })),
     })
     .await
+}
+
+#[cfg(feature = "web")]
+fn web_new_thread(
+    store: &Store,
+    cwd: &std::path::Path,
+    model: &str,
+    provider: &str,
+) -> Result<PathBuf> {
+    let active = store.session_path();
+    driver::archive_thread(&active, &store.threads_dir())?;
+    let thread = driver::open_thread(
+        &active,
+        &driver::SessionMeta {
+            cwd,
+            model,
+            provider,
+            policy: niucode_tools::SandboxPolicy::new(
+                niucode_tools::SandboxMode::WorkspaceWrite,
+                niucode_tools::NetworkMode::Off,
+            ),
+            approval: niucode_agent::ApprovalMode::Ask,
+        },
+    )?;
+    Ok(thread.path.clone())
 }
 
 #[cfg(feature = "web")]
@@ -969,6 +1001,21 @@ mod docs_tests {
     use std::collections::HashSet;
 
     const README: &str = include_str!("../../../README.md");
+
+    #[cfg(feature = "web")]
+    #[test]
+    fn web_new_thread_archives_and_recreates_the_active_thread() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().to_path_buf());
+        store.init().unwrap();
+        std::fs::write(store.session_path(), "").unwrap();
+        let path = web_new_thread(&store, directory.path(), "m", "deepseek").unwrap();
+        assert_eq!(path, store.session_path());
+        let text = std::fs::read_to_string(&path).unwrap();
+        assert!(text.contains("session_start"), "{text}");
+        let archived = std::fs::read_dir(store.threads_dir()).unwrap().count();
+        assert!(archived >= 1);
+    }
 
     #[cfg(feature = "web")]
     #[test]
