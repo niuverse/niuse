@@ -200,6 +200,7 @@ and commit agree.
 | 64 | M8-009 evidence mounts | done | /evidence shows servers, writers, hashes |
 | 65 | M3-007 release runbook | done | One reviewable 0.1.12 upload step |
 | 66 | niucode M9-001 rich text | done | Inline Markdown and boxed tables in the TUI |
+| 67 | niucode M9-002 math | done | Common TeX falls back to Unicode |
 
 ## The round ritual
 
