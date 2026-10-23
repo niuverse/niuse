@@ -100,6 +100,51 @@ async fn memory_on_off_changes_the_answer_and_the_cited_text() {
     assert_ne!(on, off, "memory must change behaviour");
 }
 
+#[tokio::test]
+async fn confirmed_markdown_memory_survives_a_new_session() {
+    let directory = tempfile::tempdir().unwrap();
+    let today = Date::today();
+    let store = Store::at(directory.path().join(".niuse"));
+    store.init().unwrap();
+    store
+        .add_memory(MemoryEntry::new(
+            MemoryKind::Preference,
+            "the user's Rust projects use cargo nextest",
+            vec!["workflow".into()],
+            today,
+            None,
+        ))
+        .unwrap();
+    drop(store);
+
+    // A new process-like handle only sees the Markdown store, not in-memory
+    // state. The first session confirms it; the second session still gets it.
+    let reopened = Store::at(directory.path().join(".niuse"));
+    let memories = reopened.memories().unwrap();
+    assert!(memories
+        .iter()
+        .any(|memory| memory.text.contains("cargo nextest")));
+    let system = compose_with_goals(None, None, &[], &memories, &[], &[], today).system;
+
+    let first = answer(system.clone(), directory.path()).await;
+    let second = answer(system, directory.path()).await;
+    assert!(
+        first.contains("I remember"),
+        "memory was not injected: {first}"
+    );
+    assert_eq!(first, second);
+    assert!(
+        reopened
+            .root()
+            .join("memory")
+            .read_dir()
+            .unwrap()
+            .next()
+            .is_some(),
+        "the confirmed entry must live in memory/"
+    );
+}
+
 #[test]
 fn goal_injection_survives_only_while_open() {
     let today = Date::today();

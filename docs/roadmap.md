@@ -317,6 +317,7 @@ and commit agree.
 | 181 | niucode M9-102 macOS backend | done | CoreGraphics capture + CGEvent + TCC |
 | 182 | M10-018 product computer flags | done | niuse exec/tui --computer |
 | 183 | M10-019 REPL computer | done | Global --computer + /computer + vision warning |
+| 184 | M10-020 cross-session memory | done | Reopen store + two-session answer |
 
 ## The round ritual
 
