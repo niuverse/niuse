@@ -26,7 +26,8 @@ All niuse paths mount niucode's read-only MCP host: `niuse tui` inherits it, and
 
 | niuse | niucode | status | updated |
 |---|---|---|---|
-| 0.1.12 | `ab50b75` | current pin; ADR-0034 mutating MCP | 2026-10-23 |
+| 0.1.12 | `56ae465` | current pin; MCP mount audit + subagent isolation | 2026-10-23 |
+| 0.1.12 | `ab50b75` | previous pin; ADR-0034 write path | 2026-10-23 |
 | 0.1.11 | `2b278fe` | previous pin; TUI resume/fork hook notification | 2026-10-22 |
 | 0.1.11 | `323a158` | previous pin; TUI new-session seam | 2026-10-22 |
 | 0.1.11 | `0da0865` | previous pin; TUI `/new` alias | 2026-10-22 |
