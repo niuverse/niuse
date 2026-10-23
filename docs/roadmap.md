@@ -306,6 +306,7 @@ and commit agree.
 | 170 | niucode M9-092 CLI attachments | done | exec --attach/--image |
 | 171 | M10-017 niuse attachments | done | niuse exec reuses the kernel path |
 | 172 | niucode M9-093 web attachments | done | Upload endpoint + browser chips |
+| 173 | niucode M9-094 TUI attachments | done | /attach, chips, live/legacy paths |
 
 ## The round ritual
 
