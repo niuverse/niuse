@@ -334,6 +334,7 @@ and commit agree.
 | 198 | niucode M9-114 window identity | done | id/app/class/kind recheck |
 | 199 | niucode M9-115 sensitive observe | done | Approval before sensitive screenshot |
 | 200 | niucode M9-116 approval thumbnail | done | In-memory data-URL target frame |
+| 201 | M10-027 preflight | done | --skip-package source gate evidence |
 
 ## The round ritual
 
