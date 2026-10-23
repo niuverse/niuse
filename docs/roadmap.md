@@ -247,6 +247,7 @@ and commit agree.
 | 111 | niucode M9-045 web theme | done | Light mode + reduced motion |
 | 112 | niucode M9-046 web tests | done | Export/new-session HTTP contracts |
 | 113 | niucode M9-047 heading levels | done | H1/H2/H3+ emphasis |
+| 114 | M10-006 web threads | done | Archived chapters in sidebar |
 
 ## The round ritual
 
