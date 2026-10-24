@@ -29,6 +29,13 @@ cargo test -p niuse --test cli stats_json_reports -- --nocapture
 
 echo "== agent recall =="
 cargo test -p niuse --bin niuse memory_tool::tests -- --nocapture
+cargo test -p niuse --bin niuse commands::recall::tests -- --nocapture
+
+echo "== doctor budget & MCP checks =="
+cargo test -p niuse --bin niuse commands::doctor::tests -- --nocapture
+
+echo "== web context budget & verification badges =="
+cargo test -p niuse --features web --bin niuse web_context -- --nocapture
 
 echo "== MCP notes pack =="
 cargo test -p niuse --test mcp_notes -- --nocapture

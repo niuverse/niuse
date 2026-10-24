@@ -13,6 +13,7 @@ use niucode_provider::{
     ChatMessage, CompletionRequest, EventStream, Provider, ProviderError, StreamEvent,
 };
 use niucode_tools::{NetworkMode, SandboxMode, SandboxPolicy};
+use niuse_core::policy::search_score;
 use niuse_core::{
     compose_with_goals, compose_with_plan, Brief, Date, Goal, LoopItem, MemoryEntry, MemoryKind,
     PlanStep, Store,
@@ -205,4 +206,52 @@ fn brief_surfaces_overdue_promises_and_stale_memory() {
     assert!(lines.contains("1 条逾期承诺"));
     assert!(lines.contains("1 条待审查"));
     assert!(lines.contains("ship the eval"));
+}
+
+#[test]
+fn brief_surfaces_due_today_loops_and_open_plan_steps() {
+    let directory = tempfile::tempdir().unwrap();
+    let store = Store::at(directory.path().join(".niuse"));
+    store.init().unwrap();
+    let today = Date::today();
+
+    store
+        .add_loop(LoopItem::new("review PR before standup", Some(today)))
+        .unwrap();
+    store
+        .write_plan(&[
+            PlanStep::new(1, "wire up recall ranking", today),
+            PlanStep {
+                done: true,
+                ..PlanStep::new(2, "already finished", today)
+            },
+        ])
+        .unwrap();
+
+    let brief = Brief::build(&store, today, "niuse").unwrap();
+    assert_eq!(brief.due_today.len(), 1);
+    assert_eq!(brief.open_steps, 1);
+    let startup = brief.startup_lines().join("\n");
+    assert!(startup.contains("1 条今日到期"));
+    assert!(startup.contains("review PR before standup"));
+    let rendered = brief.render();
+    assert!(rendered.contains("1 步待完成（/steps）"));
+}
+
+#[test]
+fn recall_scoring_ranks_exact_tag_and_phrase_above_partial_token_hits() {
+    let exact_tag_and_phrase = search_score(
+        "rust nextest",
+        "prefer cargo nextest for rust workspaces",
+        &["rust".into(), "nextest".into()],
+    );
+    let partial_body_only = search_score(
+        "rust nextest",
+        "this rust crate compiles fast",
+        &["ci".into()],
+    );
+    assert!(
+        exact_tag_and_phrase > partial_body_only,
+        "exact tag + phrase ({exact_tag_and_phrase}) must outrank single token ({partial_body_only})"
+    );
 }
