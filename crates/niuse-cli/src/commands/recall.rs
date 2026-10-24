@@ -125,11 +125,27 @@ fn collect(store: &Store, query: &str, limit: usize) -> Result<Vec<Hit>> {
         });
     }
 
+    for step in store.plan()? {
+        let score = search_score(query, &step.text, &[]);
+        if score < THRESHOLD {
+            continue;
+        }
+        hits.push(Hit {
+            kind: "plan",
+            id: step.label(),
+            date: Some(step.created.format()),
+            detail: if step.done { "done" } else { "open" }.to_string(),
+            text: step.text,
+            score,
+        });
+    }
+
     hits.sort_by(|left, right| {
         right
             .score
             .partial_cmp(&left.score)
             .unwrap_or(std::cmp::Ordering::Equal)
+            .then_with(|| right.date.cmp(&left.date))
             .then_with(|| left.kind.cmp(right.kind))
             .then_with(|| left.id.cmp(&right.id))
     });
@@ -202,9 +218,17 @@ mod tests {
             .any(|hit| hit.text == "rust expired" && hit.detail.contains("expired")));
 
         let goal = store.add_goal(Goal::new("rust goal", today)).unwrap();
+        let step = store.add_step("rust plan step".to_string(), today).unwrap();
         let all = collect(&store, "rust", 10).unwrap();
         assert!(all
             .iter()
             .any(|hit| hit.kind == "goal" && hit.id == format!("g-{}", goal.id)));
+        assert!(all
+            .iter()
+            .any(|hit| hit.kind == "plan" && hit.id == step.label()));
+        assert_eq!(
+            all[2].text, "rust expired",
+            "older confirmed memories should rank after fresher ones on equal score"
+        );
     }
 }

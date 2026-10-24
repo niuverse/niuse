@@ -76,20 +76,35 @@ pub fn similarity(left: &str, right: &str) -> f64 {
 /// a short query like "nextest" has too few bigrams to score well against a
 /// long sentence, but an exact substring is an obviously good hit.
 pub fn search_score(query: &str, text: &str, tags: &[String]) -> f64 {
+    let raw_tokens: Vec<String> = query
+        .split_whitespace()
+        .map(normalize_string)
+        .filter(|tok| !tok.is_empty())
+        .collect();
     let query = normalize_string(query);
     if query.is_empty() {
         return 0.0;
     }
 
-    if normalize_string(text).contains(&query) {
-        return 0.9;
-    }
+    let normalized_text = normalize_string(text);
+    let normalized_tags: Vec<String> = tags.iter().map(|tag| normalize_string(tag)).collect();
 
-    let tag_score = tags
+    let text_score: f64 = if normalized_text.contains(&query) {
+        0.9
+    } else if raw_tokens.len() > 1
+        && raw_tokens.iter().all(|tok| {
+            normalized_text.contains(tok) || normalized_tags.iter().any(|t| t.contains(tok))
+        })
+    {
+        0.85
+    } else {
+        0.0
+    };
+
+    let tag_score = normalized_tags
         .iter()
         .map(|tag| {
-            let tag = normalize_string(tag);
-            if tag == query {
+            if tag == &query {
                 1.0
             } else if tag.contains(&query) {
                 0.8
@@ -99,7 +114,7 @@ pub fn search_score(query: &str, text: &str, tags: &[String]) -> f64 {
         })
         .fold(0.0, f64::max);
 
-    tag_score.max(similarity(&query, text))
+    text_score.max(tag_score).max(similarity(&query, text))
 }
 
 pub fn conflicts(
@@ -188,6 +203,16 @@ mod tests {
         assert_eq!(
             search_score("rust", "用 cargo nextest", &["rust".into()]),
             1.0
+        );
+        assert_eq!(
+            search_score("rust", "rust 仓库用 cargo nextest", &["rust".into()]),
+            1.0,
+            "exact tag match must not be shadowed by text substring match"
+        );
+        assert_eq!(
+            search_score("rust nextest", "仓库一律用 cargo nextest", &["rust".into()]),
+            0.85,
+            "multi-token query should match across tags and text"
         );
         assert!(search_score("rust", "用 cargo nextest", &["rust-tooling".into()]) >= 0.8);
         assert!(search_score("kubernetes", "用 cargo nextest", &["rust".into()]) < 0.2);

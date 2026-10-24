@@ -185,6 +185,8 @@ pub fn mem_search(
             .0
             .partial_cmp(&left.0)
             .unwrap_or(std::cmp::Ordering::Equal)
+            .then_with(|| right.1.confirmed.cmp(&left.1.confirmed))
+            .then_with(|| left.1.id.cmp(&right.1.id))
     });
 
     if json {
