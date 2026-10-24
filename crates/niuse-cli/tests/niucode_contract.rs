@@ -208,3 +208,75 @@ async fn denying_approval_blocks_the_write_and_exposes_a_preview() {
         "the approver should receive a structured preview"
     );
 }
+
+#[tokio::test]
+async fn compaction_handoff_preserves_verification_steps_and_edit_diagnostics_work() {
+    let events = vec![
+        Event::UserMessage {
+            text: "implement step 1".into(),
+            attachments: Vec::new(),
+            ts: 1,
+        },
+        Event::AssistantMessage {
+            text: "verifying step 1".into(),
+            reasoning: None,
+            tool_calls: Vec::new(),
+            ts: 2,
+        },
+        Event::Verification {
+            command: "cargo test".into(),
+            ok: true,
+            output: "all green".into(),
+            step: Some("p-1".into()),
+            ts: 3,
+        },
+        Event::UserMessage {
+            text: "now step 2".into(),
+            attachments: Vec::new(),
+            ts: 4,
+        },
+        Event::AssistantMessage {
+            text: "starting step 2".into(),
+            reasoning: None,
+            tool_calls: Vec::new(),
+            ts: 5,
+        },
+    ];
+    let handoff = niucode_agent::build_handoff(&events, 1).expect("build handoff");
+    assert!(
+        handoff.summary.contains("- pass [p-1] `cargo test`"),
+        "handoff should preserve step verification: {}",
+        handoff.summary
+    );
+
+    let directory = tempfile::tempdir().expect("temp dir");
+    fs::write(
+        directory.path().join("lib.rs"),
+        "fn run() {\n    let x = 1;\n}\n",
+    )
+    .expect("write fixture");
+    let toolbox = niucode_tools::Toolbox::with_policy(
+        directory.path(),
+        SandboxPolicy::new(SandboxMode::FullAccess, NetworkMode::On),
+    )
+    .expect("toolbox");
+    let _ = toolbox
+        .execute("read", &serde_json::json!({"path": "lib.rs"}))
+        .await;
+    let failed_edit = toolbox
+        .execute(
+            "edit",
+            &serde_json::json!({
+                "path": "lib.rs",
+                "old": "fn run() {\n  let x = 1;",
+                "new": "fn run() {\n    let x = 2;"
+            }),
+        )
+        .await;
+    assert!(!failed_edit.ok);
+    assert!(
+        failed_edit.output.contains("hint: lines 1-2 match"),
+        "edit should diagnose indentation mismatch: {}",
+        failed_edit.output
+    );
+}
