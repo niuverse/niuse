@@ -20,7 +20,9 @@ pub struct Brief {
     pub expired: usize,
     pub open_loops: usize,
     pub open_goals: usize,
+    pub open_steps: usize,
     pub overdue: Vec<LoopItem>,
+    pub due_today: Vec<LoopItem>,
     pub inbox: usize,
     pub journal_last: Option<Date>,
 }
@@ -42,6 +44,13 @@ impl Brief {
         let loops = store.loops()?;
         let open_loops = loops.iter().filter(|item| !item.done).count();
         let open_goals = store.goals()?.iter().filter(|goal| !goal.done).count();
+        let open_steps = store.plan()?.iter().filter(|step| !step.done).count();
+        let mut due_today: Vec<LoopItem> = loops
+            .iter()
+            .filter(|item| !item.done && item.due == Some(today))
+            .cloned()
+            .collect();
+        due_today.sort_by(|left, right| left.id.cmp(&right.id));
         let mut overdue: Vec<LoopItem> = loops
             .into_iter()
             .filter(|item| item.is_overdue(today))
@@ -76,7 +85,9 @@ impl Brief {
             expired,
             open_loops,
             open_goals,
+            open_steps,
             overdue,
+            due_today,
             inbox,
             journal_last,
         })
@@ -84,7 +95,11 @@ impl Brief {
 
     /// Whether there is something the human should act on at session start.
     pub fn needs_attention(&self) -> bool {
-        !self.overdue.is_empty() || self.inbox > 0 || self.expired > 0 || self.stale > 0
+        !self.overdue.is_empty()
+            || !self.due_today.is_empty()
+            || self.inbox > 0
+            || self.expired > 0
+            || self.stale > 0
     }
 
     /// A compact block for the interactive banner. Empty when nothing is due.
@@ -92,6 +107,9 @@ impl Brief {
         let mut parts = Vec::new();
         if !self.overdue.is_empty() {
             parts.push(format!("{} 条逾期承诺", self.overdue.len()));
+        }
+        if !self.due_today.is_empty() {
+            parts.push(format!("{} 条今日到期", self.due_today.len()));
         }
         if self.inbox > 0 {
             parts.push(format!("{} 条待审查", self.inbox));
@@ -112,6 +130,9 @@ impl Brief {
         }
         if self.overdue.len() > 3 {
             lines.push(format!("  …还有 {} 条逾期承诺", self.overdue.len() - 3));
+        }
+        for item in self.due_today.iter().take(2) {
+            lines.push(format!("  {}", item.render().trim_start_matches("- [ ] ")));
         }
         lines
     }
@@ -145,16 +166,23 @@ impl Brief {
         ));
         if self.open_loops == 0 {
             out.push_str("loops      没有未完成承诺\n");
-        } else if self.overdue.is_empty() {
-            out.push_str(&format!("loops      {} 条未完成\n", self.open_loops));
         } else {
-            out.push_str(&format!(
-                "loops      {} 条未完成，{} 条逾期\n",
-                self.open_loops,
-                self.overdue.len()
-            ));
+            let mut loop_detail = format!("{} 条未完成", self.open_loops);
+            if !self.overdue.is_empty() {
+                loop_detail.push_str(&format!("，{} 条逾期", self.overdue.len()));
+            }
+            if !self.due_today.is_empty() {
+                loop_detail.push_str(&format!("，{} 条今日到期", self.due_today.len()));
+            }
+            out.push_str(&format!("loops      {loop_detail}\n"));
         }
         for item in &self.overdue {
+            out.push_str(&format!(
+                "  {}\n",
+                item.render().trim_start_matches("- [ ] ")
+            ));
+        }
+        for item in &self.due_today {
             out.push_str(&format!(
                 "  {}\n",
                 item.render().trim_start_matches("- [ ] ")
@@ -164,6 +192,14 @@ impl Brief {
             out.push_str("goals      没有进行中的目标\n");
         } else {
             out.push_str(&format!("goals      {} 条进行中\n", self.open_goals));
+        }
+        if self.open_steps == 0 {
+            out.push_str("plan       没有待完成步骤\n");
+        } else {
+            out.push_str(&format!(
+                "plan       {} 步待完成（/steps）\n",
+                self.open_steps
+            ));
         }
         if self.inbox > 0 {
             out.push_str(&format!(
@@ -274,5 +310,26 @@ mod tests {
         let (_directory, store) = temp_store();
         let brief = Brief::build(&store, Date::today(), "  ").unwrap();
         assert_eq!(brief.project, "unknown");
+    }
+
+    #[test]
+    fn due_today_loops_and_open_plan_steps_surface_in_brief() {
+        let (_directory, store) = temp_store();
+        let today = Date::today();
+        store
+            .add_loop(LoopItem::new("verify p-1 today", Some(today)))
+            .unwrap();
+        store.add_step("run check.sh".into(), today).unwrap();
+
+        let brief = Brief::build(&store, today, "niuse").unwrap();
+        assert_eq!(brief.due_today.len(), 1);
+        assert_eq!(brief.open_steps, 1);
+        assert!(brief.needs_attention());
+        let startup = brief.startup_lines().join("\n");
+        assert!(startup.contains("1 条今日到期"));
+        assert!(startup.contains("verify p-1 today"));
+        let rendered = brief.render();
+        assert!(rendered.contains("1 条今日到期"));
+        assert!(rendered.contains("1 步待完成（/steps）"));
     }
 }

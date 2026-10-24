@@ -201,6 +201,17 @@ pub fn brief(store: &Store, cwd: &Path, json: bool) -> Result<()> {
                     "text": item.text,
                     "due": item.due.map(|due| due.to_string()),
                 })).collect::<Vec<_>>(),
+                "due_today": view.due_today.iter().map(|item| serde_json::json!({
+                    "id": item.id,
+                    "text": item.text,
+                    "due": item.due.map(|due| due.to_string()),
+                })).collect::<Vec<_>>(),
+            },
+            "goals": {
+                "open": view.open_goals,
+            },
+            "plan": {
+                "open": view.open_steps,
             },
             "inbox": view.inbox,
             "journal": {
