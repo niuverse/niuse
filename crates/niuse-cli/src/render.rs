@@ -163,7 +163,15 @@ impl Renderer {
                 compact_tokens(self.usage_output)
             );
             if self.usage_cached > 0 {
-                line.push_str(&format!(" · {} cached", compact_tokens(self.usage_cached)));
+                let pct = self
+                    .usage_cached
+                    .saturating_mul(100)
+                    .checked_div(self.usage_input)
+                    .unwrap_or(0);
+                line.push_str(&format!(
+                    " · {} cached ({pct}%)",
+                    compact_tokens(self.usage_cached)
+                ));
             }
             println!("{}", styled("2", &line));
         }
@@ -272,7 +280,10 @@ fn preview_lines(preview: &ChangePreview, max_lines: usize) -> Vec<String> {
                     lines.push(String::new());
                 }
                 let marker = if file.is_new { " (new)" } else { "" };
-                lines.push(format!("--- {} {}", file.path, marker));
+                lines.push(format!(
+                    "--- {}{} (+{} -{})",
+                    file.path, marker, file.added, file.removed
+                ));
                 for hunk in &file.hunks {
                     lines.push(format!(
                         "@@ -{},{} +{},{} @@",
@@ -332,6 +343,7 @@ mod tests {
             body: PreviewBody::Diff { files: vec![file] },
         };
         let lines = preview_lines(&preview, 80);
+        assert!(lines.iter().any(|line| line == "--- a.txt (+1 -1)"));
         assert!(lines.iter().any(|line| line == "-beta"));
         assert!(lines.iter().any(|line| line == "+gamma"));
         assert!(lines.iter().any(|line| line.starts_with("@@ ")));

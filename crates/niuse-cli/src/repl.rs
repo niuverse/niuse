@@ -877,8 +877,13 @@ impl App {
                     render::compact_tokens(totals.output)
                 );
                 if totals.cached > 0 {
+                    let pct = totals
+                        .cached
+                        .saturating_mul(100)
+                        .checked_div(totals.input)
+                        .unwrap_or(0);
                     line.push_str(&format!(
-                        " · {} cached",
+                        " · {} cached ({pct}%)",
                         render::compact_tokens(totals.cached)
                     ));
                 }
