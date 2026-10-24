@@ -346,6 +346,7 @@ and commit agree.
 | 210 | niucode M9-125 fork attachments | done | Copy refs into fork store |
 | 211 | M10-028 computer evidence | done | evidence lists computer actions |
 | 212 | niucode M9-126 completion audit | done | Requirement/evidence matrix |
+| 213 | niucode/niuse 20-round polish | done | Tool truncation/edit hints, compaction verification preservation, recall ranking, TUI/REPL/Web UX & budget badges |
 
 ## The round ritual
 
