@@ -752,8 +752,17 @@ impl App {
                     self.metric("forget", argument);
                 }
             }
-            "/threads" => commands::threads(&self.store, &thread.path, false)?,
-            "/sessions" => commands::sessions(&self.store, false)?,
+            "/threads" => commands::threads(
+                &self.store,
+                &thread.path,
+                (!argument.is_empty()).then_some(argument),
+                false,
+            )?,
+            "/sessions" => commands::sessions(
+                &self.store,
+                (!argument.is_empty()).then_some(argument),
+                false,
+            )?,
             "/export" => {
                 let path = export_path(&self.store, &thread.path, argument, &self.cwd);
                 commands::export(&self.store, Some(&path), Some(&thread.path))?;

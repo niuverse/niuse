@@ -20,8 +20,11 @@ struct ThreadInfo {
     title: Option<String>,
 }
 
-pub fn sessions(store: &Store, json: bool) -> Result<()> {
-    let entries = collect_sessions(store)?;
+pub fn sessions(store: &Store, search: Option<&str>, json: bool) -> Result<()> {
+    let entries: Vec<ThreadInfo> = collect_sessions(store)?
+        .into_iter()
+        .filter(|info| matches_thread_query(store, info, search))
+        .collect();
     if json {
         let items: Vec<ThreadJson> = entries
             .iter()
@@ -31,7 +34,11 @@ pub fn sessions(store: &Store, json: bool) -> Result<()> {
         return Ok(());
     }
     if entries.is_empty() {
-        println!("还没有一次性 session。`niuse exec` 会在这里留下日志。");
+        if let Some(query) = search.map(str::trim).filter(|query| !query.is_empty()) {
+            println!("没有匹配 \"{query}\" 的一次性 session。");
+        } else {
+            println!("还没有一次性 session。`niuse exec` 会在这里留下日志。");
+        }
         return Ok(());
     }
     println!("{} 个一次性 session", entries.len());
@@ -51,21 +58,30 @@ pub fn sessions(store: &Store, json: bool) -> Result<()> {
     Ok(())
 }
 
-pub fn threads(store: &Store, active: &Path, json: bool) -> Result<()> {
-    let entries = collect_threads(store, active)?;
+pub fn threads(store: &Store, active: &Path, search: Option<&str>, json: bool) -> Result<()> {
+    let all = collect_threads(store, active)?;
+    let indexed: Vec<(usize, ThreadInfo)> = all
+        .into_iter()
+        .enumerate()
+        .filter(|(_, info)| matches_thread_query(store, info, search))
+        .collect();
     if json {
-        let items: Vec<ThreadJson> = entries
+        let items: Vec<ThreadJson> = indexed
             .iter()
-            .map(|info| thread_json(store, info))
+            .map(|(_, info)| thread_json(store, info))
             .collect();
         println!("{}", serde_json::to_string_pretty(&items)?);
         return Ok(());
     }
-    if entries.is_empty() {
-        println!("还没有主线。第一次对话会自动创建。");
+    if indexed.is_empty() {
+        if let Some(query) = search.map(str::trim).filter(|query| !query.is_empty()) {
+            println!("没有匹配 \"{query}\" 的主线。");
+        } else {
+            println!("还没有主线。第一次对话会自动创建。");
+        }
         return Ok(());
     }
-    for (index, info) in entries.into_iter().enumerate() {
+    for (index, info) in indexed {
         let marker = if info.active { "*" } else { " " };
         let relative = info.path.strip_prefix(store.root()).unwrap_or(&info.path);
         println!(
@@ -81,6 +97,23 @@ pub fn threads(store: &Store, active: &Path, json: bool) -> Result<()> {
         }
     }
     Ok(())
+}
+
+fn matches_thread_query(store: &Store, info: &ThreadInfo, search: Option<&str>) -> bool {
+    let Some(query) = search.map(str::trim).filter(|query| !query.is_empty()) else {
+        return true;
+    };
+    let relative = info
+        .path
+        .strip_prefix(store.root())
+        .unwrap_or(&info.path)
+        .to_string_lossy()
+        .to_lowercase();
+    let title = info.title.as_deref().unwrap_or("").to_lowercase();
+    query
+        .to_lowercase()
+        .split_whitespace()
+        .all(|needle| relative.contains(needle) || title.contains(needle))
 }
 
 #[derive(Debug, serde::Serialize)]
@@ -395,5 +428,26 @@ mod tests {
         assert_eq!(human_bytes(512), "512 B");
         assert_eq!(human_bytes(1_536), "1.5 KiB");
         assert_eq!(human_bytes(2 * 1_048_576), "2.0 MiB");
+    }
+
+    #[test]
+    fn thread_search_matches_title_and_relative_path_case_insensitively() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        let info = ThreadInfo {
+            path: store.root().join("threads/chapter-rust.jsonl"),
+            active: false,
+            events: 2,
+            bytes: 80,
+            age_secs: 10,
+            modified: SystemTime::now(),
+            title: Some("Fix clippy lint in parser".to_string()),
+        };
+        assert!(matches_thread_query(&store, &info, None));
+        assert!(matches_thread_query(&store, &info, Some("  ")));
+        assert!(matches_thread_query(&store, &info, Some("clippy parser")));
+        assert!(matches_thread_query(&store, &info, Some("chapter-rust")));
+        assert!(matches_thread_query(&store, &info, Some("rust clippy")));
+        assert!(!matches_thread_query(&store, &info, Some("python")));
     }
 }

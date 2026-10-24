@@ -842,3 +842,44 @@ fn profile_show_json_reports_missing_files() {
         assert!(profile["text"].is_null());
     }
 }
+
+#[test]
+fn threads_and_sessions_search_filter_by_title_and_path() {
+    let directory = tempfile::tempdir().unwrap();
+    let home = directory.path().join(".niuse");
+    std::fs::create_dir_all(home.join("threads")).unwrap();
+    std::fs::create_dir_all(home.join("sessions")).unwrap();
+
+    std::fs::write(
+        home.join("thread.jsonl"),
+        "{\"type\":\"user_message\",\"text\":\"fix rust clippy warnings\",\"ts\":1}\n",
+    )
+    .unwrap();
+    std::fs::write(
+        home.join("threads/chapter-1.jsonl"),
+        "{\"type\":\"user_message\",\"text\":\"draft calendar pack\",\"ts\":2}\n",
+    )
+    .unwrap();
+    std::fs::write(
+        home.join("sessions/exec-1.jsonl"),
+        "{\"type\":\"user_message\",\"text\":\"audit prompt budget\",\"ts\":3}\n",
+    )
+    .unwrap();
+    std::fs::write(
+        home.join("sessions/exec-2.jsonl"),
+        "{\"type\":\"user_message\",\"text\":\"run smoke tests\",\"ts\":4}\n",
+    )
+    .unwrap();
+
+    let threads = run(&home, &["threads", "--search", "calendar", "--json"]);
+    assert!(threads.status.success(), "{threads:?}");
+    let entries: serde_json::Value = serde_json::from_slice(&threads.stdout).expect("valid JSON");
+    assert_eq!(entries.as_array().unwrap().len(), 1);
+    assert_eq!(entries[0]["path"], "threads/chapter-1.jsonl");
+
+    let sessions = run(&home, &["sessions", "-s", "budget", "--json"]);
+    assert!(sessions.status.success(), "{sessions:?}");
+    let entries: serde_json::Value = serde_json::from_slice(&sessions.stdout).expect("valid JSON");
+    assert_eq!(entries.as_array().unwrap().len(), 1);
+    assert_eq!(entries[0]["title"], "audit prompt budget");
+}

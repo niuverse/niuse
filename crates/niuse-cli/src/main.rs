@@ -183,6 +183,9 @@ enum Command {
     },
     /// List the active thread and archived chapters
     Threads {
+        /// Filter threads by title or path
+        #[arg(short, long)]
+        search: Option<String>,
         /// Emit JSON
         #[arg(long)]
         json: bool,
@@ -208,6 +211,9 @@ enum Command {
     },
     /// List one-shot `exec` session logs
     Sessions {
+        /// Filter sessions by title or path
+        #[arg(short, long)]
+        search: Option<String>,
         /// Emit JSON
         #[arg(long)]
         json: bool,
@@ -634,10 +640,12 @@ async fn main() -> Result<()> {
             GoalsCommand::Add { text } => commands::goals_add(&store, &text),
             GoalsCommand::Done { id } => commands::goals_done(&store, &id),
         },
-        Some(Command::Sessions { json }) => commands::sessions(&store, json),
-        Some(Command::Threads { json }) => {
+        Some(Command::Sessions { search, json }) => {
+            commands::sessions(&store, search.as_deref(), json)
+        }
+        Some(Command::Threads { search, json }) => {
             let active = config::resolve_thread(cli.thread.clone(), &store)?;
-            commands::threads(&store, &active, json)
+            commands::threads(&store, &active, search.as_deref(), json)
         }
         Some(Command::Export { out, session }) => {
             commands::export(&store, out.as_deref(), session.as_deref())
