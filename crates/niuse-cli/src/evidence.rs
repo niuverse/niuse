@@ -30,6 +30,12 @@ pub struct Delegation {
     pub ok: Option<bool>,
     pub summary: String,
     pub turns: u64,
+    #[serde(default)]
+    pub input_tokens: u64,
+    #[serde(default)]
+    pub output_tokens: u64,
+    #[serde(default)]
+    pub cached_tokens: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -53,6 +59,16 @@ pub struct ComputerStep {
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize)]
 pub struct Evidence {
+    #[serde(default)]
+    pub turns: usize,
+    #[serde(default)]
+    pub input_tokens: u64,
+    #[serde(default)]
+    pub output_tokens: u64,
+    #[serde(default)]
+    pub cached_tokens: u64,
+    #[serde(default)]
+    pub compactions: usize,
     pub tools: usize,
     pub failures: usize,
     pub denied: usize,
@@ -130,6 +146,9 @@ pub fn from_events(events: &[Event]) -> Evidence {
                     ok: None,
                     summary: String::new(),
                     turns: 0,
+                    input_tokens: 0,
+                    output_tokens: 0,
+                    cached_tokens: 0,
                 });
             }
             Event::SubagentResult {
@@ -138,6 +157,7 @@ pub fn from_events(events: &[Event]) -> Evidence {
                 summary,
                 session,
                 turns,
+                usage,
                 ..
             } => {
                 if let Some(run) = evidence.delegations.iter_mut().find(|run| &run.id == id) {
@@ -145,6 +165,9 @@ pub fn from_events(events: &[Event]) -> Evidence {
                     run.summary = summary.clone();
                     run.session = session.clone();
                     run.turns = *turns;
+                    run.input_tokens = usage.input_tokens;
+                    run.output_tokens = usage.output_tokens;
+                    run.cached_tokens = usage.cached_tokens;
                 } else {
                     evidence.delegations.push(Delegation {
                         id: id.clone(),
@@ -154,8 +177,20 @@ pub fn from_events(events: &[Event]) -> Evidence {
                         ok: Some(*ok),
                         summary: summary.clone(),
                         turns: *turns,
+                        input_tokens: usage.input_tokens,
+                        output_tokens: usage.output_tokens,
+                        cached_tokens: usage.cached_tokens,
                     });
                 }
+            }
+            Event::TurnEnd { usage, .. } => {
+                evidence.turns += 1;
+                evidence.input_tokens += usage.input_tokens;
+                evidence.output_tokens += usage.output_tokens;
+                evidence.cached_tokens += usage.cached_tokens;
+            }
+            Event::Compaction { .. } => {
+                evidence.compactions += 1;
             }
             Event::Verification {
                 command, ok, step, ..
@@ -209,7 +244,9 @@ pub fn from_events(events: &[Event]) -> Evidence {
 
 impl Evidence {
     pub fn is_empty(&self) -> bool {
-        self.tools == 0
+        self.turns == 0
+            && self.compactions == 0
+            && self.tools == 0
             && self.files.is_empty()
             && self.checks.is_empty()
             && self.verifications.is_empty()
@@ -218,6 +255,13 @@ impl Evidence {
             && self.mounts.is_empty()
             && self.computer.is_empty()
             && self.denied == 0
+    }
+
+    pub fn cache_hit_percent(&self) -> u64 {
+        self.cached_tokens
+            .saturating_mul(100)
+            .checked_div(self.input_tokens)
+            .unwrap_or(0)
     }
 
     /// `verified` if any recorded check passed, `verification failed` if only
@@ -254,6 +298,16 @@ impl Evidence {
             self.mounts.len(),
             self.failures
         );
+        if self.turns > 0 || self.compactions > 0 {
+            out.push_str(&format!(
+                "usage · {} turn(s) · {} in / {} out · {}% cached · {} compaction(s)\n",
+                self.turns,
+                self.input_tokens,
+                self.output_tokens,
+                self.cache_hit_percent(),
+                self.compactions
+            ));
+        }
         if !self.computer.is_empty() {
             out.push_str(&format!(
                 "computer · {} action(s) · {} failed\n",
@@ -285,8 +339,21 @@ impl Evidence {
                     Some(false) => "✗",
                     None => "?",
                 };
+                let usage_suffix = if run.input_tokens > 0 || run.output_tokens > 0 {
+                    let cache_pct = run
+                        .cached_tokens
+                        .saturating_mul(100)
+                        .checked_div(run.input_tokens)
+                        .unwrap_or(0);
+                    format!(
+                        " · {} in / {} out ({}% cached)",
+                        run.input_tokens, run.output_tokens, cache_pct
+                    )
+                } else {
+                    String::new()
+                };
                 out.push_str(&format!(
-                    "  {status} {} · {} · {} turn(s) · {}\n",
+                    "  {status} {} · {} · {} turn(s){usage_suffix} · {}\n",
                     if run.profile.is_empty() {
                         "subagent"
                     } else {
@@ -534,5 +601,31 @@ mod tests {
     fn an_empty_thread_says_so() {
         assert!(from_events(&[]).is_empty());
         assert!(from_events(&[]).render().contains("no tool calls"));
+    }
+
+    #[test]
+    fn turn_usage_cache_hit_and_compactions_are_reported() {
+        let events = vec![
+            event(
+                r#"{"type":"turn_end","usage":{"input_tokens":1000,"output_tokens":100,"cached_tokens":600,"reasoning_tokens":0},"ts":1}"#,
+            ),
+            event(
+                r#"{"type":"compaction","summary":"handoff","upto":1,"before_tokens":1000,"after_tokens":200,"ts":2}"#,
+            ),
+            event(
+                r#"{"type":"subagent_spawn","id":"s1","call_id":"c1","task":"audit","profile":"worker","session":"sub.jsonl","max_steps":4,"timeout_secs":60,"context_budget":8000,"ts":3}"#,
+            ),
+            event(
+                r#"{"type":"subagent_result","id":"s1","call_id":"c1","ok":true,"summary":"done","session":"sub.jsonl","turns":1,"usage":{"input_tokens":400,"output_tokens":50,"cached_tokens":200,"reasoning_tokens":0},"ts":4}"#,
+            ),
+        ];
+        let evidence = from_events(&events);
+        assert_eq!(evidence.turns, 1);
+        assert_eq!(evidence.cache_hit_percent(), 60);
+        assert_eq!(evidence.compactions, 1);
+        let rendered = evidence.render();
+        assert!(rendered
+            .contains("usage · 1 turn(s) · 1000 in / 100 out · 60% cached · 1 compaction(s)"));
+        assert!(rendered.contains("400 in / 50 out (50% cached)"));
     }
 }
