@@ -3,6 +3,7 @@
 //! Prototype: not wired into a `niuse tui` command yet. The unit tests exercise
 //! the full capture → parse → write path without a terminal.
 
+use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 
 use anyhow::Result;
@@ -22,6 +23,7 @@ enum Action {
     KeepBoth,
     Edit,
     Discard,
+    SuppressSession,
 }
 
 struct PendingMemory {
@@ -40,6 +42,8 @@ pub struct CompanionHooks {
     raw: String,
     pending: Vec<Option<PendingMemory>>,
     memory_enabled: bool,
+    suppress_candidates: bool,
+    rejected_tags: BTreeSet<String>,
 }
 
 impl CompanionHooks {
@@ -86,6 +90,8 @@ impl CompanionHooks {
             raw: String::new(),
             pending: Vec::new(),
             memory_enabled,
+            suppress_candidates: false,
+            rejected_tags: BTreeSet::new(),
         })
     }
 
@@ -151,7 +157,15 @@ impl TurnHooks for CompanionHooks {
                     }
                 }
                 Block::Memory { kind, tags, text } => {
-                    if !self.memory_enabled {
+                    if !self.memory_enabled || self.suppress_candidates {
+                        continue;
+                    }
+                    let tag_text = tags.join(",");
+                    if tags
+                        .iter()
+                        .any(|tag| self.rejected_tags.contains(&tag.to_lowercase()))
+                    {
+                        let _ = store.append_metric("suppress", &tag_text);
                         continue;
                     }
                     if secret_reason(&text).is_some() {
@@ -159,32 +173,49 @@ impl TurnHooks for CompanionHooks {
                         continue;
                     }
                     let index = self.pending.len();
-                    let tag_text = tags.join(",");
                     let conflict = memories.iter().find(|entry| {
                         niuse_core::policy::conflicts(&text, &tags, &entry.text, &entry.tags)
                     });
                     let (actions, options, prefix) = match conflict {
-                        Some(entry) => (
+                        Some(entry) => {
+                            let existing_tags = if entry.tags.is_empty() {
+                                "-".to_string()
+                            } else {
+                                entry.tags.join(",")
+                            };
+                            (
+                                vec![
+                                    Action::Replace(entry.id.clone()),
+                                    Action::KeepBoth,
+                                    Action::Edit,
+                                    Action::Discard,
+                                    Action::SuppressSession,
+                                ],
+                                vec![
+                                    "replace".to_string(),
+                                    "keep both".to_string(),
+                                    "edit".to_string(),
+                                    "discard".to_string(),
+                                    "suppress session".to_string(),
+                                ],
+                                format!(
+                                    "conflicts with m-{} [{} · {}] ({})",
+                                    entry.id, existing_tags, entry.confirmed, entry.text
+                                ),
+                            )
+                        }
+                        None => (
                             vec![
-                                Action::Replace(entry.id.clone()),
-                                Action::KeepBoth,
+                                Action::Accept,
                                 Action::Edit,
                                 Action::Discard,
+                                Action::SuppressSession,
                             ],
-                            vec![
-                                "replace".to_string(),
-                                "keep both".to_string(),
-                                "edit".to_string(),
-                                "discard".to_string(),
-                            ],
-                            format!("conflicts with m-{} ({})", entry.id, entry.text),
-                        ),
-                        None => (
-                            vec![Action::Accept, Action::Edit, Action::Discard],
                             vec![
                                 "accept".to_string(),
                                 "edit".to_string(),
                                 "discard".to_string(),
+                                "suppress session".to_string(),
                             ],
                             "new memory".to_string(),
                         ),
@@ -262,7 +293,14 @@ impl TurnHooks for CompanionHooks {
                 }
             }
             Action::Discard => {
+                for tag in &memory.tags {
+                    self.rejected_tags.insert(tag.to_lowercase());
+                }
                 let _ = store.append_metric("discard", "tui-hook");
+            }
+            Action::SuppressSession => {
+                self.suppress_candidates = true;
+                let _ = store.append_metric("suppress", "session");
             }
         }
     }
@@ -277,6 +315,8 @@ impl TurnHooks for CompanionHooks {
 
     fn on_session_start(&mut self, path: &Path) {
         self.thread = path.to_path_buf();
+        self.suppress_candidates = false;
+        self.rejected_tags.clear();
     }
 
     fn commands(&self) -> Vec<(String, String)> {
@@ -1066,8 +1106,41 @@ mod tests {
             "<<niuse:memory kind=lesson tags=rust>>\nnever panic\n<</niuse:memory>>".to_string();
         hooks.filter_text(&mut text);
         let prompts = hooks.after_turn(&outcome());
-        // New-memory options are accept, edit, discard; index 1 opens $EDITOR.
+        // New-memory options are accept, edit, discard, suppress session; index 1 opens $EDITOR.
         hooks.on_answer(&prompts[0].id, 2);
         assert!(store.memories().unwrap().is_empty());
+
+        // Subsequent candidate with the same rejected tag is suppressed in this session.
+        let mut follow_up =
+            "<<niuse:memory kind=lesson tags=rust>>\nanother rust tip\n<</niuse:memory>>"
+                .to_string();
+        hooks.filter_text(&mut follow_up);
+        assert!(hooks.after_turn(&outcome()).is_empty());
+        assert!(store.metrics().unwrap().contains("\tsuppress\trust"));
+    }
+
+    #[test]
+    fn conflict_preview_shows_metadata_and_suppress_session_silences_all() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        seed(&store);
+        let (mut hooks, prompt) = conflict_prompt(&store);
+        assert!(
+            prompt
+                .question
+                .contains(&format!("[rust · {}]", Date::today())),
+            "{}",
+            prompt.question
+        );
+        // Index 4 on conflict prompt is "suppress session".
+        hooks.on_answer(&prompt.id, 4);
+
+        let mut next =
+            "<<niuse:memory kind=preference tags=python>>\nuse pytest\n<</niuse:memory>>"
+                .to_string();
+        hooks.filter_text(&mut next);
+        assert!(hooks.after_turn(&outcome()).is_empty());
+        assert!(store.metrics().unwrap().contains("\tsuppress\tsession"));
     }
 }
