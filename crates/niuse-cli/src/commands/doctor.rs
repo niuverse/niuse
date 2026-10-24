@@ -127,6 +127,7 @@ pub fn doctor(store: &Store, preset: &str, json: bool) -> Result<()> {
                 .count()
         ),
     );
+    prompt_check(&mut report, store, today)?;
 
     let thread = store.session_path();
     if thread.exists() {
@@ -186,6 +187,10 @@ pub fn doctor(store: &Store, preset: &str, json: bool) -> Result<()> {
         ),
         Ok(_) => report.record(Level::Ok, "config", "defaults (no config.toml)"),
         Err(error) => report.record(Level::Fail, "config", format!("{error:#}")),
+    }
+
+    if let Ok(root) = crate::projects::default_root() {
+        mcp_check(&mut report, &root.join("mcp.toml"));
     }
 
     match Preset::parse(preset) {
@@ -453,9 +458,84 @@ fn mode_of(_metadata: &fs::Metadata) -> String {
     "mode n/a".to_string()
 }
 
+fn prompt_check(report: &mut Report, store: &Store, today: Date) -> Result<()> {
+    let identity = store.identity()?;
+    let user = store.user()?;
+    let goals = store.goals()?;
+    let plan = store.plan()?;
+    let memories = store.memories()?;
+    let loops = store.loops()?;
+    let journal = store.recent_journal(3)?;
+    let composition = niuse_core::prompt::compose_with_plan(
+        identity.as_deref(),
+        user.as_deref(),
+        &goals,
+        &plan,
+        &memories,
+        &loops,
+        &journal,
+        today,
+    );
+    let active_memories = memories
+        .iter()
+        .filter(|entry| !entry.is_expired(today))
+        .count();
+    let budget_dropped = active_memories.saturating_sub(composition.memory_injected);
+    let truncated = composition.system.contains("……（已截断）");
+    if budget_dropped > 0 || truncated {
+        let mut reasons = Vec::new();
+        if budget_dropped > 0 {
+            reasons.push(format!("{budget_dropped} memory dropped by budget"));
+        }
+        if truncated {
+            reasons.push("section truncated".to_string());
+        }
+        report.record(
+            Level::Warn,
+            "prompt",
+            format!(
+                "~{} tokens ({} memory injected; {}; run `niuse mem prune` or `niuse mem review`)",
+                composition.tokens,
+                composition.memory_injected,
+                reasons.join(", ")
+            ),
+        );
+    } else {
+        report.record(
+            Level::Ok,
+            "prompt",
+            format!(
+                "~{} tokens ({} memory injected, {} expired dropped)",
+                composition.tokens, composition.memory_injected, composition.memory_dropped
+            ),
+        );
+    }
+    Ok(())
+}
+
+fn mcp_check(report: &mut Report, path: &Path) {
+    if !path.exists() {
+        report.record(
+            Level::Ok,
+            "mcp",
+            "not configured (optional; run `niuse mcp init`)",
+        );
+        return;
+    }
+    match niucode_mcp::McpConfig::load(path).and_then(|config| config.validated()) {
+        Ok(servers) => report.record(
+            Level::Ok,
+            "mcp",
+            format!("{} ({} read-only server(s))", path.display(), servers.len()),
+        ),
+        Err(error) => report.record(Level::Warn, "mcp", format!("{}: {error:#}", path.display())),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use niuse_core::{MemoryEntry, MemoryKind};
 
     #[test]
     fn private_modes_reject_group_and_world_bits() {
@@ -494,5 +574,49 @@ mod tests {
         assert_eq!(json[0]["level"], "ok");
         assert_eq!(json[1]["level"], "warn");
         assert_eq!(json[2]["level"], "fail");
+    }
+
+    #[test]
+    fn prompt_and_mcp_checks_surface_budget_drop_and_manifest_validity() {
+        let directory = tempfile::tempdir().unwrap();
+        let store = Store::at(directory.path().join(".niuse"));
+        store.init().unwrap();
+        let today = Date::parse("2026-10-25").unwrap();
+
+        let mut ok_report = Report::default();
+        prompt_check(&mut ok_report, &store, today).unwrap();
+        assert_eq!(ok_report.warnings, 0);
+        assert_eq!(ok_report.checks[0].label, "prompt");
+        assert_eq!(ok_report.checks[0].level, Level::Ok);
+
+        for index in 0..160 {
+            let entry = MemoryEntry::new(
+                MemoryKind::Preference,
+                format!(
+                    "preference {index} with enough words to overflow the two thousand token memory budget"
+                ),
+                vec!["rust".into()],
+                today,
+                None,
+            );
+            store.add_memory(entry).unwrap();
+        }
+        let mut warn_report = Report::default();
+        prompt_check(&mut warn_report, &store, today).unwrap();
+        assert_eq!(warn_report.warnings, 1);
+        assert_eq!(warn_report.checks[0].level, Level::Warn);
+        assert!(warn_report.checks[0]
+            .detail
+            .contains("memory dropped by budget"));
+
+        let mcp_path = directory.path().join("mcp.toml");
+        let mut mcp_report = Report::default();
+        mcp_check(&mut mcp_report, &mcp_path);
+        assert_eq!(mcp_report.checks[0].level, Level::Ok);
+
+        fs::write(&mcp_path, "invalid = [toml").unwrap();
+        let mut bad_mcp = Report::default();
+        mcp_check(&mut bad_mcp, &mcp_path);
+        assert_eq!(bad_mcp.checks[0].level, Level::Warn);
     }
 }
