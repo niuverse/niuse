@@ -309,8 +309,14 @@ impl TurnHooks for CompanionHooks {
             ("/status".into(), "identity, memory, and loop counts".into()),
             ("/cost".into(), "session token usage".into()),
             ("/export".into(), "export the thread as Markdown".into()),
-            ("/threads".into(), "list archived thread chapters".into()),
-            ("/sessions".into(), "list one-shot session logs".into()),
+            (
+                "/threads".into(),
+                "list or filter archived thread chapters".into(),
+            ),
+            (
+                "/sessions".into(),
+                "list or filter one-shot session logs".into(),
+            ),
             ("/prompt".into(), "print the composed system prompt".into()),
             ("/identity".into(), "print identity.md".into()),
             ("/user".into(), "print user.md".into()),
@@ -512,33 +518,83 @@ impl TurnHooks for CompanionHooks {
                     .unwrap_or_else(|| "(missing; run `niuse user edit`)".into()),
             ),
             "/threads" => {
+                let query = parts.collect::<Vec<_>>().join(" ").to_lowercase();
                 let mut out = String::new();
-                out.push_str(&format!("active: {}\n", self.thread.display()));
+                if query.is_empty()
+                    || self
+                        .thread
+                        .to_string_lossy()
+                        .to_lowercase()
+                        .contains(&query)
+                {
+                    out.push_str(&format!("active: {}\n", self.thread.display()));
+                }
                 if let Ok(entries) = std::fs::read_dir(store.threads_dir()) {
-                    let mut names: Vec<String> = entries
-                        .flatten()
-                        .filter_map(|entry| entry.file_name().into_string().ok())
-                        .collect();
-                    names.sort();
-                    for name in names {
-                        out.push_str(&format!("archived: {name}\n"));
+                    let mut paths: Vec<PathBuf> =
+                        entries.flatten().map(|entry| entry.path()).collect();
+                    paths.sort();
+                    for path in paths {
+                        let Some(name) = path.file_name().and_then(|n| n.to_str()) else {
+                            continue;
+                        };
+                        let title = first_user_title(&path);
+                        let hay = format!(
+                            "{} {}",
+                            name.to_lowercase(),
+                            title.as_deref().unwrap_or("").to_lowercase()
+                        );
+                        if query.split_whitespace().all(|needle| hay.contains(needle)) {
+                            match title {
+                                Some(title) => {
+                                    out.push_str(&format!("archived: {name} · {title}\n"))
+                                }
+                                None => out.push_str(&format!("archived: {name}\n")),
+                            }
+                        }
                     }
                 }
-                Some(out.trim_end().to_string())
+                if out.is_empty() {
+                    Some(format!("(no threads matching \"{query}\")"))
+                } else {
+                    Some(out.trim_end().to_string())
+                }
             }
             "/sessions" => {
-                let mut names: Vec<String> = std::fs::read_dir(store.root().join("sessions"))
+                let query = parts.collect::<Vec<_>>().join(" ").to_lowercase();
+                let mut paths: Vec<PathBuf> = std::fs::read_dir(store.root().join("sessions"))
                     .ok()
                     .into_iter()
                     .flatten()
                     .flatten()
-                    .filter_map(|entry| entry.file_name().into_string().ok())
+                    .map(|entry| entry.path())
                     .collect();
-                names.sort();
-                if names.is_empty() {
-                    Some("(no sessions)".into())
+                paths.sort();
+                let mut lines = Vec::new();
+                for path in paths {
+                    let Some(name) = path.file_name().and_then(|n| n.to_str()) else {
+                        continue;
+                    };
+                    let title = first_user_title(&path);
+                    let hay = format!(
+                        "{} {}",
+                        name.to_lowercase(),
+                        title.as_deref().unwrap_or("").to_lowercase()
+                    );
+                    if query.split_whitespace().all(|needle| hay.contains(needle)) {
+                        match title {
+                            Some(title) => lines.push(format!("{name} · {title}")),
+                            None => lines.push(name.to_string()),
+                        }
+                    }
+                }
+                if lines.is_empty() {
+                    if query.is_empty() {
+                        Some("(no sessions)".into())
+                    } else {
+                        Some(format!("(no sessions matching \"{query}\")"))
+                    }
                 } else {
-                    Some(names.join("\n"))
+                    Some(lines.join("\n"))
                 }
             }
             "/export" => {
@@ -579,8 +635,13 @@ impl TurnHooks for CompanionHooks {
                     crate::render::compact_tokens(totals.output)
                 );
                 if totals.cached > 0 {
+                    let pct = totals
+                        .cached
+                        .saturating_mul(100)
+                        .checked_div(totals.input)
+                        .unwrap_or(0);
                     line.push_str(&format!(
-                        " · {} cached",
+                        " · {} cached ({pct}%)",
                         crate::render::compact_tokens(totals.cached)
                     ));
                 }
@@ -602,6 +663,25 @@ impl TurnHooks for CompanionHooks {
             _ => None,
         }
     }
+}
+
+fn first_user_title(path: &Path) -> Option<String> {
+    let loaded = niucode_core::load(path).ok()?;
+    for event in &loaded.events {
+        if let Event::UserMessage { text, .. } = event {
+            let line = text.lines().next().unwrap_or(text).trim();
+            if line.is_empty() {
+                continue;
+            }
+            let title: String = line.chars().take(60).collect();
+            return Some(if line.chars().count() > 60 {
+                format!("{title}…")
+            } else {
+                title
+            });
+        }
+    }
+    None
 }
 
 #[cfg(test)]
@@ -817,7 +897,7 @@ mod tests {
         let report = hooks.command("/report").unwrap();
         assert!(report.contains("weekly report"), "{report}");
         assert!(cost.contains("150 in"));
-        assert!(cost.contains("40 cached"));
+        assert!(cost.contains("40 cached (26%)"), "{cost}");
 
         let added = hooks.command("/steps add write the tests").unwrap();
         assert!(added.contains("p-1"));
@@ -888,15 +968,40 @@ mod tests {
         let store = Store::at(directory.path().join(".niuse"));
         store.init().unwrap();
         std::fs::create_dir_all(store.threads_dir()).unwrap();
-        std::fs::write(store.threads_dir().join("thread-1.jsonl"), "{}\n").unwrap();
+        std::fs::write(
+            store.threads_dir().join("thread-1.jsonl"),
+            "{\"type\":\"user_message\",\"text\":\"fix rust clippy\",\"ts\":1}\n",
+        )
+        .unwrap();
+        std::fs::write(
+            store.threads_dir().join("thread-2.jsonl"),
+            "{\"type\":\"user_message\",\"text\":\"draft calendar\",\"ts\":2}\n",
+        )
+        .unwrap();
         std::fs::create_dir_all(store.root().join("sessions")).unwrap();
-        std::fs::write(store.root().join("sessions").join("s-1.jsonl"), "{}\n").unwrap();
+        std::fs::write(
+            store.root().join("sessions").join("s-1.jsonl"),
+            "{\"type\":\"user_message\",\"text\":\"audit budget\",\"ts\":1}\n",
+        )
+        .unwrap();
+        std::fs::write(
+            store.root().join("sessions").join("s-2.jsonl"),
+            "{\"type\":\"user_message\",\"text\":\"smoke check\",\"ts\":2}\n",
+        )
+        .unwrap();
         let mut hooks = CompanionHooks::new(&store).unwrap();
         assert!(hooks
             .command("/threads")
             .unwrap()
             .contains("thread-1.jsonl"));
+        let filtered_threads = hooks.command("/threads calendar").unwrap();
+        assert!(filtered_threads.contains("thread-2.jsonl"));
+        assert!(!filtered_threads.contains("thread-1.jsonl"));
+
         assert!(hooks.command("/sessions").unwrap().contains("s-1.jsonl"));
+        let filtered_sessions = hooks.command("/sessions budget").unwrap();
+        assert!(filtered_sessions.contains("s-1.jsonl"));
+        assert!(!filtered_sessions.contains("s-2.jsonl"));
     }
 
     #[test]
