@@ -39,9 +39,7 @@ pub use report::{report, report_text};
 #[cfg(feature = "tui")]
 pub(crate) use session::write_export;
 pub use session::{export, sessions, thread_at, threads};
-#[cfg(feature = "tui")]
-pub use verify::verify_shell_with_step;
-pub use verify::{verify_shell, verify_with_step};
+pub use verify::{verify_shell_with_step, verify_with_step};
 
 use anyhow::Result;
 use niuse_core::prompt::compose_with_plan;

@@ -27,10 +27,6 @@ pub fn verify_with_step(
     verify_shell_with_step(thread, &command.join(" "), step, json)
 }
 
-pub fn verify_shell(thread: &Path, shell: &str, json: bool) -> Result<VerifyOutcome> {
-    verify_shell_with_step(thread, shell, None, json)
-}
-
 pub fn verify_shell_with_step(
     thread: &Path,
     shell: &str,

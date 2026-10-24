@@ -369,7 +369,10 @@ impl TurnHooks for CompanionHooks {
                     }
                 }
                 Some("done") => {
-                    let Some(id) = parts.next().and_then(|id| id.parse::<u32>().ok()) else {
+                    let Some(id) = parts
+                        .next()
+                        .and_then(|id| id.trim_start_matches("p-").parse::<u32>().ok())
+                    else {
                         return Some("usage: /steps done <N>".to_string());
                     };
                     match crate::commands::plan_done(&store, &self.thread, id) {

@@ -70,6 +70,12 @@ pub(crate) const SLASH_COMMANDS: &[&str] = &[
     "/model",
     "/cost",
     "/computer",
+    "/computer status",
+    "/computer stop",
+    "/computer off",
+    "/computer observe",
+    "/computer control",
+    "/computer autonomous",
 ];
 
 fn slash_candidates(prefix: &str) -> Vec<&'static str> {
@@ -85,10 +91,12 @@ fn slash_candidates(prefix: &str) -> Vec<&'static str> {
     matches
 }
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum IdScope {
     Memory,
     Loop,
+    Goal,
+    Step,
 }
 
 /// Where an id completion starts, the fragment typed so far, and which store.
@@ -101,7 +109,13 @@ fn id_query(line: &str) -> Option<(usize, &str, IdScope)> {
         };
         return Some((line.len() - fragment.len(), fragment, scope));
     }
-    for (command, scope) in [("/forget ", IdScope::Memory), ("/done ", IdScope::Loop)] {
+    for (command, scope) in [
+        ("/forget ", IdScope::Memory),
+        ("/done ", IdScope::Loop),
+        ("/goals done ", IdScope::Goal),
+        ("/steps done ", IdScope::Step),
+        ("/verify ", IdScope::Step),
+    ] {
         if let Some(fragment) = line.strip_prefix(command) {
             if !fragment.contains(' ') {
                 return Some((command.len(), fragment, scope));
@@ -117,7 +131,7 @@ fn id_candidates(store: &Store, scope: IdScope, fragment: &str) -> Vec<Pair> {
             Some(rest) => ("m-", rest),
             None => ("", fragment),
         },
-        IdScope::Loop => ("", fragment),
+        IdScope::Loop | IdScope::Goal | IdScope::Step => ("", fragment),
     };
     let items: Vec<(String, String)> = match scope {
         IdScope::Memory => store
@@ -132,6 +146,20 @@ fn id_candidates(store: &Store, scope: IdScope, fragment: &str) -> Vec<Pair> {
             .into_iter()
             .filter(|item| !item.done)
             .map(|item| (format!("l-{}", item.id), item.text))
+            .collect(),
+        IdScope::Goal => store
+            .goals()
+            .unwrap_or_default()
+            .into_iter()
+            .filter(|goal| !goal.done)
+            .map(|goal| (format!("g-{}", goal.id), goal.text))
+            .collect(),
+        IdScope::Step => store
+            .plan()
+            .unwrap_or_default()
+            .into_iter()
+            .filter(|step| !step.done)
+            .map(|step| (step.label(), step.text))
             .collect(),
     };
     let mut matches: Vec<Pair> = items
@@ -772,8 +800,9 @@ impl App {
                     Some("done") => {
                         let id = argument["done".len()..]
                             .trim()
+                            .trim_start_matches("p-")
                             .parse::<u32>()
-                            .map_err(|_| anyhow::anyhow!("用法：/steps done <N>"))?;
+                            .map_err(|_| anyhow::anyhow!("用法：/steps done <N|p-N>"))?;
                         let step = commands::plan_done(&self.store, &thread.path, id)?;
                         println!("done {}", step.label());
                     }
@@ -930,9 +959,19 @@ impl App {
             }
             "/verify" => {
                 if argument.is_empty() {
-                    println!("用法：/verify <命令>");
-                } else if !commands::verify_shell(&thread.path, argument, false)?.ok {
-                    println!("verify failed");
+                    println!("用法：/verify [p-N] <命令>");
+                } else {
+                    let (step, command) = match argument.split_once(' ') {
+                        Some((first, command))
+                            if first.starts_with("p-") && !command.trim().is_empty() =>
+                        {
+                            (Some(first), command.trim())
+                        }
+                        _ => (None, argument),
+                    };
+                    if !commands::verify_shell_with_step(&thread.path, command, step, false)?.ok {
+                        println!("verify failed");
+                    }
                 }
             }
             "/status" => {
@@ -1676,6 +1715,32 @@ mod tests {
         let loops = id_candidates(&store, IdScope::Loop, "l-");
         assert_eq!(loops.len(), 1);
         assert_eq!(loops[0].replacement, format!("l-{}", loop_item.id));
+
+        let goal = store
+            .add_goal(niuse_core::Goal::new("ship round 9", Date::today()))
+            .unwrap();
+        let goals = id_candidates(&store, IdScope::Goal, "g-");
+        assert_eq!(goals.len(), 1);
+        assert_eq!(goals[0].replacement, format!("g-{}", goal.id));
+        assert_eq!(
+            id_query("/goals done g-"),
+            Some(("/goals done ".len(), "g-", IdScope::Goal))
+        );
+
+        let step = store
+            .add_step("verify completion".into(), Date::today())
+            .unwrap();
+        let steps = id_candidates(&store, IdScope::Step, "p-");
+        assert_eq!(steps.len(), 1);
+        assert_eq!(steps[0].replacement, step.label());
+        assert_eq!(
+            id_query("/steps done p-"),
+            Some(("/steps done ".len(), "p-", IdScope::Step))
+        );
+        assert_eq!(
+            id_query("/verify p-"),
+            Some(("/verify ".len(), "p-", IdScope::Step))
+        );
     }
 
     #[test]
