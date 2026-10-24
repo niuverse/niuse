@@ -976,13 +976,45 @@ fn web_switch_thread(
 
 #[cfg(feature = "web")]
 fn web_context(store: &Store) -> Result<serde_json::Value> {
+    let today = niuse_core::date::Date::today();
     let identity = store.identity()?;
     let user = store.user()?;
     let memories = store.memories()?;
     let goals = store.goals()?;
     let plan = store.plan()?;
     let loops = store.loops()?;
+    let journal = store.recent_journal(3)?;
+    let composition = niuse_core::prompt::compose_with_plan(
+        identity.as_deref(),
+        user.as_deref(),
+        &goals,
+        &plan,
+        &memories,
+        &loops,
+        &journal,
+        today,
+    );
+    let active = store.session_path();
+    let evidence = crate::evidence::from_thread(&active).unwrap_or_default();
     let mut sections = Vec::new();
+    sections.push(json!({
+        "title": "prompt budget",
+        "lines": [
+            format!("composed · ~{} tokens", composition.tokens),
+            format!(
+                "memory · {} injected, {} dropped (cap {})",
+                composition.memory_injected,
+                composition.memory_dropped,
+                niuse_core::prompt::MEMORY_BUDGET
+            ),
+            format!(
+                "caps · id {} · user {} · journal {}",
+                niuse_core::prompt::IDENTITY_BUDGET,
+                niuse_core::prompt::USER_BUDGET,
+                niuse_core::prompt::JOURNAL_BUDGET
+            ),
+        ],
+    }));
     sections.push(json!({
         "title": "identity",
         "lines": identity
@@ -1008,7 +1040,15 @@ fn web_context(store: &Store) -> Result<serde_json::Value> {
         "title": "plan",
         "lines": plan
             .iter()
-            .map(|step| format!("{} {} · {}", if step.done { "x" } else { " " }, step.id, step.text))
+            .map(|step| {
+                format!(
+                    "[{}] {} · {} ({})",
+                    if step.done { "x" } else { " " },
+                    step.label(),
+                    step.text,
+                    evidence.step_state(step)
+                )
+            })
             .collect::<Vec<_>>(),
     }));
     sections.push(json!({
@@ -1028,7 +1068,6 @@ fn web_context(store: &Store) -> Result<serde_json::Value> {
             .map(|item| format!("{} · {}", item.id, item.text))
             .collect::<Vec<_>>(),
     }));
-    let active = store.session_path();
     sections.push(json!({
         "title": "thread",
         "lines": [format!(
@@ -1173,10 +1212,32 @@ mod docs_tests {
         let directory = tempfile::tempdir().unwrap();
         let store = Store::at(directory.path().to_path_buf());
         store.init().unwrap();
+        store
+            .add_step("verify web sidebar".into(), niuse_core::Date::today())
+            .unwrap();
+        std::fs::write(
+            store.session_path(),
+            "{\"type\":\"verification\",\"command\":\"cargo test\",\"ok\":true,\"output\":\"ok\",\"step\":\"p-1\",\"ts\":1}\n",
+        )
+        .unwrap();
         let context = web_context(&store).unwrap();
         assert_eq!(context["brand"], "niuse");
         let sections = context["sections"].as_array().unwrap();
-        assert!(sections.len() >= 9);
+        assert!(sections.len() >= 10);
+        assert!(sections
+            .iter()
+            .any(|section| section["title"] == "prompt budget"));
+        let plan_section = sections
+            .iter()
+            .find(|section| section["title"] == "plan")
+            .unwrap();
+        assert!(
+            plan_section["lines"][0]
+                .as_str()
+                .unwrap()
+                .contains("p-1 · verify web sidebar (verified)"),
+            "{plan_section:?}"
+        );
         assert!(sections
             .iter()
             .any(|section| section["title"] == "report · 7d"));
